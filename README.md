@@ -57,6 +57,4 @@ git clone https://github.com/Khanhnv26/MiniPocketKit.git
 
 ---
 
-## 👥 Tác giả
-- **Developer**: [Khanhnv26](https://github.com/Khanhnv26)
-- **Course**: PRM392 - Mobile Programming (FPT University)
+
