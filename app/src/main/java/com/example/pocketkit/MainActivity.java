@@ -1,13 +1,11 @@
 package com.example.pocketkit;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.pocketkit.databinding.ActivityMainBinding;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,71 +27,59 @@ public class MainActivity extends AppCompatActivity {
         );
 
         binding.layoutActionSchedule.setOnClickListener(v ->
-                showToast("Mở Lịch học và công việc chi tiết")
+                showToast("Mở Lịch học: 15:15 - Lập trình Android (Lab 3)")
         );
 
         binding.btnSettings.setOnClickListener(v ->
                 showToast("Cài đặt ứng dụng & Chuyển đổi giao diện Sáng / Tối")
         );
 
-        // 2. Lưới 3 cột tiện ích chính
-        binding.btnToolNotes.setOnClickListener(v ->
-                showToast("Mở Ghi chú (Notes)")
+        // 2. Góc học tập (Study Essentials)
+        binding.cardToolNotes.setOnClickListener(v ->
+                showToast("Mở Ghi chú & Checklist (Notes)")
         );
 
-        binding.btnToolDeadline.setOnClickListener(v ->
-                showToast("Mở Hạn nộp (Deadline Reminder)")
+        binding.cardToolDeadline.setOnClickListener(v ->
+                showToast("Mở Hạn nộp bài (Deadline Reminder)")
         );
 
-        binding.btnToolTimetable.setOnClickListener(v ->
-                showToast("Mở Lịch học (Timetable)")
+        binding.cardToolTimetable.setOnClickListener(v ->
+                showToast("Mở Thời khóa biểu (Timetable)")
         );
 
-        binding.btnToolCompress.setOnClickListener(v ->
-                showToast("Mở Nén ảnh hồ sơ (Image Compressor)")
+        binding.cardToolGpa.setOnClickListener(v ->
+                showToast("Mở Tính điểm GPA & Dự đoán qua môn")
         );
 
-        binding.btnToolOcr.setOnClickListener(v ->
-                showToast("Mở Quét slide & OCR chữ (Scan OCR)")
+        binding.cardToolFocus.setOnClickListener(v ->
+                showToast("Mở Đồng hồ Focus (Pomodoro 25 phút)")
         );
 
-        binding.btnToolGpa.setOnClickListener(v ->
-                showToast("Mở Tính GPA & Điểm cần đạt")
+        // 3. Hồ sơ & Tài liệu (Document Utilities)
+        binding.cardToolCompress.setOnClickListener(v ->
+                showToast("Mở Nén ảnh hồ sơ & CCCD (< 100KB, 500KB)")
         );
 
-        binding.btnToolPdf.setOnClickListener(v ->
-                showToast("Mở Bộ công cụ PDF (PDF Toolkit)")
+        binding.cardToolOcr.setOnClickListener(v ->
+                showToast("Mở Quét slide & Trích xuất chữ tiếng Việt")
         );
 
-        binding.btnToolFocus.setOnClickListener(v ->
-                showToast("Mở Đồng hồ Pomodoro (Focus Timer)")
+        binding.cardToolPdf.setOnClickListener(v ->
+                showToast("Mở Bộ tiện ích PDF (Gộp ảnh thành PDF)")
         );
 
-        // 3. Nút Tất cả: Mở Bottom Sheet mở rộng
-        binding.btnToolAll.setOnClickListener(v -> showAllToolsBottomSheet());
-    }
+        // 4. Tiện ích đời sống (Quick Tools)
+        binding.cardToolSplitBill.setOnClickListener(v ->
+                showToast("Mở Chia tiền phòng trọ / Điện nước EVN")
+        );
 
-    private void showAllToolsBottomSheet() {
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_all_tools, null);
-        dialog.setContentView(sheetView);
+        binding.cardToolRandom.setOnClickListener(v ->
+                showToast("Mở Vòng quay chọn người thuyết trình")
+        );
 
-        sheetView.findViewById(R.id.btnSheetSplitBill).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Mở Chia tiền phòng trọ / Điện nước EVN");
-        });
-
-        sheetView.findViewById(R.id.btnSheetRandom).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Mở Vòng quay chọn người thuyết trình");
-        });
-
-        sheetView.findViewById(R.id.btnSheetQr).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Mở Quét & Tạo mã QR tài liệu");
-        });
-
-        dialog.show();
+        binding.cardToolQr.setOnClickListener(v ->
+                showToast("Mở Quét & Tạo mã QR tài liệu / WiFi")
+        );
     }
 
     private void showToast(String message) {
