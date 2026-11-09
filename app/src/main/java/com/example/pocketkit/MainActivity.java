@@ -21,56 +21,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // 1. Thẻ Hôm nay
-        binding.cardTodayGlance.setOnClickListener(v -> 
-            showToast("Dữ liệu tổng quan: 2 deadline sắp tới, 1 tiết học chiều nay.")
+        // 1. Dual Hero Live Widgets
+        binding.cardLiveDeadline.setOnClickListener(v ->
+                showToast("Chi tiết hạn chót: Assignment 1 PRM392 (Còn 18 giờ)")
         );
 
-        // 2. Study Essentials
-        binding.cardToolNotes.setOnClickListener(v -> 
-            showToast("Tiện ích Ghi chú nhanh (Notes)")
+        binding.cardLiveClass.setOnClickListener(v ->
+                showToast("Tiết học kế tiếp: Lập trình Android (15:15 - Phòng AL-L203)")
         );
 
-        binding.cardToolDeadline.setOnClickListener(v -> 
-            showToast("Tiện ích Nhắc nhở hạn nộp (Deadline Reminder)")
+        // 2. Góc học tập (Study Essentials)
+        binding.cardToolNotes.setOnClickListener(v ->
+                showToast("Tiện ích Ghi chú nhanh & Checklist")
         );
 
-        binding.cardToolTimetable.setOnClickListener(v -> 
-            showToast("Tiện ích Thời khóa biểu (Timetable)")
+        binding.cardToolGpa.setOnClickListener(v ->
+                showToast("Tiện ích Tính GPA & Dự đoán điểm qua môn")
         );
 
-        binding.cardToolGpa.setOnClickListener(v -> 
-            showToast("Tiện ích Tính GPA & Dự đoán điểm")
+        binding.cardToolPomodoro.setOnClickListener(v ->
+                showToast("Đồng hồ tập trung học Pomodoro 25 phút")
         );
 
-        binding.cardToolPomodoro.setOnClickListener(v -> 
-            showToast("Tiện ích Đồng hồ học tập (Focus Timer)")
+        // 3. Hồ sơ & Tài liệu (Document Utilities)
+        binding.cardToolCompress.setOnClickListener(v ->
+                showToast("Công cụ cứu nguy: Nén ảnh thẻ & CCCD (<100KB, <500KB)")
         );
 
-        // 3. Document Utilities
-        binding.cardToolCompress.setOnClickListener(v -> 
-            showToast("Tiện ích Nén ảnh hồ sơ (Image Compressor)")
+        binding.cardToolOcr.setOnClickListener(v ->
+                showToast("Quét slide & Trích xuất chữ tiếng Việt (ML Kit Offline)")
         );
 
-        binding.cardToolOcr.setOnClickListener(v -> 
-            showToast("Tiện ích Quét slide & OCR chữ (Scan OCR)")
+        binding.cardToolPdf.setOnClickListener(v ->
+                showToast("Bộ tiện ích PDF: Gộp ảnh bài tập thành file PDF")
         );
 
-        binding.cardToolPdf.setOnClickListener(v -> 
-            showToast("Tiện ích Ghép/Tách PDF (PDF Toolkit)")
+        // 4. Tiện ích đời sống (Quick Tools)
+        binding.cardToolSplitBill.setOnClickListener(v ->
+                showToast("Chia tiền phòng trọ & Điện nước EVN 5 bậc")
         );
 
-        // 4. Quick Tools
-        binding.cardToolSplitBill.setOnClickListener(v -> 
-            showToast("Tiện ích Chia tiền trọ / Ăn nhóm (Group Bill)")
+        binding.cardToolRandom.setOnClickListener(v ->
+                showToast("Vòng quay bốc thăm chọn người thuyết trình")
         );
 
-        binding.cardToolRandom.setOnClickListener(v -> 
-            showToast("Tiện ích Vòng quay ngẫu nhiên (Random Picker)")
-        );
-
-        binding.cardToolQr.setOnClickListener(v -> 
-            showToast("Tiện ích Quét & Tạo mã QR (QR Tool)")
+        binding.cardToolQr.setOnClickListener(v ->
+                showToast("Quét & Tạo mã QR tài liệu / WiFi")
         );
     }
 
