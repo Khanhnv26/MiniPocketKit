@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark OLED Mode Tokens (Pure Black OLED #000000) -->
+    <color name="bg_screen">#FF000000</color>
+    <color name="card_bg">#FF141416</color>
+    <color name="card_stroke">#FF27272A</color>
+    <color name="text_title">#FFFFFFFF</color>
+    <color name="text_subtitle">#FFA1A1AA</color>
+    <color name="icon_color">#FFFFFFFF</color>
+    <color name="divider_color">#FF27272A</color>
+</resources>

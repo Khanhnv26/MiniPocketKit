@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/card_bg"
+    android:padding="24dp">
+
+    <!-- Drag Handle -->
+    <View
+        android:layout_width="36dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/ic_launcher_background"
+        android:backgroundTint="@color/divider_color" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:text="Tiện ích mở rộng"
+        android:textColor="@color/text_title"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- 3-Column Grid for Extra Tools -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <!-- Chia tiền trọ -->
+        <LinearLayout
+            android:id="@+id/btnSheetSplitBill"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_compress" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Chia tiền trọ"
+                android:textColor="@color/text_title"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- Vòng quay nhóm -->
+        <LinearLayout
+            android:id="@+id/btnSheetRandom"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_focus" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Vòng quay"
+                android:textColor="@color/text_title"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <!-- Mã QR -->
+        <LinearLayout
+            android:id="@+id/btnSheetQr"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_ocr" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Mã QR"
+                android:textColor="@color/text_title"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
