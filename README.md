@@ -10,7 +10,7 @@
 CampusKit (tên repo: `MiniPocketKit`) được xây dựng theo nguyên tắc:
 1. **Single-task & Fast**: Mở app → chọn công cụ → dùng ngay lập tức.
 2. **100% Offline-First**: Không bắt buộc tạo tài khoản, không phụ thuộc server/cloud, bảo mật dữ liệu tuyệt đối trên máy người dùng (SQLite).
-3. **Phù hợp chuẩn PRM392 (FPT University)**: Kiến trúc Java thuần + XML Layouts + SQLite Database.
+3. **Kiến trúc Java thuần + XML Layouts + SQLite Database.
 
 ---
 
