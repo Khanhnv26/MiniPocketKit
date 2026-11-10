@@ -26,6 +26,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".NotesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PocketKit" />
+
+        <activity
+            android:name=".NoteEditorActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PocketKit"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

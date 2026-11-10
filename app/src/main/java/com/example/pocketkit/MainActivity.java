@@ -1,5 +1,6 @@
 package com.example.pocketkit;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -42,9 +43,10 @@ public class MainActivity extends AppCompatActivity {
                 showToast("Cài đặt ứng dụng & Chuyển đổi giao diện Sáng / Tối")
         );
 
-        binding.cardToolNotes.setOnClickListener(v ->
-                showToast("Mở Ghi chú & Checklist (Notes)")
-        );
+        binding.cardToolNotes.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, NotesActivity.class);
+            startActivity(intent);
+        });
 
         binding.cardToolDeadline.setOnClickListener(v ->
                 showToast("Mở Hạn nộp bài (Deadline Reminder)")

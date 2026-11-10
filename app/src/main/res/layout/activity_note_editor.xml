@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_gradient_pastel"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:id="@+id/btnBackEditor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:paddingVertical="8dp"
+                android:paddingEnd="16dp"
+                android:text="← Quay lại"
+                android:textColor="@color/text_subtitle"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvEditorHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="Tạo ghi chú mới"
+                android:textColor="@color/text_title"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tiêu đề"
+                    android:textColor="@color/text_subtitle"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtNoteTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/shape_squircle"
+                    android:backgroundTint="@color/divider_color"
+                    android:hint="Nhập tiêu đề ghi chú..."
+                    android:inputType="textCapSentences"
+                    android:padding="14dp"
+                    android:textColor="@color/text_title"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Môn học / Nhãn"
+                    android:textColor="@color/text_subtitle"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtNoteSubject"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/shape_squircle"
+                    android:backgroundTint="@color/divider_color"
+                    android:hint="VD: PRM392, SWP391, Cá nhân..."
+                    android:inputType="textCapCharacters"
+                    android:padding="14dp"
+                    android:textColor="@color/text_title"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nội dung"
+                    android:textColor="@color/text_subtitle"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtNoteContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/shape_squircle"
+                    android:backgroundTint="@color/divider_color"
+                    android:gravity="top|start"
+                    android:hint="Viết nội dung ghi chú..."
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:padding="14dp"
+                    android:textColor="@color/text_title"
+                    android:textSize="14sp" />
+
+                <CheckBox
+                    android:id="@+id/cbPinNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/coral_accent"
+                    android:text="Ghim ghi chú này lên đầu danh sách"
+                    android:textColor="@color/text_title"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/btnSaveNote"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/shape_gradient_coral"
+            android:gravity="center"
+            android:text="Lưu ghi chú"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btnDeleteNote"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="Xóa ghi chú này"
+            android:textColor="@color/squircle_coral_icon"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>

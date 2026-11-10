@@ -1,5 +1,7 @@
 package com.example.pocketkit.model;
 
+import java.io.Serializable;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class Note {
+public class Note implements Serializable {
     private int id;
 
     @NotBlank(message = "Tiêu đề ghi chú không được để trống")
