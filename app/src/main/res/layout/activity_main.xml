@@ -84,64 +84,24 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:text="Hôm nay"
+                    android:textColor="@color/text_subtitle"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-medium" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Hôm nay"
-                        android:textColor="@color/text_subtitle"
-                        android:textSize="12sp"
-                        android:fontFamily="sans-serif-medium" />
-
-                    <!-- Compact Badge -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="FPTU SE1740"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/squircle_violet_icon"
-                        android:background="@drawable/shape_badge_pill"
-                        android:backgroundTint="@color/squircle_violet_bg"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="3dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/tvDeadlineSummary"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="8dp">
-
-                    <TextView
-                        android:id="@+id/tvDeadlineSummary"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="2 deadline sắp đến"
-                        android:textColor="@color/text_title"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="-0.01" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Gấp"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@drawable/shape_gradient_coral"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="3dp" />
-                </LinearLayout>
+                    android:layout_marginTop="6dp"
+                    android:text="2 deadline sắp đến"
+                    android:textColor="@color/text_title"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.01" />
 
                 <!-- Action row -->
                 <LinearLayout
@@ -189,38 +149,23 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 3. SECTION 1: GÓC HỌC TẬP (STUDY ESSENTIALS) -->
+        <!-- 3. SECTION 1: GÓC HỌC TẬP -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginBottom="26dp">
 
-            <LinearLayout
+            <!-- Clean Header: No emoji, No badge -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="📚 GÓC HỌC TẬP"
-                    android:textColor="@color/text_subtitle"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="5 công cụ"
-                    android:textColor="@color/coral_accent"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_marginBottom="12dp"
+                android:text="GÓC HỌC TẬP"
+                android:textColor="@color/text_subtitle"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
             <!-- 2-Column Grid: Notes & Deadline -->
             <LinearLayout
@@ -464,7 +409,7 @@
 
             </LinearLayout>
 
-            <!-- Focus Pomodoro Card (Full width) -->
+            <!-- Focus Pomodoro Card (Full width - No badge) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardToolFocus"
                 android:layout_width="match_parent"
@@ -520,56 +465,30 @@
                             android:textSize="11sp" />
                     </LinearLayout>
 
-                    <!-- Compact Gradient Pill for 25:00 -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="25:00"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@drawable/shape_gradient_coral"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
-        <!-- 4. SECTION 2: HỒ SƠ & TÀI LIỆU (DOCUMENT UTILITIES) -->
+        <!-- 4. SECTION 2: HỒ SƠ & TÀI LIỆU -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginBottom="26dp">
 
-            <LinearLayout
+            <!-- Clean Header: No emoji, No badge -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:text="HỒ SƠ &amp; TÀI LIỆU"
+                android:textColor="@color/text_subtitle"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="📄 HỒ SƠ &amp; TÀI LIỆU"
-                    android:textColor="@color/text_subtitle"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="3 công cụ"
-                    android:textColor="@color/squircle_amber_icon"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <!-- Nén ảnh Card (Rescue Tool - Full width) -->
+            <!-- Nén ảnh Card (Rescue Tool - Full width - No badge) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardToolCompress"
                 android:layout_width="match_parent"
@@ -609,33 +528,13 @@
                         android:layout_marginStart="12dp"
                         android:orientation="vertical">
 
-                        <LinearLayout
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Nén ảnh hồ sơ &amp; CCCD"
-                                android:textColor="@color/text_title"
-                                android:textSize="13sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:text="Cứu nguy"
-                                android:textSize="10sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/squircle_amber_icon"
-                                android:background="@drawable/shape_badge_pill"
-                                android:backgroundTint="@color/squircle_amber_bg"
-                                android:paddingHorizontal="7dp"
-                                android:paddingVertical="2dp" />
-                        </LinearLayout>
+                            android:text="Nén ảnh hồ sơ &amp; CCCD"
+                            android:textColor="@color/text_title"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -770,37 +669,22 @@
 
         </LinearLayout>
 
-        <!-- 5. SECTION 3: TIỆN ÍCH ĐỜI SỐNG (QUICK TOOLS) -->
+        <!-- 5. SECTION 3: TIỆN ÍCH ĐỜI SỐNG -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
+            <!-- Clean Header: No emoji, No badge -->
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="⚡ TIỆN ÍCH ĐỜI SỐNG"
-                    android:textColor="@color/text_subtitle"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="3 công cụ"
-                    android:textColor="@color/squircle_violet_icon"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_marginBottom="12dp"
+                android:text="TIỆN ÍCH ĐỜI SỐNG"
+                android:textColor="@color/text_subtitle"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
             <!-- 3-Column Quick Tools -->
             <LinearLayout
