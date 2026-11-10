@@ -40,6 +40,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
+
+    // Lombok (auto-generate Getter, Setter, Constructor, Builder)
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    // Jakarta Bean Validation annotations (@NotBlank, @NotNull, @Size, ...)
+    implementation(libs.jakarta.validation)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
