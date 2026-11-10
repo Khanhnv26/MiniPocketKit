@@ -11,9 +11,6 @@ import com.example.pocketkit.model.Note;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-
-
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CampusKit.db";
@@ -45,13 +42,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_UPDATED_AT + " TEXT)";
         db.execSQL(createTable);
 
-        //mock data
         db.execSQL("INSERT INTO " + TABLE_NOTES + " (title, content, subject, is_pinned, is_done, updated_at) " +
                 "VALUES ('Ôn thi Practical Exam PRM392', 'Nắm vững SQLiteOpenHelper, RecyclerView Adapter và Intent truyền dữ liệu.', 'PRM392', 1, 0, '10/11 09:30')");
         db.execSQL("INSERT INTO " + TABLE_NOTES + " (title, content, subject, is_pinned, is_done, updated_at) " +
-                "VALUES ('Chuẩn bị slide thuyết trình nhóm', 'Hoàn thành phần kiến trúc hệ thống và demo app.', 'SWP391', 0, 1, '09/11 20:15')"););
-
-
+                "VALUES ('Chuẩn bị slide thuyết trình nhóm', 'Hoàn thành phần kiến trúc hệ thống và demo app.', 'SWP391', 0, 1, '09/11 20:15')");
     }
 
     @Override
@@ -80,31 +74,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String selection = null;
         String [] selectionArgs = null;
 
-        if(keyword != null && !keyword.trim().isEmpty()) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
             selection = COL_TITLE + " LIKE ? OR " + COL_CONTENT + " LIKE ? OR " + COL_SUBJECT + " LIKE ?";
             String query = "%" + keyword.trim() + "%";
             selectionArgs = new String[] {query, query, query};
+        }
 
-            String orderBy = COL_IS_PINNED + " DESC, " + COL_ID + " DESC";
-            Cursor cursor = db.query(TABLE_NOTES, null, selection, selectionArgs, null, null, orderBy);
+        String orderBy = COL_IS_PINNED + " DESC, " + COL_ID + " DESC";
+        Cursor cursor = db.query(TABLE_NOTES, null, selection, selectionArgs, null, null, orderBy);
 
-            if(cursor != null && cursor.moveToFirst()) {
-                do {
-                    Note note = Note.builder()
-                            .id(cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)))
-                            .title(cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)))
-                            .content(cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTENT)))
-                            .subject(cursor.getString(cursor.getColumnIndexOrThrow(COL_SUBJECT)))
-                            .isPinned(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_PINNED)))
-                            .isDone(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_DONE)))
-                            .updateAt(cursor.getString(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)))
-                            .build();
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Note note = Note.builder()
+                        .id(cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)))
+                        .title(cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)))
+                        .content(cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTENT)))
+                        .subject(cursor.getString(cursor.getColumnIndexOrThrow(COL_SUBJECT)))
+                        .isPinned(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_PINNED)))
+                        .isDone(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_DONE)))
+                        .updateAt(cursor.getString(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)))
+                        .build();
 
-                    list.add(note);
-                } while(cursor.moveToNext()) {
-                    cursor.close();
-                }
-            }
+                list.add(note);
+            } while (cursor.moveToNext());
+            cursor.close();
         }
         return list;
     }
@@ -117,8 +110,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COL_SUBJECT, note.getSubject());
         values.put(COL_IS_PINNED, note.getIsPinned());
         values.put(COL_IS_DONE, note.getIsDone());
+        values.put(COL_UPDATED_AT, note.getUpdateAt());
 
         return db.update(TABLE_NOTES, values, COL_ID + " = ?", new String[] {String.valueOf(note.getId())});
+    }
+
+    public int deleteNote(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_NOTES, COL_ID + " = ?", new String[]{String.valueOf(id)});
     }
 
 }

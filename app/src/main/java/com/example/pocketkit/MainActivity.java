@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // 1. Thẻ Hôm nay & Lịch học
         binding.cardTodayGlance.setOnClickListener(v ->
                 showToast("Chi tiết: 2 deadline sắp đến hạn nộp")
         );
@@ -43,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
                 showToast("Cài đặt ứng dụng & Chuyển đổi giao diện Sáng / Tối")
         );
 
-        // 2. Góc học tập (Study Essentials)
         binding.cardToolNotes.setOnClickListener(v ->
                 showToast("Mở Ghi chú & Checklist (Notes)")
         );
@@ -64,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
                 showToast("Mở Đồng hồ Focus (Pomodoro 25 phút)")
         );
 
-        // 3. Hồ sơ & Tài liệu (Document Utilities)
         binding.cardToolCompress.setOnClickListener(v ->
                 showToast("Mở Nén ảnh hồ sơ & CCCD (< 100KB, 500KB)")
         );
@@ -77,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
                 showToast("Mở Bộ tiện ích PDF (Gộp ảnh thành PDF)")
         );
 
-        // 4. Tiện ích đời sống (Quick Tools)
         binding.cardToolSplitBill.setOnClickListener(v ->
                 showToast("Mở Chia tiền phòng trọ / Điện nước EVN")
         );

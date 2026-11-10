@@ -41,12 +41,14 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
 
-    // Lombok (auto-generate Getter, Setter, Constructor, Builder)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    // Jakarta Bean Validation annotations (@NotBlank, @NotNull, @Size, ...)
     implementation(libs.jakarta.validation)
+
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.gson)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
