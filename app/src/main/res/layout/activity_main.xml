@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
-        android:paddingTop="24dp"
+        android:paddingTop="26dp"
         android:paddingBottom="48dp">
 
         <!-- 1. HEADER SECTION -->
@@ -53,12 +53,14 @@
 
             <ImageView
                 android:id="@+id/btnSettings"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:padding="7dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/card_bg"
+                android:elevation="1dp"
                 android:contentDescription="Settings"
                 android:src="@drawable/ic_settings"
                 app:tint="@color/text_subtitle" />
@@ -70,8 +72,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="28dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="2dp"
             app:cardBackgroundColor="@color/card_bg"
             app:strokeColor="@color/card_stroke"
             app:strokeWidth="1dp">
@@ -80,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -97,55 +99,85 @@
                         android:textSize="12sp"
                         android:fontFamily="sans-serif-medium" />
 
+                    <!-- Compact Badge -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="FPTU SE1740"
                         android:textSize="11sp"
-                        android:textColor="@color/text_subtitle"
-                        android:background="@drawable/ic_launcher_background"
-                        android:backgroundTint="@color/divider_color"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="2dp" />
+                        android:textStyle="bold"
+                        android:textColor="@color/squircle_violet_icon"
+                        android:background="@drawable/shape_badge_pill"
+                        android:backgroundTint="@color/squircle_violet_bg"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvDeadlineSummary"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="2 deadline sắp đến"
-                    android:textColor="@color/text_title"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="-0.01" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="8dp">
+
+                    <TextView
+                        android:id="@+id/tvDeadlineSummary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="2 deadline sắp đến"
+                        android:textColor="@color/text_title"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="-0.01" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Gấp"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:background="@drawable/shape_gradient_coral"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp" />
+                </LinearLayout>
 
                 <!-- Action row -->
                 <LinearLayout
                     android:id="@+id/layoutActionSchedule"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:paddingTop="12dp"
-                    android:background="@drawable/ic_launcher_background"
+                    android:layout_marginTop="16dp"
+                    android:paddingTop="14dp"
+                    android:background="@drawable/shape_squircle"
                     android:backgroundTint="@android:color/transparent"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_timetable"
-                        app:tint="@color/text_subtitle" />
+                    <FrameLayout
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:background="@drawable/shape_squircle"
+                        android:backgroundTint="@color/squircle_rose_bg">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_timetable"
+                            app:tint="@color/squircle_rose_icon" />
+                    </FrameLayout>
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="10dp"
                         android:text="15:15 - Lập trình Android (Lab 3)"
                         android:textColor="@color/text_title"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif-medium" />
 
                     <ImageView
                         android:layout_width="16dp"
@@ -185,9 +217,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="5 công cụ"
-                    android:textColor="@color/squircle_sapphire_icon"
+                    android:textColor="@color/coral_accent"
                     android:textSize="11sp"
-                    android:fontFamily="sans-serif-medium" />
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- 2-Column Grid: Notes & Deadline -->
@@ -201,11 +233,11 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardToolNotes"
                     android:layout_width="0dp"
-                    android:layout_height="130dp"
+                    android:layout_height="135dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="5dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -214,13 +246,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
-                        <!-- Squircle Icon -->
                         <FrameLayout
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_sapphire_bg">
 
                             <ImageView
@@ -258,11 +289,11 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardToolDeadline"
                     android:layout_width="0dp"
-                    android:layout_height="130dp"
+                    android:layout_height="135dp"
                     android:layout_weight="1"
                     android:layout_marginStart="5dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -271,12 +302,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
                         <FrameLayout
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_rose_bg">
 
                             <ImageView
@@ -323,11 +354,11 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardToolTimetable"
                     android:layout_width="0dp"
-                    android:layout_height="130dp"
+                    android:layout_height="135dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="5dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -336,12 +367,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
                         <FrameLayout
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_emerald_bg">
 
                             <ImageView
@@ -379,11 +410,11 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardToolGpa"
                     android:layout_width="0dp"
-                    android:layout_height="130dp"
+                    android:layout_height="135dp"
                     android:layout_weight="1"
                     android:layout_marginStart="5dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -392,12 +423,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
                         <FrameLayout
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_amber_bg">
 
                             <ImageView
@@ -438,8 +469,8 @@
                 android:id="@+id/cardToolFocus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/card_bg"
                 app:strokeColor="@color/card_stroke"
                 app:strokeWidth="1dp">
@@ -449,12 +480,12 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="14dp">
+                    android:padding="16dp">
 
                     <FrameLayout
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:background="@drawable/ic_launcher_background"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/shape_squircle"
                         android:backgroundTint="@color/squircle_cyan_bg">
 
                         <ImageView
@@ -489,17 +520,17 @@
                             android:textSize="11sp" />
                     </LinearLayout>
 
+                    <!-- Compact Gradient Pill for 25:00 -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="25:00"
                         android:textSize="11sp"
                         android:textStyle="bold"
-                        android:textColor="@color/squircle_cyan_icon"
-                        android:background="@drawable/ic_launcher_background"
-                        android:backgroundTint="@color/squircle_cyan_bg"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="3dp" />
+                        android:textColor="@color/white"
+                        android:background="@drawable/shape_gradient_coral"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -535,7 +566,7 @@
                     android:text="3 công cụ"
                     android:textColor="@color/squircle_amber_icon"
                     android:textSize="11sp"
-                    android:fontFamily="sans-serif-medium" />
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- Nén ảnh Card (Rescue Tool - Full width) -->
@@ -544,8 +575,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/card_bg"
                 app:strokeColor="@color/card_stroke"
                 app:strokeWidth="1dp">
@@ -555,12 +586,12 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="14dp">
+                    android:padding="16dp">
 
                     <FrameLayout
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:background="@drawable/ic_launcher_background"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/shape_squircle"
                         android:backgroundTint="@color/squircle_amber_bg">
 
                         <ImageView
@@ -600,10 +631,10 @@
                                 android:textSize="10sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/squircle_amber_icon"
-                                android:background="@drawable/ic_launcher_background"
+                                android:background="@drawable/shape_badge_pill"
                                 android:backgroundTint="@color/squircle_amber_bg"
-                                android:paddingHorizontal="6dp"
-                                android:paddingVertical="1dp" />
+                                android:paddingHorizontal="7dp"
+                                android:paddingVertical="2dp" />
                         </LinearLayout>
 
                         <TextView
@@ -627,11 +658,11 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardToolOcr"
                     android:layout_width="0dp"
-                    android:layout_height="130dp"
+                    android:layout_height="135dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="5dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -640,12 +671,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
                         <FrameLayout
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_violet_bg">
 
                             <ImageView
@@ -683,11 +714,11 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardToolPdf"
                     android:layout_width="0dp"
-                    android:layout_height="130dp"
+                    android:layout_height="135dp"
                     android:layout_weight="1"
                     android:layout_marginStart="5dp"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -696,12 +727,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:padding="16dp">
 
                         <FrameLayout
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_coral_bg">
 
                             <ImageView
@@ -766,9 +797,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="3 công cụ"
-                    android:textColor="@color/squircle_teal_icon"
+                    android:textColor="@color/squircle_violet_icon"
                     android:textSize="11sp"
-                    android:fontFamily="sans-serif-medium" />
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- 3-Column Quick Tools -->
@@ -784,8 +815,8 @@
                     android:layout_height="115dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="4dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -798,9 +829,9 @@
                         android:padding="8dp">
 
                         <FrameLayout
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_violet_bg">
 
                             <ImageView
@@ -836,8 +867,8 @@
                     android:layout_height="115dp"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -850,17 +881,17 @@
                         android:padding="8dp">
 
                         <FrameLayout
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:background="@drawable/ic_launcher_background"
-                            android:backgroundTint="@color/squircle_teal_bg">
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/shape_squircle"
+                            android:backgroundTint="@color/squircle_emerald_bg">
 
                             <ImageView
                                 android:layout_width="18dp"
                                 android:layout_height="18dp"
                                 android:layout_gravity="center"
                                 android:src="@drawable/ic_focus"
-                                app:tint="@color/squircle_teal_icon" />
+                                app:tint="@color/squircle_emerald_icon" />
                         </FrameLayout>
 
                         <TextView
@@ -888,8 +919,8 @@
                     android:layout_height="115dp"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="@color/card_bg"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -902,9 +933,9 @@
                         android:padding="8dp">
 
                         <FrameLayout
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:background="@drawable/ic_launcher_background"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:background="@drawable/shape_squircle"
                             android:backgroundTint="@color/squircle_sapphire_bg">
 
                             <ImageView

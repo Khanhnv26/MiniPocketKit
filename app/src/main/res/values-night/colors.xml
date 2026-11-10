@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark OLED Minimal Tokens -->
-    <color name="bg_screen">#FF000000</color>
-    <color name="card_bg">#FF141416</color>
-    <color name="card_stroke">#FF27272A</color>
+    <!-- Soft Dark Pastel Tokens -->
+    <color name="bg_screen">#FF0F0E17</color>
+    <color name="card_bg">#FF1A1829</color>
+    <color name="card_stroke">#FF2A2740</color>
     <color name="text_title">#FFFFFFFF</color>
-    <color name="text_subtitle">#FFA1A1AA</color>
-    <color name="divider_color">#FF27272A</color>
+    <color name="text_subtitle">#FFA5A3BF</color>
+    <color name="divider_color">#FF2A2740</color>
     <color name="icon_color">#FFFFFFFF</color>
+    <color name="coral_accent">#FFFF758C</color>
 
-    <!-- Squircle Accent Colors (Dark OLED Mode) -->
+    <!-- Squircles (Dark Mode) -->
     <color name="squircle_sapphire_bg">#FF1E293B</color>
-    <color name="squircle_sapphire_icon">#FF3B82F6</color>
+    <color name="squircle_sapphire_icon">#FF60A5FA</color>
     
     <color name="squircle_rose_bg">#FF3B1820</color>
     <color name="squircle_rose_icon">#FFF43F5E</color>
     
     <color name="squircle_emerald_bg">#FF064E3B</color>
-    <color name="squircle_emerald_icon">#FF10B981</color>
+    <color name="squircle_emerald_icon">#FF34D399</color>
     
     <color name="squircle_amber_bg">#FF451A03</color>
-    <color name="squircle_amber_icon">#FFF59E0B</color>
+    <color name="squircle_amber_icon">#FFFBBF24</color>
     
     <color name="squircle_cyan_bg">#FF083344</color>
-    <color name="squircle_cyan_icon">#FF06B6D4</color>
+    <color name="squircle_cyan_icon">#FF38BDF8</color>
     
     <color name="squircle_violet_bg">#FF2E1065</color>
-    <color name="squircle_violet_icon">#FF8B5CF6</color>
+    <color name="squircle_violet_icon">#FFA78BFA</color>
     
     <color name="squircle_coral_bg">#FF3F161A</color>
-    <color name="squircle_coral_icon">#FFEF4444</color>
+    <color name="squircle_coral_icon">#FFF87171</color>
     
-    <color name="squircle_teal_bg">#FF134E4A</color>
-    <color name="squircle_teal_icon">#FF14B8A6</color>
+    <color name="squircle_teal_bg">#FF064E3B</color>
+    <color name="squircle_teal_icon">#FF34D399</color>
 </resources>

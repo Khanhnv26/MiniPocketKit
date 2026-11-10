@@ -3,37 +3,38 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Clean Light Mode Tokens (Things 3 / Apple style) -->
-    <color name="bg_screen">#FFF8FAFC</color>
+    <!-- Dribbble Soft Pastel & Frosted Tokens -->
+    <color name="bg_screen">#FFF8F6FC</color>
     <color name="card_bg">#FFFFFFFF</color>
-    <color name="card_stroke">#FFE2E8F0</color>
-    <color name="text_title">#FF0F172A</color>
-    <color name="text_subtitle">#FF64748B</color>
-    <color name="divider_color">#FFF1F5F9</color>
-    <color name="icon_color">#FF18181B</color>
+    <color name="card_stroke">#FFF3EEF9</color>
+    <color name="text_title">#FF1E1B4B</color>
+    <color name="text_subtitle">#FF8E8CA7</color>
+    <color name="divider_color">#FFF1EFF7</color>
+    <color name="icon_color">#FF1E1B4B</color>
+    <color name="coral_accent">#FFFF758C</color>
 
-    <!-- Squircle Accent Colors (Light Mode) -->
-    <color name="squircle_sapphire_bg">#FFDBEAFE</color>
-    <color name="squircle_sapphire_icon">#FF2563EB</color>
+    <!-- Dribbble Pastel Squircles -->
+    <color name="squircle_sapphire_bg">#FFEBF5FF</color>
+    <color name="squircle_sapphire_icon">#FF3B82F6</color>
     
-    <color name="squircle_rose_bg">#FFFFE4E6</color>
-    <color name="squircle_rose_icon">#FFE11D48</color>
+    <color name="squircle_rose_bg">#FFFFF1F2</color>
+    <color name="squircle_rose_icon">#FFFF6B6B</color>
     
-    <color name="squircle_emerald_bg">#FFD1FAE5</color>
-    <color name="squircle_emerald_icon">#FF059669</color>
+    <color name="squircle_emerald_bg">#FFECFDF5</color>
+    <color name="squircle_emerald_icon">#FF10B981</color>
     
     <color name="squircle_amber_bg">#FFFEF3C7</color>
-    <color name="squircle_amber_icon">#FFD97706</color>
+    <color name="squircle_amber_icon">#FFF59E0B</color>
     
-    <color name="squircle_cyan_bg">#FFCFFAFE</color>
-    <color name="squircle_cyan_icon">#FF0891B2</color>
+    <color name="squircle_cyan_bg">#FFE0F2FE</color>
+    <color name="squircle_cyan_icon">#FF0284C7</color>
     
-    <color name="squircle_violet_bg">#FFEDE9FE</color>
-    <color name="squircle_violet_icon">#FF7C3AED</color>
+    <color name="squircle_violet_bg">#FFF5F3FF</color>
+    <color name="squircle_violet_icon">#FF8B5CF6</color>
     
-    <color name="squircle_coral_bg">#FFFEE2E2</color>
-    <color name="squircle_coral_icon">#FFDC2626</color>
+    <color name="squircle_coral_bg">#FFFFF1F2</color>
+    <color name="squircle_coral_icon">#FFF43F5E</color>
     
-    <color name="squircle_teal_bg">#FFCCFBF1</color>
-    <color name="squircle_teal_icon">#FF0D9488</color>
+    <color name="squircle_teal_bg">#FFECFDF5</color>
+    <color name="squircle_teal_icon">#FF10B981</color>
 </resources>
