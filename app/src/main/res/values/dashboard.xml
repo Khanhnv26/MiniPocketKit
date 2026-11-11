@@ -1,0 +1,83 @@
+<resources>
+    <color name="dashboard_background">#F2F2F7</color>
+    <color name="dashboard_surface">#FFFFFF</color>
+    <color name="dashboard_secondary">#64646D</color>
+    <color name="dashboard_text">#08080A</color>
+    <color name="dashboard_segment">#E5E5EA</color>
+    <color name="dashboard_dock">#F4F4F8</color>
+    <color name="dashboard_deadline_text">#C52923</color>
+    <color name="dashboard_green_text">#157B36</color>
+    <color name="dashboard_accent">#0068DD</color>
+    <color name="dashboard_red">#FF453A</color>
+    <color name="dashboard_green">#28CC56</color>
+    <color name="dashboard_teal">#00C2BD</color>
+
+    <string name="dashboard_appearance">Giao diện</string>
+    <string name="dashboard_tasks_left">%1$d việc còn lại</string>
+    <string-array name="dashboard_theme_options">
+        <item>Theo hệ thống</item>
+        <item>Sáng</item>
+        <item>Tối</item>
+    </string-array>
+
+    <style name="Dashboard.Card" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="cardBackgroundColor">@color/dashboard_surface</item>
+        <item name="cardCornerRadius">22dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="Dashboard.Column" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="Dashboard.Label" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/dashboard_secondary</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="Dashboard.Metric" parent="Dashboard.Label">
+        <item name="android:fontFamily">sans-serif-black</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:textColor">@color/dashboard_text</item>
+        <item name="android:textSize">33sp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="Dashboard.Action" parent="Dashboard.Label">
+        <item name="android:background">@drawable/dashboard_pill</item>
+        <item name="android:backgroundTint">@color/dashboard_segment</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="android:clipToOutline">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">36dp</item>
+        <item name="android:paddingHorizontal">10dp</item>
+        <item name="android:paddingVertical">4dp</item>
+        <item name="android:textColor">@color/dashboard_text</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Dashboard.Tab" parent="Dashboard.Label">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:drawablePadding">3dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingVertical">3dp</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

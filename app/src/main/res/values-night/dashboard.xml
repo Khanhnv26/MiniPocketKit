@@ -1,0 +1,11 @@
+<resources>
+    <color name="dashboard_background">#000000</color>
+    <color name="dashboard_surface">#1C1C1E</color>
+    <color name="dashboard_secondary">#ABABB3</color>
+    <color name="dashboard_text">#FFFFFF</color>
+    <color name="dashboard_segment">#303034</color>
+    <color name="dashboard_dock">#222225</color>
+    <color name="dashboard_deadline_text">#FF736A</color>
+    <color name="dashboard_green_text">#4ADD76</color>
+    <color name="dashboard_accent">#61A8FF</color>
+</resources>
