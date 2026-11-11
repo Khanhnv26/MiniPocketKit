@@ -8,4 +8,7 @@
     <color name="dashboard_deadline_text">#FF736A</color>
     <color name="dashboard_green_text">#4ADD76</color>
     <color name="dashboard_accent">#61A8FF</color>
+    <color name="dashboard_red">#FF453A</color>
+    <color name="dashboard_green">#28CC56</color>
+    <color name="dashboard_teal">#00C2BD</color>
 </resources>

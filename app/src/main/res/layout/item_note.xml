@@ -1,33 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Dashboard.Card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/card_bg"
-    app:cardCornerRadius="22dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
+    android:layout_marginBottom="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
+        android:gravity="top"
         android:orientation="horizontal"
         android:padding="16dp">
 
         <CheckBox
             android:id="@+id/cbNoteDone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="@color/squircle_sapphire_icon" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="2dp"
+            android:buttonTint="@color/dashboard_green" />
 
         <LinearLayout
+            style="@style/Dashboard.Column"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_marginStart="12dp"
+            android:layout_weight="1">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -37,37 +35,36 @@
 
                 <TextView
                     android:id="@+id/tvNoteTitle"
+                    style="@style/Dashboard.Label"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="Tiêu đề ghi chú"
-                    android:textColor="@color/text_title"
-                    android:textSize="15sp"
+                    android:textColor="@color/dashboard_text"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tvPinnedLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/ivPinned"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:layout_marginStart="8dp"
-                    android:text="Ghim"
-                    android:textColor="@color/coral_accent"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
+                    android:contentDescription="Đã ghim"
+                    android:src="@drawable/ic_pin"
                     android:visibility="gone" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/tvNoteContent"
+                style="@style/Dashboard.Label"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:ellipsize="end"
+                android:lineSpacingExtra="2dp"
                 android:maxLines="2"
-                android:text="Nội dung chi tiết ghi chú..."
-                android:textColor="@color/text_subtitle"
+                android:text="Nội dung tóm tắt ghi chú..."
+                android:textColor="@color/dashboard_secondary"
                 android:textSize="13sp" />
 
             <LinearLayout
@@ -79,28 +76,24 @@
 
                 <TextView
                     android:id="@+id/tvNoteSubject"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="PRM392"
-                    android:textColor="@color/squircle_sapphire_icon"
-                    android:textSize="11sp"
+                    style="@style/Dashboard.Label"
+                    android:text="● PRM392"
+                    android:textColor="@color/dashboard_green_text"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="6dp"
-                    android:text="•"
-                    android:textColor="@color/text_subtitle"
-                    android:textSize="11sp" />
+                    style="@style/Dashboard.Label"
+                    android:text=" · "
+                    android:textColor="@color/dashboard_secondary"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvNoteTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="10/11 09:30"
-                    android:textColor="@color/text_subtitle"
-                    android:textSize="11sp" />
+                    style="@style/Dashboard.Label"
+                    android:text="10:30 hôm nay"
+                    android:textColor="@color/dashboard_secondary"
+                    android:textSize="12sp" />
             </LinearLayout>
 
         </LinearLayout>
