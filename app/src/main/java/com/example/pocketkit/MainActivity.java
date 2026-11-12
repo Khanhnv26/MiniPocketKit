@@ -7,25 +7,25 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.Gravity;
 import android.view.View;
-import android.view.animation.AnimationUtils;
-import android.view.animation.Interpolator;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityMainBinding;
+import com.example.pocketkit.model.Note;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,16 +37,48 @@ public class MainActivity extends AppCompatActivity {
     private static final long FOCUS_DURATION = 25 * 60_000L;
 
     private ActivityMainBinding binding;
+    private DatabaseHelper dbHelper;
+    private Note currentPinnedNote = null;
     private TextView[] tabs;
     private int selectedTab = 0;
     private long focusEnd;
     private long focusRemaining = FOCUS_DURATION;
+
+    private static class DaySchedule {
+        final String badge;
+        final String time;
+        final String subject;
+        final String room;
+
+        DaySchedule(String badge, String time, String subject, String room) {
+            this.badge = badge;
+            this.time = time;
+            this.subject = subject;
+            this.room = room;
+        }
+    }
+
+    private final DaySchedule[] weekSchedules = new DaySchedule[]{
+            new DaySchedule("● ĐÃ KẾT THÚC", "Ca 1 · 07:30 - 09:00", "SWP391 · Phát triển dự án phần mềm", "Phòng 401 (Tòa Beta) · GV Cô Mai"),
+            new DaySchedule("● ĐÃ KẾT THÚC", "Ca 3 · 13:00 - 15:30", "MAS291 · Thống kê ứng dụng", "Phòng 204 (Tòa Alpha) · GV Thầy Dũng"),
+            new DaySchedule("● ĐÃ KẾT THÚC", "Ca 4 · 15:45 - 18:00", "PRN211 · Lập trình C# .NET", "Phòng Lab 3 (Tòa Gamma) · GV Thầy Long"),
+            new DaySchedule("● TIẾT HỌC KẾ TIẾP", "Ca 2 · 09:15 - 11:45", "PRM392 · Lập trình Android", "Phòng 302 (Tòa Alpha) · GV Thầy Hoàng"),
+            new DaySchedule("● NGÀY MAI", "Ca 2 · 09:15 - 11:45", "EXE201 · Khởi nghiệp sáng tạo", "Hội trường A (Tòa Delta) · GV Thầy Tuấn"),
+            new DaySchedule("● CUỐI TUẦN", "Ca 3 · 14:00 - 16:00", "SWP391 · Họp Sprint 2 Review", "Online Google Meet · Nhóm trưởng"),
+            new DaySchedule("● NGÀY NGHỈ", "Cả ngày", "Tự học & Chuẩn bị bài tuần mới", "Thư viện Tòa Alpha · Tự do")
+    };
+
+    private View[] dayButtons;
+    private TextView[] dayNames;
+    private TextView[] dayNums;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        dbHelper = new DatabaseHelper(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -62,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             focusEnd = savedInstanceState.getLong(STATE_FOCUS_END);
             focusRemaining = savedInstanceState.getLong(STATE_FOCUS_REMAINING, FOCUS_DURATION);
         }
+        setupCalendarStrip();
         setupClickListeners();
         adaptDashboard();
         if (savedInstanceState == null) {
@@ -71,6 +104,82 @@ public class MainActivity extends AppCompatActivity {
             binding.getRoot().setAlpha(0f);
             binding.getRoot().animate().alpha(1f).setDuration(200).start();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadNotesFromDatabase();
+    }
+
+    private void loadNotesFromDatabase() {
+        if (dbHelper == null) return;
+        List<Note> pinnedNotes = dbHelper.getNotesFiltered("", "PINNED");
+        if (!pinnedNotes.isEmpty()) {
+            currentPinnedNote = pinnedNotes.get(0);
+            binding.cardPinnedNote.setVisibility(View.VISIBLE);
+            binding.tvPinnedSubject.setText("● " + currentPinnedNote.getSubject());
+            binding.tvPinnedTitle.setText(currentPinnedNote.getTitle());
+            binding.tvPinnedContent.setText(currentPinnedNote.getContent());
+            binding.tvPinnedTime.setText(currentPinnedNote.getUpdatedAt());
+        } else {
+            List<Note> allNotes = dbHelper.getNotesFiltered("", "ALL");
+            if (!allNotes.isEmpty()) {
+                currentPinnedNote = allNotes.get(0);
+                binding.cardPinnedNote.setVisibility(View.VISIBLE);
+                binding.tvPinnedSubject.setText("● " + currentPinnedNote.getSubject());
+                binding.tvPinnedTitle.setText(currentPinnedNote.getTitle());
+                binding.tvPinnedContent.setText(currentPinnedNote.getContent());
+                binding.tvPinnedTime.setText(currentPinnedNote.getUpdatedAt());
+            } else {
+                binding.cardPinnedNote.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void setupCalendarStrip() {
+        dayButtons = new View[]{
+                binding.dayBtn0, binding.dayBtn1, binding.dayBtn2,
+                binding.dayBtn3, binding.dayBtn4, binding.dayBtn5, binding.dayBtn6
+        };
+        dayNames = new TextView[]{
+                binding.tvDayName0, binding.tvDayName1, binding.tvDayName2,
+                binding.tvDayName3, binding.tvDayName4, binding.tvDayName5, binding.tvDayName6
+        };
+        dayNums = new TextView[]{
+                binding.tvDayNum0, binding.tvDayNum1, binding.tvDayNum2,
+                binding.tvDayNum3, binding.tvDayNum4, binding.tvDayNum5, binding.tvDayNum6
+        };
+
+        for (int i = 0; i < dayButtons.length; i++) {
+            final int dayIdx = i;
+            dayButtons[i].setOnClickListener(v -> selectCalendarDay(dayIdx));
+        }
+        selectCalendarDay(3);
+    }
+
+    private void selectCalendarDay(int dayIdx) {
+        int activeColor = ContextCompat.getColor(this, R.color.dashboard_surface);
+        int inactiveColor = ContextCompat.getColor(this, R.color.dashboard_secondary);
+        int textColor = ContextCompat.getColor(this, R.color.dashboard_text);
+
+        for (int i = 0; i < dayButtons.length; i++) {
+            if (i == dayIdx) {
+                dayButtons[i].setBackgroundResource(R.drawable.shape_calendar_day_selected);
+                dayNames[i].setTextColor(activeColor);
+                dayNums[i].setTextColor(activeColor);
+            } else {
+                dayButtons[i].setBackgroundResource(R.drawable.shape_calendar_day_normal);
+                dayNames[i].setTextColor(inactiveColor);
+                dayNums[i].setTextColor(textColor);
+            }
+        }
+
+        DaySchedule schedule = weekSchedules[dayIdx];
+        binding.tvTimetableBadge.setText(schedule.badge);
+        binding.tvTimetableTime.setText(schedule.time);
+        binding.tvTimetableSubject.setText(schedule.subject);
+        binding.tvTimetableRoom.setText(schedule.room);
     }
 
     @Override
@@ -107,92 +216,76 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         binding.dashboardRings.animateReveal();
-        View[] sections = {binding.dashboardHeader, binding.dashboardSummary, binding.dashboardDeadlineCard,
-                binding.cardToolTimetable, binding.dashboardQuickTools, binding.dashboardDocuments};
+        View[] sections = {
+                binding.dashboardHeader,
+                binding.dashboardCalendarCard,
+                binding.cardToolTimetable,
+                binding.dashboardTasks,
+                binding.dashboardSummary,
+                binding.dashboardQuickTools,
+                binding.dashboardDeadlineCard,
+                binding.dashboardDocuments,
+                binding.dashboardUtilities
+        };
         float offset = 12 * getResources().getDisplayMetrics().density;
-        Interpolator easing = AnimationUtils.loadInterpolator(this, android.R.interpolator.fast_out_slow_in);
+        long stagger = 30L;
         for (int index = 0; index < sections.length; index++) {
             View section = sections[index];
+            if (section == null) continue;
             section.setAlpha(0f);
             section.setTranslationY(offset);
             section.animate()
                     .alpha(1f)
                     .translationY(0f)
-                    .setStartDelay(index * 35L)
-                    .setDuration(220)
-                    .setInterpolator(easing)
+                    .setDuration(320)
+                    .setStartDelay(index * stagger)
                     .start();
         }
     }
 
     private void adaptDashboard() {
-        Configuration configuration = getResources().getConfiguration();
-        if (configuration.fontScale > 1.25f || configuration.screenWidthDp < 350) {
-            stackTiles(binding.dashboardQuickTools);
-            stackTiles(binding.dashboardDocuments);
-        }
-        if (configuration.fontScale > 1.4f) {
-            binding.dashboardHeader.setOrientation(LinearLayout.VERTICAL);
-            binding.dashboardHeader.setGravity(Gravity.START);
-            binding.dashboardHeader.getChildAt(0).setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        }
+        boolean dark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
+        binding.dashboardDate.setTextColor(getColor(dark ? R.color.dashboard_secondary : R.color.dashboard_accent));
     }
 
-    private void stackTiles(LinearLayout row) {
-        row.setOrientation(LinearLayout.VERTICAL);
-        row.getChildAt(1).setLayoutParams(new LinearLayout.LayoutParams(1,
-                Math.round(10 * getResources().getDisplayMetrics().density)));
-        for (int index : new int[]{0, 2}) {
-            View tile = row.getChildAt(index);
-            tile.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        }
+    private void updateTaskCount() {
+        int count = 0;
+        if (!binding.taskLab.isChecked()) count++;
+        if (!binding.taskSlides.isChecked()) count++;
+        if (!binding.taskAttendance.isChecked()) count++;
+        binding.taskCount.setText(getString(R.string.dashboard_tasks_left, count));
     }
 
-    private void selectTab(int index, boolean scroll) {
+    private void selectTab(int index, boolean animate) {
         selectedTab = index;
-        for (int tab = 0; tab < tabs.length; tab++) {
-            int color = getColor(tab == index ? R.color.dashboard_accent : R.color.dashboard_secondary);
-            tabs[tab].setSelected(tab == index);
-            tabs[tab].setTextColor(color);
-            tabs[tab].setCompoundDrawableTintList(ColorStateList.valueOf(color));
-        }
-        if (scroll) {
-            View[] destinations = {null, binding.cardToolTimetable,
-                    binding.dashboardUtilities, binding.dashboardDocuments};
-            int y = index == 0 ? 0 : destinations[index].getTop();
-            if (animationsEnabled()) {
-                binding.mainScrollView.smoothScrollTo(0, y);
-            } else {
-                binding.mainScrollView.scrollTo(0, y);
+        for (int i = 0; i < tabs.length; i++) {
+            boolean active = i == index;
+            tabs[i].setSelected(active);
+            int color = getColor(active ? R.color.dashboard_accent : R.color.dashboard_secondary);
+            tabs[i].setTextColor(color);
+            tabs[i].getCompoundDrawablesRelative()[1].setTint(color);
+            if (active && animate && animationsEnabled()) {
+                tabs[i].setScaleX(0.92f);
+                tabs[i].setScaleY(0.92f);
+                tabs[i].animate().scaleX(1f).scaleY(1f).setDuration(160).start();
             }
         }
     }
 
-    private void updateTaskCount() {
-        int count = (binding.taskLab.isChecked() ? 0 : 1)
-                + (binding.taskSlides.isChecked() ? 0 : 1)
-                + (binding.taskAttendance.isChecked() ? 0 : 1);
-        binding.taskCount.setText(getString(R.string.dashboard_tasks_left, count));
-    }
-
     private void updateFocusTimer() {
-        long now = SystemClock.elapsedRealtime();
-        if (focusEnd != 0 && focusEnd <= now) {
-            focusEnd = 0;
-            focusRemaining = 0;
-        }
-        if (focusEnd != 0) {
-            binding.focusTimer.setBase(focusEnd);
+        long remaining = focusEnd == 0 ? focusRemaining : Math.max(0, focusEnd - SystemClock.elapsedRealtime());
+        long base = SystemClock.elapsedRealtime() + remaining;
+        binding.focusTimer.setBase(base);
+        if (focusEnd == 0) {
+            binding.focusTimer.stop();
+            binding.cardToolFocus.setText("Bắt đầu");
+            binding.cardToolFocus.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.dashboard_segment)));
+            binding.cardToolFocus.setTextColor(getColor(R.color.dashboard_text));
+        } else {
             binding.focusTimer.start();
             binding.cardToolFocus.setText("Tạm dừng");
-        } else {
-            binding.focusTimer.stop();
-            long seconds = (focusRemaining + 999) / 1000;
-            binding.focusTimer.setText(String.format(Locale.ROOT, "%02d:%02d", seconds / 60, seconds % 60));
-            binding.cardToolFocus.setText(focusRemaining == FOCUS_DURATION ? "Bắt đầu"
-                    : focusRemaining == 0 ? "Bắt đầu lại" : "Tiếp tục");
+            binding.cardToolFocus.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.dashboard_accent)));
+            binding.cardToolFocus.setTextColor(getColor(R.color.dashboard_surface));
         }
     }
 
@@ -245,6 +338,14 @@ public class MainActivity extends AppCompatActivity {
         binding.taskSlides.setOnCheckedChangeListener((button, checked) -> updateTaskCount());
         binding.taskAttendance.setOnCheckedChangeListener((button, checked) -> updateTaskCount());
         binding.taskCount.post(this::updateTaskCount);
+
+        binding.cardPinnedNote.setOnClickListener(v -> {
+            if (currentPinnedNote != null) {
+                Intent intent = new Intent(this, NoteEditorActivity.class);
+                intent.putExtra("note_item", currentPinnedNote);
+                startActivity(intent);
+            }
+        });
 
         binding.cardToolNotes.setOnClickListener(v -> {
             Intent intent = new Intent(this, NotesActivity.class);

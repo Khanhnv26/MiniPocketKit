@@ -11,4 +11,5 @@
     <color name="dashboard_red">#FF453A</color>
     <color name="dashboard_green">#28CC56</color>
     <color name="dashboard_teal">#00C2BD</color>
+    <color name="dashboard_glass_stroke">#26FFFFFF</color>
 </resources>

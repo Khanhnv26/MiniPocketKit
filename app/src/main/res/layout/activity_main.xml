@@ -17,6 +17,8 @@
             android:paddingHorizontal="16dp"
             android:paddingTop="14dp"
             android:paddingBottom="92dp">
+
+            <!-- ================= HEADER ================= -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -60,6 +62,422 @@
                         android:text="Tối"  />
                 </LinearLayout>
             </LinearLayout>
+
+            <!-- ================= 1. KHỐI LỊCH HỌC TUẦN (WEEKLY CALENDAR STRIP) ================= -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Dashboard.Card"
+                android:id="@+id/dashboard_calendar_card">
+                <LinearLayout
+                    style="@style/Dashboard.Column"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            style="@style/Dashboard.Label"
+                            android:text="LỊCH HỌC TRONG TUẦN"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:layout_width="0dp"
+                            android:layout_weight="1" />
+                        <TextView
+                            style="@style/Dashboard.Label"
+                            android:text="Tuần 7 · Block 5"
+                            android:textColor="@color/dashboard_accent"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- 7 Ngày trong tuần -->
+                    <LinearLayout
+                        android:id="@+id/layoutCalendarDays"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <!-- T2 -->
+                        <LinearLayout
+                            android:id="@+id/dayBtn0"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/shape_calendar_day_normal"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView
+                                android:id="@+id/tvDayName0"
+                                style="@style/Dashboard.Label"
+                                android:text="T2"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDayNum0"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="09"
+                                android:textColor="@color/dashboard_text"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                        <Space android:layout_width="4dp" android:layout_height="1dp" />
+
+                        <!-- T3 -->
+                        <LinearLayout
+                            android:id="@+id/dayBtn1"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/shape_calendar_day_normal"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView
+                                android:id="@+id/tvDayName1"
+                                style="@style/Dashboard.Label"
+                                android:text="T3"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDayNum1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="10"
+                                android:textColor="@color/dashboard_text"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                        <Space android:layout_width="4dp" android:layout_height="1dp" />
+
+                        <!-- T4 -->
+                        <LinearLayout
+                            android:id="@+id/dayBtn2"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/shape_calendar_day_normal"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView
+                                android:id="@+id/tvDayName2"
+                                style="@style/Dashboard.Label"
+                                android:text="T4"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDayNum2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="11"
+                                android:textColor="@color/dashboard_text"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                        <Space android:layout_width="4dp" android:layout_height="1dp" />
+
+                        <!-- T5 (Hôm nay - Active) -->
+                        <LinearLayout
+                            android:id="@+id/dayBtn3"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/shape_calendar_day_selected"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView
+                                android:id="@+id/tvDayName3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="HÔM NAY"
+                                android:textColor="#FFFFFF"
+                                android:textSize="8sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDayNum3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="12"
+                                android:textColor="#FFFFFF"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                        <Space android:layout_width="4dp" android:layout_height="1dp" />
+
+                        <!-- T6 -->
+                        <LinearLayout
+                            android:id="@+id/dayBtn4"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/shape_calendar_day_normal"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView
+                                android:id="@+id/tvDayName4"
+                                style="@style/Dashboard.Label"
+                                android:text="T6"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDayNum4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="13"
+                                android:textColor="@color/dashboard_text"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                        <Space android:layout_width="4dp" android:layout_height="1dp" />
+
+                        <!-- T7 -->
+                        <LinearLayout
+                            android:id="@+id/dayBtn5"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/shape_calendar_day_normal"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView
+                                android:id="@+id/tvDayName5"
+                                style="@style/Dashboard.Label"
+                                android:text="T7"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDayNum5"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="14"
+                                android:textColor="@color/dashboard_text"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                        <Space android:layout_width="4dp" android:layout_height="1dp" />
+
+                        <!-- CN -->
+                        <LinearLayout
+                            android:id="@+id/dayBtn6"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp"
+                            android:background="@drawable/shape_calendar_day_normal"
+                            android:clickable="true"
+                            android:focusable="true">
+                            <TextView
+                                android:id="@+id/tvDayName6"
+                                style="@style/Dashboard.Label"
+                                android:text="CN"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDayNum6"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="15"
+                                android:textColor="@color/dashboard_text"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Thẻ Tiết học kế tiếp / ngày được chọn -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Dashboard.Card"
+                android:id="@+id/cardToolTimetable">
+                <LinearLayout
+                    style="@style/Dashboard.Column"
+                    android:padding="16dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical" >
+                        <TextView
+                            android:id="@+id/tvTimetableBadge"
+                            style="@style/Dashboard.Label"
+                            android:text="● TIẾT HỌC KẾ TIẾP"
+                            android:textColor="@color/dashboard_green_text"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvTimetableTime"
+                            style="@style/Dashboard.Label"
+                            android:text="Ca 2 · 09:15 - 11:45"
+                            android:textColor="@color/dashboard_secondary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/tvTimetableSubject"
+                        style="@style/Dashboard.Label"
+                        android:text="PRM392 · Lập trình Android"
+                        android:textColor="@color/dashboard_text"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:layout_marginTop="4dp" />
+                    <TextView
+                        android:id="@+id/tvTimetableRoom"
+                        style="@style/Dashboard.Label"
+                        android:text="Phòng 302 (Tòa Alpha) · GV Thầy Hoàng"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ================= 2. KHỐI GHI CHÚ & CHECKLIST NHIỆM VỤ ================= -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Dashboard.Card"
+                android:id="@+id/dashboard_tasks">
+                <LinearLayout
+                    style="@style/Dashboard.Column"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            style="@style/Dashboard.Label"
+                            android:text="GHI CHÚ &amp; CHECKLIST"
+                            android:textColor="@color/dashboard_text"
+                            android:textStyle="bold"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:textSize="15sp" />
+                        <TextView
+                            android:id="@+id/task_count"
+                            style="@style/Dashboard.Label"
+                            android:text="1 việc còn lại"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- THẺ GHI CHÚ ĐÃ GHIM (PINNED NOTE TỪ SQLITE) -->
+                    <LinearLayout
+                        android:id="@+id/cardPinnedNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/shape_input_rounded"
+                        android:padding="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+                            <TextView
+                                style="@style/Dashboard.Label"
+                                android:text="📌 ĐÃ GHIM"
+                                android:textColor="#E69500"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvPinnedSubject"
+                                style="@style/Dashboard.Label"
+                                android:text="● PRM392"
+                                android:textColor="@color/dashboard_accent"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:layout_marginStart="8dp" />
+                            <TextView
+                                android:id="@+id/tvPinnedTime"
+                                style="@style/Dashboard.Label"
+                                android:text="10:30 hôm nay"
+                                android:textSize="11sp"
+                                android:layout_marginStart="8dp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvPinnedTitle"
+                            style="@style/Dashboard.Label"
+                            android:text="Ôn thi Practical Exam PRM392"
+                            android:textColor="@color/dashboard_text"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp" />
+
+                        <TextView
+                            android:id="@+id/tvPinnedContent"
+                            style="@style/Dashboard.Label"
+                            android:text="Nắm vững SQLiteOpenHelper, RecyclerView Adapter và Intent."
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            android:textSize="12sp"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <!-- CÁC CHECKBOX NHIỆM VỤ -->
+                    <CheckBox
+                        android:id="@+id/task_lab"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="40dp"
+                        android:text="Nộp bài Lab 3 Android Studio"
+                        android:textColor="@color/dashboard_text"
+                        android:checked="false"
+                        android:buttonTint="@color/dashboard_accent" />
+                    <CheckBox
+                        android:id="@+id/task_slides"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="40dp"
+                        android:text="Đọc trước Slide RecyclerView"
+                        android:textColor="@color/dashboard_text"
+                        android:checked="true"
+                        android:buttonTint="@color/dashboard_accent" />
+                    <CheckBox
+                        android:id="@+id/task_attendance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="40dp"
+                        android:text="Điểm danh EduNext tiết sáng"
+                        android:textColor="@color/dashboard_text"
+                        android:checked="true"
+                        android:buttonTint="@color/dashboard_accent" />
+
+                    <TextView
+                        android:id="@+id/cardToolNotes"
+                        style="@style/Dashboard.Action"
+                        android:text="Xem tất cả Ghi chú &amp; Checklist →"
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ================= 3. KHỐI VÒNG HOẠT ĐỘNG (SUMMARY RINGS) ================= -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/dashboard_summary"
                 style="@style/Dashboard.Card">
@@ -156,80 +574,8 @@
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/dashboard_deadline_card"
-                style="@style/Dashboard.Card">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="16dp">
-                    <LinearLayout
-                        style="@style/Dashboard.Column"
-                        android:layout_width="0dp"
-                        android:layout_weight="1">
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="●  15:15 hôm nay"
-                            android:textColor="@color/dashboard_deadline_text"
-                            android:textStyle="bold" />
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="Lab 3: Lập trình Android"
-                            android:textColor="@color/dashboard_text"
-                            android:textStyle="bold"
-                            android:textSize="16sp" />
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="Phòng máy P.302-Alpha · Nộp CMS"  />
-                    </LinearLayout>
-                    <Space
-                        android:layout_width="7dp"
-                        android:layout_height="1dp" />
-                    <TextView
-                        android:id="@+id/cardToolDeadline"
-                        style="@style/Dashboard.Action"
-                        android:text="Chi tiết"
-                        android:backgroundTint="@color/dashboard_text"
-                        android:textColor="@color/dashboard_surface" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Dashboard.Card"
-                android:id="@+id/cardToolTimetable">
-                <LinearLayout
-                    style="@style/Dashboard.Column"
-                    android:padding="16dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical" >
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="TIẾT HỌC KẾ TIẾP"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:textStyle="bold" />
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="Slot 3 · 13:30 - 15:45"
-                            android:textColor="@color/dashboard_green_text"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:text="PRM392 · Lập trình Android"
-                        android:textColor="@color/dashboard_text"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:layout_marginTop="3dp" />
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:text="Phòng 302 (Tòa Alpha) · GV Thầy Hoàng"  />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ================= 4. KHỐI BENTO TOOLS (FOCUS & GPA) ================= -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -359,6 +705,48 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+
+            <!-- ================= 5. DEADLINE & TIỆN ÍCH SINH VIÊN ================= -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/dashboard_deadline_card"
+                style="@style/Dashboard.Card">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+                    <LinearLayout
+                        style="@style/Dashboard.Column"
+                        android:layout_width="0dp"
+                        android:layout_weight="1">
+                        <TextView
+                            style="@style/Dashboard.Label"
+                            android:text="●  Còn 2 ngày"
+                            android:textColor="@color/dashboard_deadline_text"
+                            android:textStyle="bold" />
+                        <TextView
+                            style="@style/Dashboard.Label"
+                            android:text="SWP391 · Nộp báo cáo Sprint 2"
+                            android:textColor="@color/dashboard_text"
+                            android:textStyle="bold"
+                            android:textSize="16sp" />
+                        <TextView
+                            style="@style/Dashboard.Label"
+                            android:text="Hoàn thiện SRS, Mockup và nộp link LMS"  />
+                    </LinearLayout>
+                    <Space
+                        android:layout_width="7dp"
+                        android:layout_height="1dp" />
+                    <TextView
+                        android:id="@+id/cardToolDeadline"
+                        style="@style/Dashboard.Action"
+                        android:text="Chi tiết"
+                        android:backgroundTint="@color/dashboard_text"
+                        android:textColor="@color/dashboard_surface" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -469,64 +857,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Dashboard.Card" >
-                <LinearLayout
-                    style="@style/Dashboard.Column"
-                    android:padding="16dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical" >
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="Nhiệm vụ hôm nay"
-                            android:textColor="@color/dashboard_text"
-                            android:textStyle="bold"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:textSize="16sp" />
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="1 việc còn lại"
-                            android:id="@+id/task_count" />
-                    </LinearLayout>
-                    <CheckBox
-                        android:id="@+id/task_lab"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="44dp"
-                        android:text="Nộp bài Lab 3 Android Studio"
-                        android:textColor="@color/dashboard_text"
-                        android:checked="false"
-                        android:buttonTint="@color/dashboard_accent" />
-                    <CheckBox
-                        android:id="@+id/task_slides"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="44dp"
-                        android:text="Đọc trước Slide RecyclerView"
-                        android:textColor="@color/dashboard_text"
-                        android:checked="true"
-                        android:buttonTint="@color/dashboard_accent" />
-                    <CheckBox
-                        android:id="@+id/task_attendance"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="44dp"
-                        android:text="Điểm danh EduNext tiết sáng"
-                        android:textColor="@color/dashboard_text"
-                        android:checked="true"
-                        android:buttonTint="@color/dashboard_accent" />
-                    <TextView
-                        android:id="@+id/cardToolNotes"
-                        style="@style/Dashboard.Action"
-                        android:text="Mở Ghi chú"
-                        android:layout_width="match_parent"
-                        android:layout_marginTop="6dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.card.MaterialCardView
                 style="@style/Dashboard.Card"
                 android:id="@+id/dashboard_utilities">
@@ -565,8 +896,11 @@
                         android:layout_marginTop="6dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
     </ScrollView>
+
+    <!-- ================= FLOATING GLASS DOCK (NAVIGATION BAR) ================= -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -576,7 +910,7 @@
         app:cardBackgroundColor="@color/dashboard_dock"
         app:cardCornerRadius="32dp"
         app:cardElevation="7dp"
-        app:strokeColor="@color/dashboard_segment"
+        app:strokeColor="@color/dashboard_glass_stroke"
         app:strokeWidth="1dp">
         <LinearLayout
             android:layout_width="match_parent"
