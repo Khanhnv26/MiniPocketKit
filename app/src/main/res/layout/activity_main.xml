@@ -433,7 +433,7 @@
                             android:id="@+id/tvPinnedContent"
                             style="@style/Dashboard.Label"
                             android:text="Nắm vững SQLiteOpenHelper, RecyclerView Adapter và Intent."
-                            android:maxLines="2"
+                            android:maxLines="1"
                             android:ellipsize="end"
                             android:textSize="12sp"
                             android:layout_marginTop="2dp" />
@@ -471,7 +471,7 @@
                     <TextView
                         android:id="@+id/cardToolNotes"
                         style="@style/Dashboard.Action"
-                        android:text="Xem tất cả Ghi chú &amp; Checklist →"
+                        android:text="Xem tất cả →"
                         android:layout_width="match_parent"
                         android:layout_marginTop="8dp" />
                 </LinearLayout>
