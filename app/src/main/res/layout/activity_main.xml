@@ -18,8 +18,7 @@
             android:paddingTop="14dp"
             android:paddingBottom="92dp">
 
-            <!-- ================= HEADER ================= -->
-            <LinearLayout
+<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -63,8 +62,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ================= 1. KHỐI LỊCH HỌC TUẦN (WEEKLY CALENDAR STRIP) ================= -->
-            <com.google.android.material.card.MaterialCardView
+<com.google.android.material.card.MaterialCardView
                 style="@style/Dashboard.Card"
                 android:id="@+id/dashboard_calendar_card">
                 <LinearLayout
@@ -92,16 +90,14 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- 7 Ngày trong tuần -->
-                    <LinearLayout
+<LinearLayout
                         android:id="@+id/layoutCalendarDays"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center">
 
-                        <!-- T2 -->
-                        <LinearLayout
+<LinearLayout
                             android:id="@+id/dayBtn0"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -129,8 +125,7 @@
                         </LinearLayout>
                         <Space android:layout_width="4dp" android:layout_height="1dp" />
 
-                        <!-- T3 -->
-                        <LinearLayout
+<LinearLayout
                             android:id="@+id/dayBtn1"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -158,8 +153,7 @@
                         </LinearLayout>
                         <Space android:layout_width="4dp" android:layout_height="1dp" />
 
-                        <!-- T4 -->
-                        <LinearLayout
+<LinearLayout
                             android:id="@+id/dayBtn2"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -187,8 +181,7 @@
                         </LinearLayout>
                         <Space android:layout_width="4dp" android:layout_height="1dp" />
 
-                        <!-- T5 (Hôm nay - Active) -->
-                        <LinearLayout
+<LinearLayout
                             android:id="@+id/dayBtn3"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -218,8 +211,7 @@
                         </LinearLayout>
                         <Space android:layout_width="4dp" android:layout_height="1dp" />
 
-                        <!-- T6 -->
-                        <LinearLayout
+<LinearLayout
                             android:id="@+id/dayBtn4"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -247,8 +239,7 @@
                         </LinearLayout>
                         <Space android:layout_width="4dp" android:layout_height="1dp" />
 
-                        <!-- T7 -->
-                        <LinearLayout
+<LinearLayout
                             android:id="@+id/dayBtn5"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -276,8 +267,7 @@
                         </LinearLayout>
                         <Space android:layout_width="4dp" android:layout_height="1dp" />
 
-                        <!-- CN -->
-                        <LinearLayout
+<LinearLayout
                             android:id="@+id/dayBtn6"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -307,8 +297,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Thẻ Tiết học kế tiếp / ngày được chọn -->
-            <com.google.android.material.card.MaterialCardView
+<com.google.android.material.card.MaterialCardView
                 style="@style/Dashboard.Card"
                 android:id="@+id/cardToolTimetable">
                 <LinearLayout
@@ -352,8 +341,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ================= 2. KHỐI GHI CHÚ & CHECKLIST NHIỆM VỤ ================= -->
-            <com.google.android.material.card.MaterialCardView
+<com.google.android.material.card.MaterialCardView
                 style="@style/Dashboard.Card"
                 android:id="@+id/dashboard_tasks">
                 <LinearLayout
@@ -381,8 +369,7 @@
                             android:textSize="12sp" />
                     </LinearLayout>
 
-                    <!-- THẺ GHI CHÚ ĐÃ GHIM (PINNED NOTE TỪ SQLITE) -->
-                    <LinearLayout
+<LinearLayout
                         android:id="@+id/cardPinnedNote"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -439,8 +426,7 @@
                             android:layout_marginTop="2dp" />
                     </LinearLayout>
 
-                    <!-- CÁC CHECKBOX NHIỆM VỤ -->
-                    <CheckBox
+<CheckBox
                         android:id="@+id/task_lab"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -477,8 +463,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ================= 3. KHỐI VÒNG HOẠT ĐỘNG (SUMMARY RINGS) ================= -->
-            <com.google.android.material.card.MaterialCardView
+<com.google.android.material.card.MaterialCardView
                 android:id="@+id/dashboard_summary"
                 style="@style/Dashboard.Card">
                 <LinearLayout
@@ -575,8 +560,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ================= 4. KHỐI BENTO TOOLS (FOCUS & GPA) ================= -->
-            <LinearLayout
+<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -706,8 +690,7 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- ================= 5. DEADLINE & TIỆN ÍCH SINH VIÊN ================= -->
-            <com.google.android.material.card.MaterialCardView
+<com.google.android.material.card.MaterialCardView
                 android:id="@+id/dashboard_deadline_card"
                 style="@style/Dashboard.Card">
                 <LinearLayout
@@ -900,8 +883,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- ================= FLOATING GLASS DOCK (NAVIGATION BAR) ================= -->
-    <com.google.android.material.card.MaterialCardView
+<com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"

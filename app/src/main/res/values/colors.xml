@@ -3,8 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Dribbble Soft Pastel Tokens -->
-    <color name="bg_screen">#FFF8F6FC</color>
+<color name="bg_screen">#FFF8F6FC</color>
     <color name="card_bg">#FFFFFFFF</color>
     <color name="card_stroke">#00000000</color>
     <color name="text_title">#FF1E1B4B</color>
@@ -13,8 +12,7 @@
     <color name="icon_color">#FF1E1B4B</color>
     <color name="coral_accent">#FFFF758C</color>
 
-    <!-- Dribbble Pastel Squircles -->
-    <color name="squircle_sapphire_bg">#FFEBF5FF</color>
+<color name="squircle_sapphire_bg">#FFEBF5FF</color>
     <color name="squircle_sapphire_icon">#FF3B82F6</color>
     
     <color name="squircle_rose_bg">#FFFFF1F2</color>
