@@ -4,33 +4,248 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/card_bg"
-    android:padding="24dp">
+    android:background="@drawable/shape_dropdown_popup"
+    android:padding="20dp">
 
-<View
-        android:layout_width="36dp"
+    <View
+        android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="20dp"
-        android:background="@drawable/ic_launcher_background"
-        android:backgroundTint="@color/divider_color" />
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/shape_calendar_day_selected"
+        android:backgroundTint="@color/dashboard_secondary" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="18dp"
-        android:text="Tiện ích mở rộng"
-        android:textColor="@color/text_title"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-<LinearLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_marginBottom="16dp">
 
-<LinearLayout
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Tiện ích học tập"
+            android:textColor="@color/dashboard_text"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="9 công cụ"
+            android:textColor="@color/dashboard_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:id="@+id/btnSheetFocus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_coral_bg"
+                android:src="@drawable/ic_focus"
+                app:tint="@color/squircle_coral_icon"
+                android:padding="9dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Pomodoro"
+                android:textColor="@color/dashboard_text"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnSheetGpa"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_sapphire_bg"
+                android:src="@drawable/ic_gpa"
+                app:tint="@color/squircle_sapphire_icon"
+                android:padding="9dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Tính GPA"
+                android:textColor="@color/dashboard_text"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnSheetDeadline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_rose_bg"
+                android:src="@drawable/ic_deadline"
+                app:tint="@color/squircle_rose_icon"
+                android:padding="9dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Deadline"
+                android:textColor="@color/dashboard_text"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:id="@+id/btnSheetOcr"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_emerald_bg"
+                android:src="@drawable/ic_ocr"
+                app:tint="@color/squircle_emerald_icon"
+                android:padding="9dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Quét OCR"
+                android:textColor="@color/dashboard_text"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnSheetCompress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_amber_bg"
+                android:src="@drawable/ic_compress"
+                app:tint="@color/squircle_amber_icon"
+                android:padding="9dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Nén ảnh"
+                android:textColor="@color/dashboard_text"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnSheetPdf"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_violet_bg"
+                android:src="@drawable/ic_pdf"
+                app:tint="@color/squircle_violet_icon"
+                android:padding="9dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Gộp PDF"
+                android:textColor="@color/dashboard_text"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
             android:id="@+id/btnSheetSplitBill"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -38,24 +253,30 @@
             android:gravity="center"
             android:orientation="vertical"
             android:background="?attr/selectableItemBackground"
-            android:paddingVertical="12dp">
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_compress" />
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_cyan_bg"
+                android:src="@drawable/ic_compress"
+                app:tint="@color/squircle_cyan_icon"
+                android:padding="9dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Chia tiền trọ"
-                android:textColor="@color/text_title"
+                android:layout_marginTop="6dp"
+                android:text="Chia tiền"
+                android:textColor="@color/dashboard_text"
                 android:textSize="12sp"
-                android:fontFamily="sans-serif-medium" />
+                android:textStyle="bold" />
         </LinearLayout>
 
-<LinearLayout
+        <LinearLayout
             android:id="@+id/btnSheetRandom"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -63,24 +284,30 @@
             android:gravity="center"
             android:orientation="vertical"
             android:background="?attr/selectableItemBackground"
-            android:paddingVertical="12dp">
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_focus" />
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_teal_bg"
+                android:src="@drawable/ic_all"
+                app:tint="@color/squircle_teal_icon"
+                android:padding="9dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Vòng quay"
-                android:textColor="@color/text_title"
+                android:layout_marginTop="6dp"
+                android:text="Bốc thăm"
+                android:textColor="@color/dashboard_text"
                 android:textSize="12sp"
-                android:fontFamily="sans-serif-medium" />
+                android:textStyle="bold" />
         </LinearLayout>
 
-<LinearLayout
+        <LinearLayout
             android:id="@+id/btnSheetQr"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -88,23 +315,28 @@
             android:gravity="center"
             android:orientation="vertical"
             android:background="?attr/selectableItemBackground"
-            android:paddingVertical="12dp">
+            android:paddingVertical="10dp"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_ocr" />
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/shape_squircle"
+                android:backgroundTint="@color/squircle_amber_bg"
+                android:src="@drawable/ic_ocr"
+                app:tint="@color/squircle_amber_icon"
+                android:padding="9dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:text="Mã QR"
-                android:textColor="@color/text_title"
+                android:textColor="@color/dashboard_text"
                 android:textSize="12sp"
-                android:fontFamily="sans-serif-medium" />
+                android:textStyle="bold" />
         </LinearLayout>
-
     </LinearLayout>
 
 </LinearLayout>

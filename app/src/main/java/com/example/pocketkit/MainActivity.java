@@ -6,7 +6,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityMainBinding;
 import com.example.pocketkit.model.Note;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.SimpleDateFormat;
@@ -32,17 +32,12 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String STATE_NIGHT_MODE = "dashboard_night_mode";
     private static final String STATE_SELECTED_TAB = "dashboard_selected_tab";
-    private static final String STATE_FOCUS_END = "dashboard_focus_end";
-    private static final String STATE_FOCUS_REMAINING = "dashboard_focus_remaining";
-    private static final long FOCUS_DURATION = 25 * 60_000L;
 
     private ActivityMainBinding binding;
     private DatabaseHelper dbHelper;
     private Note currentPinnedNote = null;
     private TextView[] tabs;
     private int selectedTab = 0;
-    private long focusEnd;
-    private long focusRemaining = FOCUS_DURATION;
 
     private static class DaySchedule {
         final String badge;
@@ -92,8 +87,6 @@ public class MainActivity extends AppCompatActivity {
                 .format(new Date()).toUpperCase(vietnamese));
         if (savedInstanceState != null) {
             selectedTab = savedInstanceState.getInt(STATE_SELECTED_TAB);
-            focusEnd = savedInstanceState.getLong(STATE_FOCUS_END);
-            focusRemaining = savedInstanceState.getLong(STATE_FOCUS_REMAINING, FOCUS_DURATION);
         }
         setupCalendarStrip();
         setupClickListeners();
@@ -190,23 +183,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        updateFocusTimer();
-    }
-
-    @Override
-    protected void onStop() {
-        binding.focusTimer.stop();
-        super.onStop();
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(STATE_NIGHT_MODE, getNightMode());
         outState.putInt(STATE_SELECTED_TAB, selectedTab);
-        outState.putLong(STATE_FOCUS_END, focusEnd);
-        outState.putLong(STATE_FOCUS_REMAINING, focusRemaining);
         super.onSaveInstanceState(outState);
     }
 
@@ -222,17 +201,13 @@ public class MainActivity extends AppCompatActivity {
         if (!animationsEnabled()) {
             return;
         }
-        binding.dashboardRings.animateReveal();
         View[] sections = {
                 binding.dashboardHeader,
                 binding.dashboardCalendarCard,
                 binding.cardToolTimetable,
-                binding.dashboardTasks,
-                binding.dashboardSummary,
-                binding.dashboardQuickTools,
-                binding.dashboardDeadlineCard,
-                binding.dashboardDocuments,
-                binding.dashboardUtilities
+                binding.cardPinnedNote,
+                binding.cardBentoProject,
+                binding.dashboardTasks
         };
         float offset = 12 * getResources().getDisplayMetrics().density;
         long stagger = 30L;
@@ -279,34 +254,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateFocusTimer() {
-        long remaining = focusEnd == 0 ? focusRemaining : Math.max(0, focusEnd - SystemClock.elapsedRealtime());
-        long base = SystemClock.elapsedRealtime() + remaining;
-        binding.focusTimer.setBase(base);
-        if (focusEnd == 0) {
-            binding.focusTimer.stop();
-            binding.cardToolFocus.setText("Bắt đầu");
-            binding.cardToolFocus.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.dashboard_segment)));
-            binding.cardToolFocus.setTextColor(getColor(R.color.dashboard_text));
-        } else {
-            binding.focusTimer.start();
-            binding.cardToolFocus.setText("Tạm dừng");
-            binding.cardToolFocus.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.dashboard_accent)));
-            binding.cardToolFocus.setTextColor(getColor(R.color.dashboard_surface));
-        }
-    }
-
-    private void toggleFocusTimer() {
-        long now = SystemClock.elapsedRealtime();
-        if (focusEnd == 0) {
-            focusEnd = now + (focusRemaining == 0 ? FOCUS_DURATION : focusRemaining);
-        } else {
-            focusRemaining = Math.max(0, focusEnd - now);
-            focusEnd = 0;
-        }
-        updateFocusTimer();
-    }
-
     private void showAppearanceOptions() {
         PocketKitApplication application = (PocketKitApplication) getApplication();
         new MaterialAlertDialogBuilder(this)
@@ -317,6 +264,51 @@ public class MainActivity extends AppCompatActivity {
                             application.setThemeChoice(choice);
                         })
                 .show();
+    }
+
+    private void showToolsBottomSheet() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_all_tools, null);
+        dialog.setContentView(sheetView);
+
+        sheetView.findViewById(R.id.btnSheetFocus).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Đồng hồ Pomodoro 25 phút");
+        });
+        sheetView.findViewById(R.id.btnSheetGpa).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Tính điểm GPA & Dự đoán qua môn");
+        });
+        sheetView.findViewById(R.id.btnSheetDeadline).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Hạn nộp bài Assignment 1 (Còn 2 ngày)");
+        });
+        sheetView.findViewById(R.id.btnSheetOcr).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Quét slide & Trích xuất tiếng Việt");
+        });
+        sheetView.findViewById(R.id.btnSheetCompress).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Nén ảnh CCCD & Thẻ SV (< 500KB)");
+        });
+        sheetView.findViewById(R.id.btnSheetPdf).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Bộ tiện ích PDF");
+        });
+        sheetView.findViewById(R.id.btnSheetSplitBill).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Chia tiền trọ & Điện nước");
+        });
+        sheetView.findViewById(R.id.btnSheetRandom).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Vòng quay bốc thăm nhóm");
+        });
+        sheetView.findViewById(R.id.btnSheetQr).setOnClickListener(v -> {
+            dialog.dismiss();
+            showToast("Mã QR thanh toán & Wi-Fi");
+        });
+
+        dialog.show();
     }
 
     private void setupClickListeners() {
@@ -335,10 +327,19 @@ public class MainActivity extends AppCompatActivity {
         binding.themeDark.setOnLongClickListener(appearanceOptions);
 
         tabs = new TextView[]{binding.tabToday, binding.tabSchedule, binding.tabTools, binding.tabDocuments};
-        for (int index = 0; index < tabs.length; index++) {
-            int destination = index;
-            tabs[index].setOnClickListener(v -> selectTab(destination, true));
-        }
+        binding.tabToday.setOnClickListener(v -> selectTab(0, true));
+        binding.tabSchedule.setOnClickListener(v -> {
+            selectTab(1, true);
+            showToast("Thời khóa biểu tuần 7 · Block 5");
+        });
+        binding.tabTools.setOnClickListener(v -> {
+            selectTab(2, true);
+            showToolsBottomSheet();
+        });
+        binding.tabDocuments.setOnClickListener(v -> {
+            selectTab(3, true);
+            showToast("Hồ sơ sinh viên FPT University");
+        });
         selectTab(selectedTab, false);
 
         binding.taskLab.setOnCheckedChangeListener((button, checked) -> updateTaskCount());
@@ -374,47 +375,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        binding.cardToolDeadline.setOnClickListener(v ->
-                showToast("Mở Hạn nộp bài (Deadline Reminder)")
-        );
-
         binding.cardToolTimetable.setOnClickListener(v ->
-                showToast("Mở Thời khóa biểu (Timetable)")
-        );
-
-        binding.cardToolGpa.setOnClickListener(v ->
-                showToast("Mở Tính điểm GPA & Dự đoán qua môn")
-        );
-
-        binding.cardToolFocus.setOnClickListener(v -> toggleFocusTimer());
-        binding.focusTimer.setOnChronometerTickListener(timer -> {
-            if (focusEnd != 0 && SystemClock.elapsedRealtime() >= focusEnd) {
-                updateFocusTimer();
-            }
-        });
-
-        binding.cardToolCompress.setOnClickListener(v ->
-                showToast("Mở Nén ảnh hồ sơ & CCCD (< 100KB, 500KB)")
-        );
-
-        binding.cardToolOcr.setOnClickListener(v ->
-                showToast("Mở Quét slide & Trích xuất chữ tiếng Việt")
-        );
-
-        binding.cardToolPdf.setOnClickListener(v ->
-                showToast("Mở Bộ tiện ích PDF (Gộp ảnh thành PDF)")
-        );
-
-        binding.cardToolSplitBill.setOnClickListener(v ->
-                showToast("Mở Chia tiền phòng trọ / Điện nước EVN")
-        );
-
-        binding.cardToolRandom.setOnClickListener(v ->
-                showToast("Mở Vòng quay chọn người thuyết trình")
-        );
-
-        binding.cardToolQr.setOnClickListener(v ->
-                showToast("Mở Quét & Tạo mã QR tài liệu / WiFi")
+                showToast("Thời khóa biểu: Ca 2 · PRM392 (Phòng 302)")
         );
     }
 
