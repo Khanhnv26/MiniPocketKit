@@ -17,7 +17,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CampusKit.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     private static final String TABLE_NOTES = "notes";
     private static final String COL_ID = "id";
@@ -40,7 +40,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
         db.execSQL("CREATE TABLE " + TABLE_NOTES + " (" +
-                COL_ID + "INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_TITLE + " TEXT NOT NULL, " +
                 COL_CONTENT + " TEXT, " +
                 COL_SUBJECT + " TEXT, " +
@@ -52,6 +52,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_CAT_NAME + " TEXT UNIQUE NOT NULL)");
 
+        db.execSQL("INSERT INTO " + TABLE_CATEGORIES + " (" + COL_CAT_NAME + ") VALUES ('PRM392')");
+        db.execSQL("INSERT INTO " + TABLE_CATEGORIES + " (" + COL_CAT_NAME + ") VALUES ('SWP391')");
+
+        db.execSQL("INSERT INTO " + TABLE_NOTES + " (title, content, subject, is_pinned, is_done, updated_at) " +
+                "VALUES ('Ôn thi Practical Exam PRM392', 'Nắm vững SQLiteOpenHelper, RecyclerView Adapter và Intent.', 'PRM392', 1, 0, '10:30 hôm nay')");
+        db.execSQL("INSERT INTO " + TABLE_NOTES + " (title, content, subject, is_pinned, is_done, updated_at) " +
+                "VALUES ('Nộp báo cáo Sprint 2 SWP391', 'Hoàn thiện tài liệu SRS và sơ đồ kiến trúc.', 'SWP391', 0, 1, 'Hôm qua')");
     }
 
     @Override
@@ -65,27 +72,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_CAT_NAME, name.trim());
-        return db.insert(TABLE_CATEGORIES, null, values);
+        return db.insertWithOnConflict(TABLE_CATEGORIES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
     public List<String> getAllCategories() {
         List<String> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_CATEGORIES, new String[]{COL_CAT_NAME}, null, null, null, null, COL_CAT_ID + " ASC");
-        if (cursor.moveToFirst()) {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 list.add(cursor.getString(0));
             } while (cursor.moveToNext());
+            cursor.close();
         }
-        cursor.close();
         return list;
     }
 
-    public long insertNode(Note note) {
+    public long insertNote(Note note) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_TITLE, note.getTitle());
-        values.put(COL_CONTENT, note.getTitle());
+        values.put(COL_CONTENT, note.getContent());
         values.put(COL_SUBJECT, note.getSubject());
         values.put(COL_IS_PINNED, note.getIsPinned());
         values.put(COL_IS_DONE, note.getIsDone());
@@ -124,21 +131,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String orderBy = COL_IS_PINNED + " DESC, " + COL_ID + " DESC";
         Cursor cursor = db.query(TABLE_NOTES, null, where.toString(), args.toArray(new String[0]), null, null, orderBy);
-        if(cursor.moveToFirst()) {
-            do {
-                Note note = Note.builder()
-                        .id(cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)))
-                        .title(cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)))
-                        .content(cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTENT)))
-                        .subject(cursor.getString(cursor.getColumnIndexOrThrow(COL_SUBJECT)))
-                        .isPinned(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_PINNED)))
-                        .isDone(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_DONE)))
-                        .updatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)))
-                        .build();
-                list.add(note);
-            } while(cursor.moveToNext());
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    Note note = Note.builder()
+                            .id(cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)))
+                            .title(cursor.getString(cursor.getColumnIndexOrThrow(COL_TITLE)))
+                            .content(cursor.getString(cursor.getColumnIndexOrThrow(COL_CONTENT)))
+                            .subject(cursor.getString(cursor.getColumnIndexOrThrow(COL_SUBJECT)))
+                            .isPinned(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_PINNED)))
+                            .isDone(cursor.getInt(cursor.getColumnIndexOrThrow(COL_IS_DONE)))
+                            .updatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COL_UPDATED_AT)))
+                            .build();
+                    list.add(note);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
         }
-        cursor.close();
         return list;
     }
 
