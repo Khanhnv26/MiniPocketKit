@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private View[] dayButtons;
     private TextView[] dayNames;
     private TextView[] dayNums;
+    private View[] dayDots;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +151,10 @@ public class MainActivity extends AppCompatActivity {
                 binding.tvDayNum0, binding.tvDayNum1, binding.tvDayNum2,
                 binding.tvDayNum3, binding.tvDayNum4, binding.tvDayNum5, binding.tvDayNum6
         };
+        dayDots = new View[]{
+                binding.dotDay0, binding.dotDay1, binding.dotDay2,
+                binding.dotDay3, binding.dotDay4, binding.dotDay5, binding.dotDay6
+        };
 
         for (int i = 0; i < dayButtons.length; i++) {
             final int dayIdx = i;
@@ -159,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectCalendarDay(int dayIdx) {
-        int activeColor = ContextCompat.getColor(this, R.color.dashboard_surface);
+        int activeColor = ContextCompat.getColor(this, R.color.dashboard_capsule_active_text);
         int inactiveColor = ContextCompat.getColor(this, R.color.dashboard_secondary);
         int textColor = ContextCompat.getColor(this, R.color.dashboard_text);
 
@@ -168,10 +173,12 @@ public class MainActivity extends AppCompatActivity {
                 dayButtons[i].setBackgroundResource(R.drawable.shape_calendar_day_selected);
                 dayNames[i].setTextColor(activeColor);
                 dayNums[i].setTextColor(activeColor);
+                if (dayDots[i] != null) dayDots[i].setVisibility(View.VISIBLE);
             } else {
                 dayButtons[i].setBackgroundResource(R.drawable.shape_calendar_day_normal);
                 dayNames[i].setTextColor(inactiveColor);
                 dayNums[i].setTextColor(textColor);
+                if (dayDots[i] != null) dayDots[i].setVisibility(View.GONE);
             }
         }
 
@@ -345,6 +352,15 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("note_item", currentPinnedNote);
                 startActivity(intent);
             }
+        });
+
+        binding.cardBentoProject.setOnClickListener(v ->
+                showToast("Dự án Khởi nghiệp EXE201 · Nhóm 4")
+        );
+
+        binding.btnDockAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(this, NoteEditorActivity.class);
+            startActivity(intent);
         });
 
         binding.cardToolNotes.setOnClickListener(v -> {

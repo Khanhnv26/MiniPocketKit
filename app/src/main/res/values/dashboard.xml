@@ -12,6 +12,14 @@
     <color name="dashboard_green">#28CC56</color>
     <color name="dashboard_teal">#00C2BD</color>
     <color name="dashboard_glass_stroke">#14000000</color>
+    <color name="dashboard_capsule_active">#121215</color>
+    <color name="dashboard_capsule_active_text">#FFFFFF</color>
+    <color name="dashboard_card_dark">#121215</color>
+    <color name="dashboard_card_dark_stroke">#1AFFFFFF</color>
+    <color name="dashboard_card_lavender">#F5F3FF</color>
+    <color name="dashboard_card_lavender_stroke">#1A8B5CF6</color>
+    <color name="dashboard_card_lavender_text">#5B21B6</color>
+    <color name="dashboard_timeline_line">#E5E7EB</color>
 
     <string name="dashboard_appearance">Giao diện</string>
     <string name="dashboard_tasks_left">%1$d việc còn lại</string>
