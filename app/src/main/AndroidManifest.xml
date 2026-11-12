@@ -30,12 +30,12 @@
 
         <activity
             android:name=".NotesActivity"
-            android:exported="false"
+            android:exported="true"
             android:theme="@style/Theme.PocketKit" />
 
         <activity
             android:name=".NoteEditorActivity"
-            android:exported="false"
+            android:exported="true"
             android:theme="@style/Theme.PocketKit"
             android:windowSoftInputMode="adjustResize" />
     </application>
