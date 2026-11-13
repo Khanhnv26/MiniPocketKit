@@ -1,3 +1,65 @@
 <resources>
     <string name="app_name">CampusKit</string>
+
+    <string name="note_default_category">Chung</string>
+    <string name="note_seed_category_1">Lập trình Di động</string>
+    <string name="note_seed_category_2">Dự án Phần mềm</string>
+    <string name="note_seed_title_1">Ôn tập kiến trúc SQLite và Adapter</string>
+    <string name="note_seed_content_1">Xem lại cách tách ViewBinding, cập nhật danh sách động và truyền Intent an toàn.</string>
+    <string name="note_seed_time_1">10:30 hôm nay</string>
+    <string name="note_seed_title_2">Hoàn thiện đặc tả báo cáo tuần</string>
+    <string name="note_seed_content_2">Kiểm tra danh sách chức năng ưu tiên và lưu tài liệu vào thư mục dự án.</string>
+    <string name="note_seed_time_2">Hôm qua</string>
+    <string name="note_timestamp_format">dd/MM HH:mm</string>
+
+    <string name="notes_back_home">Trang chủ</string>
+    <string name="notes_section_kicker">HỌC TẬP VÀ GHI CHÉP</string>
+    <string name="notes_screen_title">Sổ ghi chú</string>
+    <string name="notes_count_badge_format">%1$d ghi chú</string>
+    <string name="notes_search_hint">Tìm kiếm theo tiêu đề, môn học...</string>
+    <string name="notes_search_desc">Tìm kiếm ghi chú</string>
+    <string name="notes_clear_search_desc">Xóa từ khóa tìm kiếm</string>
+    <string name="notes_filter_all">Tất cả</string>
+    <string name="notes_filter_pinned">Đã ghim</string>
+    <string name="notes_category_add_chip">+ Thêm</string>
+    <string name="notes_empty_default">Chưa có ghi chú nào.\nHãy bấm nút bên dưới để tạo mới.</string>
+    <string name="notes_empty_search">Không tìm thấy ghi chú phù hợp với bộ lọc hiện tại.</string>
+    <string name="notes_btn_create">Tạo ghi chú mới</string>
+    <string name="notes_create_desc">Tạo ghi chú mới</string>
+    <string name="notes_done_desc">Đánh dấu hoàn thành</string>
+    <string name="note_pin_desc">Ghi chú đã ghim</string>
+
+    <string name="notes_dialog_add_category_title">Thêm phân loại mới</string>
+    <string name="notes_dialog_add_category_hint">Nhập tên phân loại...</string>
+    <string name="notes_dialog_empty_category_error">Vui lòng nhập tên phân loại</string>
+    <string name="notes_dialog_add_confirm">Thêm</string>
+    <string name="notes_dialog_cancel">Hủy</string>
+    <string name="notes_category_added_toast">Đã thêm phân loại: %1$s</string>
+    <string name="notes_category_delete_title">Xóa phân loại</string>
+    <string name="notes_category_delete_message">Xóa phân loại \"%1$s\"? Các ghi chú thuộc mục này sẽ chuyển về mục Chung.</string>
+    <string name="notes_dialog_delete_confirm">Xóa</string>
+    <string name="notes_category_deleted_toast">Đã xóa phân loại: %1$s</string>
+
+    <string name="notes_delete_note_title">Xóa ghi chú</string>
+    <string name="notes_delete_note_message">Bạn muốn xóa ghi chú \"%1$s\"?</string>
+    <string name="notes_note_deleted_toast">Đã xóa ghi chú</string>
+
+    <string name="editor_back">Quay lại</string>
+    <string name="editor_title_create">Tạo ghi chú mới</string>
+    <string name="editor_title_edit">Chỉnh sửa ghi chú</string>
+    <string name="editor_label_title">TIÊU ĐỀ GHI CHÚ</string>
+    <string name="editor_hint_title">Nhập tiêu đề ghi chú...</string>
+    <string name="editor_label_category">PHÂN LOẠI MÔN HỌC</string>
+    <string name="editor_label_content">NỘI DUNG CHI TIẾT</string>
+    <string name="editor_hint_content">Viết nội dung ghi chú hoặc danh sách cần làm...</string>
+    <string name="editor_pin_label">Ghim lên đầu danh sách</string>
+    <string name="editor_btn_save">Lưu ghi chú</string>
+    <string name="editor_btn_delete">Xóa ghi chú này</string>
+    <string name="editor_error_empty_title">Tiêu đề không được để trống</string>
+    <string name="editor_toast_created">Đã tạo ghi chú mới</string>
+    <string name="editor_toast_updated">Đã cập nhật ghi chú</string>
+    <string name="editor_delete_confirm_message">Bạn có chắc muốn xóa ghi chú này không?</string>
+
+    <string name="notes_summary_pinned_bar">%1$s · %2$s</string>
+    <string name="tools_notes_count_format">Đang lưu %1$d ghi chú ngoại tuyến</string>
 </resources>

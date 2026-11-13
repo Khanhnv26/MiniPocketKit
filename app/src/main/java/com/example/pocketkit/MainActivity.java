@@ -1,18 +1,13 @@
 package com.example.pocketkit;
 
-import android.animation.ValueAnimator;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
-import android.graphics.RenderEffect;
-import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -26,15 +21,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityMainBinding;
 import com.example.pocketkit.model.Note;
+import com.example.pocketkit.ui.FrostUiHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -106,8 +97,13 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        configureEdgeToEdge();
-        applyBackdropBlur();
+        FrostUiHelper.setupEdgeToEdgeAndBackdrop(
+                this,
+                binding.rootContainer,
+                binding.mainScrollView,
+                binding.ambientBackdrop.ambientBackdropView,
+                binding.bottomDockContainer
+        );
         restoreState(savedInstanceState);
         seedData();
         bindHeaderDate();
@@ -145,39 +141,6 @@ public class MainActivity extends AppCompatActivity {
             focusTimer = null;
         }
         super.onDestroy();
-    }
-
-    private void configureEdgeToEdge() {
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), binding.getRoot());
-        if (controller != null) {
-            controller.setAppearanceLightStatusBars(true);
-            controller.setAppearanceLightNavigationBars(true);
-        }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.rootContainer, (view, windowInsets) -> {
-            Insets bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            binding.mainScrollView.setPadding(
-                    bars.left,
-                    bars.top,
-                    bars.right,
-                    0
-            );
-            binding.bottomDockContainer.setPadding(
-                    dpToPx(16) + bars.left,
-                    0,
-                    dpToPx(16) + bars.right,
-                    dpToPx(14) + bars.bottom
-            );
-            return windowInsets;
-        });
-    }
-
-    private void applyBackdropBlur() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            binding.ambientBackdropView.setRenderEffect(
-                    RenderEffect.createBlurEffect(110f, 110f, Shader.TileMode.CLAMP)
-            );
-        }
     }
 
     private void restoreState(Bundle savedInstanceState) {
@@ -354,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
         binding.tabHome.layoutPinnedNoteBar.setOnClickListener(v -> {
             if (currentPinnedNote != null) {
                 Intent intent = new Intent(this, NoteEditorActivity.class);
-                intent.putExtra("note_item", currentPinnedNote);
+                intent.putExtra(Note.EXTRA_NOTE_ITEM, currentPinnedNote);
                 startActivity(intent);
             }
         });
@@ -425,8 +388,8 @@ public class MainActivity extends AppCompatActivity {
         if (dbHelper == null) {
             return;
         }
-        List<Note> pinned = dbHelper.getNotesFiltered("", "PINNED");
-        List<Note> all = dbHelper.getNotesFiltered("", "ALL");
+        List<Note> pinned = dbHelper.getNotesFiltered("", DatabaseHelper.FILTER_PINNED);
+        List<Note> all = dbHelper.getNotesFiltered("", DatabaseHelper.FILTER_ALL);
 
         if (!pinned.isEmpty()) {
             currentPinnedNote = pinned.get(0);
@@ -438,13 +401,17 @@ public class MainActivity extends AppCompatActivity {
 
         if (currentPinnedNote != null) {
             binding.tabHome.layoutPinnedNoteBar.setVisibility(View.VISIBLE);
-            String subject = currentPinnedNote.getSubject() != null ? currentPinnedNote.getSubject() : "Chung";
-            binding.tabHome.tvPinnedNoteSummary.setText(subject + " · " + currentPinnedNote.getTitle());
+            String subject = currentPinnedNote.getSubject() != null && !currentPinnedNote.getSubject().trim().isEmpty()
+                    ? currentPinnedNote.getSubject()
+                    : getString(R.string.note_default_category);
+            binding.tabHome.tvPinnedNoteSummary.setText(
+                    getString(R.string.notes_summary_pinned_bar, subject, currentPinnedNote.getTitle())
+            );
         } else {
             binding.tabHome.layoutPinnedNoteBar.setVisibility(View.GONE);
         }
 
-        binding.tabTools.tvToolNotesCount.setText("Đang lưu " + all.size() + " ghi chú ngoại tuyến");
+        binding.tabTools.tvToolNotesCount.setText(getString(R.string.tools_notes_count_format, all.size()));
     }
 
     private void bindCalendarTab() {
@@ -699,28 +666,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void openNotesActivity() {
         Intent intent = new Intent(this, NotesActivity.class);
-        if (areAnimationsEnabled()) {
+        if (FrostUiHelper.areAnimationsEnabled(this)) {
             ActivityOptionsCompat transition = ActivityOptionsCompat.makeCustomAnimation(
                     this, R.anim.dashboard_enter, R.anim.dashboard_exit);
             startActivity(intent, transition.toBundle());
         } else {
             startActivity(intent);
         }
-    }
-
-    private boolean areAnimationsEnabled() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return ValueAnimator.areAnimatorsEnabled();
-        }
-        float scale = Settings.Global.getFloat(
-                getContentResolver(),
-                Settings.Global.ANIMATOR_DURATION_SCALE,
-                1.0f
-        );
-        return scale != 0f;
-    }
-
-    private int dpToPx(int dp) {
-        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 }

@@ -1,29 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/notes_root"
+    android:id="@+id/notesRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dashboard_background">
+    android:background="@drawable/bg_ambient_canvas">
+
+    <include
+        android:id="@+id/ambientBackdrop"
+        layout="@layout/layout_ambient_backdrop" />
 
     <LinearLayout
-        style="@style/Dashboard.Column"
+        android:id="@+id/notesContentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="14dp">
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_h"
+        android:paddingTop="@dimen/screen_padding_top">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/header_bottom_gap"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:orientation="horizontal">
 
-            <TextView
+            <LinearLayout
                 android:id="@+id/btnBackFromNotes"
-                style="@style/Dashboard.Action"
-                android:text="← Trang chủ" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_secondary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/touch_target_min"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingEnd="16dp">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:contentDescription="@string/notes_back_home"
+                    android:src="@drawable/ic_back"
+                    app:tint="@color/ink_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/notes_back_home"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <Space
                 android:layout_width="0dp"
@@ -31,105 +61,92 @@
                 android:layout_weight="1" />
 
             <TextView
-                style="@style/Dashboard.Label"
-                android:text="PocketKit"
+                android:id="@+id/tvNotesSummaryCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <LinearLayout
-            style="@style/Dashboard.Column"
-            android:layout_marginBottom="12dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/notes_section_kicker"
+            android:textColor="@color/accent_sapphire"
+            android:textSize="@dimen/text_size_caption"
+            android:textStyle="bold" />
 
-            <TextView
-                style="@style/Dashboard.Label"
-                android:text="HỌC TẬP &amp; NHIỆM VỤ"
-                android:textStyle="bold" />
-
-            <TextView
-                style="@style/Dashboard.Label"
-                android:fontFamily="sans-serif-black"
-                android:text="Ghi chú &amp; Checklist"
-                android:textColor="@color/dashboard_text"
-                android:textSize="27sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="@dimen/section_gap"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/notes_screen_title"
+            android:textColor="@color/ink_primary"
+            android:textSize="@dimen/text_size_screen_title" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="42dp"
-            android:background="@drawable/dashboard_pill"
-            android:backgroundTint="@color/dashboard_segment"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/card_gap"
+            android:background="@drawable/bg_glass_inner"
             android:gravity="center_vertical"
+            android:minHeight="@dimen/touch_target_min"
             android:orientation="horizontal"
-            android:paddingHorizontal="14dp"
-            android:layout_marginBottom="10dp">
+            android:paddingStart="14dp"
+            android:paddingEnd="4dp">
 
             <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:contentDescription="Tìm kiếm"
-                android:src="@drawable/ic_search" />
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:contentDescription="@string/notes_search_desc"
+                android:src="@drawable/ic_search"
+                app:tint="@color/ink_secondary" />
 
             <EditText
                 android:id="@+id/edtSearchNote"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:layout_weight="1"
                 android:background="@null"
-                android:hint="Tìm kiếm theo tiêu đề, môn học..."
+                android:hint="@string/notes_search_hint"
                 android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
                 android:inputType="text"
-                android:textColor="@color/dashboard_text"
-                android:textColorHint="@color/dashboard_secondary"
-                android:textSize="13sp" />
+                android:minHeight="@dimen/touch_target_min"
+                android:textColor="@color/ink_primary"
+                android:textColorHint="@color/ink_secondary"
+                android:textSize="@dimen/text_size_input" />
+
+            <ImageButton
+                android:id="@+id/btnClearSearch"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/notes_clear_search_desc"
+                android:padding="14dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_clear"
+                android:visibility="gone"
+                app:tint="@color/ink_secondary" />
         </LinearLayout>
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/section_gap"
             android:clipToPadding="false"
-            android:scrollbars="none"
-            android:layout_marginBottom="12dp">
+            android:scrollbars="none">
 
             <LinearLayout
                 android:id="@+id/layoutCategories"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/chipAll"
-                    style="@style/Dashboard.Action"
-                    android:backgroundTint="@color/dashboard_text"
-                    android:text="Tất cả"
-                    android:textColor="@color/dashboard_surface" />
-
-                <TextView
-                    android:id="@+id/chipPrm392"
-                    style="@style/Dashboard.Action"
-                    android:layout_marginStart="6dp"
-                    android:text="PRM392" />
-
-                <TextView
-                    android:id="@+id/chipSwp391"
-                    style="@style/Dashboard.Action"
-                    android:layout_marginStart="6dp"
-                    android:text="SWP391" />
-
-                <TextView
-                    android:id="@+id/chipPinned"
-                    style="@style/Dashboard.Action"
-                    android:layout_marginStart="6dp"
-                    android:text="Đã ghim" />
-
-                <TextView
-                    android:id="@+id/btnAddCategory"
-                    style="@style/Dashboard.Action"
-                    android:layout_marginStart="6dp"
-                    android:text="+ Thêm"
-                    android:textColor="@color/dashboard_accent" />
-            </LinearLayout>
+                android:orientation="horizontal" />
         </HorizontalScrollView>
 
         <FrameLayout
@@ -142,33 +159,79 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingBottom="92dp"
+                android:paddingBottom="@dimen/notes_list_bottom_padding"
                 android:scrollbars="none" />
 
-            <TextView
-                android:id="@+id/tvEmptyNotes"
-                style="@style/Dashboard.Label"
+            <LinearLayout
+                android:id="@+id/emptyStateContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:lineSpacingExtra="4dp"
-                android:text="Chưa có ghi chú nào.\nHãy bấm nút bên dưới để tạo mới!"
-                android:textAlignment="center"
-                android:textSize="14sp"
-                android:visibility="gone" />
-        </FrameLayout>
+                android:background="@drawable/bg_glass_card"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding"
+                android:visibility="gone">
 
+                <ImageView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_icon_badge"
+                    android:contentDescription="@string/notes_screen_title"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_notes"
+                    app:tint="@color/accent_sapphire" />
+
+                <TextView
+                    android:id="@+id/tvEmptyNotes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="@string/notes_empty_default"
+                    android:textAlignment="center"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_input" />
+            </LinearLayout>
+        </FrameLayout>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/btnAddNote"
-        style="@style/Dashboard.Action"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/dashboard_text"
-        android:elevation="6dp"
-        android:minHeight="48dp"
-        android:paddingHorizontal="24dp"
-        android:text="+ Tạo ghi chú mới"
-        android:textColor="@color/dashboard_surface"
-        android:textSize="14sp" />
+    <LinearLayout
+        android:id="@+id/bottomCtaContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="center"
+        android:paddingHorizontal="@dimen/dock_horizontal_padding"
+        android:paddingBottom="@dimen/dock_bottom_padding">
 
+        <LinearLayout
+            android:id="@+id/btnAddNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_target_min"
+            android:orientation="horizontal"
+            android:paddingHorizontal="22dp">
+
+            <ImageView
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:contentDescription="@string/notes_create_desc"
+                android:src="@drawable/ic_plus"
+                app:tint="@color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/notes_btn_create"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_input"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 </FrameLayout>

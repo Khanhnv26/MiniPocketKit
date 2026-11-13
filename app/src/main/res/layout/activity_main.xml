@@ -6,35 +6,9 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_ambient_canvas">
 
-    <FrameLayout
-        android:id="@+id/ambientBackdropView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <View
-            android:layout_width="320dp"
-            android:layout_height="320dp"
-            android:layout_gravity="top|end"
-            android:layout_marginTop="-64dp"
-            android:layout_marginEnd="-80dp"
-            android:background="@drawable/bg_orb_sky" />
-
-        <View
-            android:layout_width="290dp"
-            android:layout_height="290dp"
-            android:layout_gravity="center_vertical|start"
-            android:layout_marginStart="-90dp"
-            android:layout_marginTop="40dp"
-            android:background="@drawable/bg_orb_mint" />
-
-        <View
-            android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="-60dp"
-            android:layout_marginBottom="40dp"
-            android:background="@drawable/bg_orb_ice" />
-    </FrameLayout>
+    <include
+        android:id="@+id/ambientBackdrop"
+        layout="@layout/layout_ambient_backdrop" />
 
     <ScrollView
         android:id="@+id/mainScrollView"

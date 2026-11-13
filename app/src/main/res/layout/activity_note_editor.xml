@@ -1,201 +1,247 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/editorRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dashboard_background"
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:scrollbars="none">
+    android:background="@drawable/bg_ambient_canvas">
 
-    <LinearLayout
-        style="@style/Dashboard.Column"
+    <include
+        android:id="@+id/ambientBackdrop"
+        layout="@layout/layout_ambient_backdrop" />
+
+    <ScrollView
+        android:id="@+id/editorScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="40dp">
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_h"
+            android:paddingTop="@dimen/screen_padding_top"
+            android:paddingBottom="40dp">
 
-            <TextView
-                android:id="@+id/btnBackEditor"
-                style="@style/Dashboard.Action"
-                android:text="← Quay lại" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/section_gap"
+                android:minHeight="@dimen/touch_target_min">
 
-            <TextView
-                android:id="@+id/tvEditorHeader"
-                style="@style/Dashboard.Label"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Tạo ghi chú mới"
-                android:textColor="@color/dashboard_text"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                <LinearLayout
+                    android:id="@+id/btnBackEditor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|center_vertical"
+                    android:background="@drawable/bg_pill_secondary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:orientation="horizontal"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="14dp">
 
-            <Space
-                android:layout_width="72dp"
-                android:layout_height="1dp" />
-        </LinearLayout>
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:contentDescription="@string/editor_back"
+                        android:src="@drawable/ic_back"
+                        app:tint="@color/ink_primary" />
 
-        <com.google.android.material.card.MaterialCardView
-            style="@style/Dashboard.Card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
-
-            <LinearLayout
-                style="@style/Dashboard.Column"
-                android:padding="18dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="2dp"
+                        android:text="@string/editor_back"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <TextView
-                    style="@style/Dashboard.Label"
-                    android:text="TIÊU ĐỀ GHI CHÚ"
-                    android:textSize="11sp"
+                    android:id="@+id/tvEditorHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginHorizontal="108dp"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/editor_title_create"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_section_title"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/section_gap"
+                android:background="@drawable/bg_glass_hero"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_label_title"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_caption"
                     android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/edtNoteTitle"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/shape_input_rounded"
-                    android:hint="Nhập tiêu đề..."
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="@dimen/section_gap"
+                    android:background="@drawable/bg_glass_inner"
+                    android:hint="@string/editor_hint_title"
                     android:importantForAutofill="no"
                     android:inputType="textCapSentences"
+                    android:minHeight="@dimen/input_min_height"
                     android:paddingHorizontal="14dp"
-                    android:textColor="@color/dashboard_text"
-                    android:textColorHint="@color/dashboard_secondary"
-                    android:textSize="14sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:text="MÔN HỌC / PHÂN LOẠI"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/btnAddCategoryInEditor"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingVertical="4dp"
-                        android:paddingHorizontal="8dp"
-                        android:text="+ Thêm mới"
-                        android:textColor="@color/dashboard_accent"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <Spinner
-                    android:id="@+id/spnNoteSubject"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/shape_spinner_rounded"
-                    android:popupBackground="@drawable/shape_dropdown_popup"
-                    android:dropDownVerticalOffset="6dp"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="36dp"
-                    android:spinnerMode="dropdown" />
+                    android:textColor="@color/ink_primary"
+                    android:textColorHint="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_input" />
 
                 <TextView
-                    style="@style/Dashboard.Label"
-                    android:text="NỘI DUNG CHI TIẾT"
-                    android:textSize="11sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_label_category"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="@dimen/section_gap"
+                    android:clipToPadding="false"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/layoutEditorCategories"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/editor_label_content"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_caption"
                     android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/edtNoteContent"
                     android:layout_width="match_parent"
-                    android:layout_height="140dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/shape_input_rounded"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="@dimen/section_gap"
+                    android:background="@drawable/bg_glass_inner"
                     android:gravity="top|start"
-                    android:hint="Viết nội dung ghi chú..."
+                    android:hint="@string/editor_hint_content"
                     android:importantForAutofill="no"
                     android:inputType="textMultiLine|textCapSentences"
+                    android:minHeight="@dimen/editor_content_min_height"
                     android:padding="14dp"
-                    android:textColor="@color/dashboard_text"
-                    android:textColorHint="@color/dashboard_secondary"
-                    android:textSize="14sp" />
+                    android:textColor="@color/ink_primary"
+                    android:textColorHint="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_input" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginBottom="12dp"
-                    android:background="@color/dashboard_segment" />
+                    android:layout_marginBottom="@dimen/card_gap"
+                    android:background="@drawable/divider_hairline" />
 
                 <LinearLayout
+                    android:id="@+id/layoutPinToggle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/bg_glass_inner"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:minHeight="@dimen/touch_target_min"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="8dp">
 
                     <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:contentDescription="Icon ghim"
-                        android:src="@drawable/ic_pin" />
+                        android:id="@+id/ivEditorPinIcon"
+                        android:layout_width="@dimen/icon_size_md"
+                        android:layout_height="@dimen/icon_size_md"
+                        android:contentDescription="@string/note_pin_desc"
+                        android:src="@drawable/ic_pin"
+                        app:tint="@color/ink_secondary" />
 
                     <TextView
-                        style="@style/Dashboard.Label"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="10dp"
                         android:layout_weight="1"
-                        android:text="Ghim lên đầu danh sách"
-                        android:textColor="@color/dashboard_text"
-                        android:textSize="13sp"
+                        android:text="@string/editor_pin_label"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_input"
                         android:textStyle="bold" />
 
-                    <CheckBox
-                        android:id="@+id/cbPinNote"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:buttonTint="@color/dashboard_accent" />
+                    <FrameLayout
+                        android:id="@+id/pinSwitchTrack"
+                        android:layout_width="52dp"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_switch_track_off"
+                        android:padding="3dp">
+
+                        <View
+                            android:id="@+id/pinSwitchThumb"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:background="@drawable/bg_switch_thumb" />
+                    </FrameLayout>
                 </LinearLayout>
-
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:id="@+id/btnSaveNote"
-            style="@style/Dashboard.Action"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:backgroundTint="@color/dashboard_text"
-            android:text="Lưu ghi chú"
-            android:textColor="@color/dashboard_surface"
-            android:textSize="14sp" />
+            <TextView
+                android:id="@+id/btnSaveNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_primary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/editor_btn_save"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_input"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/btnDeleteNote"
-            style="@style/Dashboard.Action"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="@android:color/transparent"
-            android:text="Xóa ghi chú này"
-            android:textColor="@color/dashboard_red"
-            android:textSize="13sp"
-            android:visibility="gone" />
-
-    </LinearLayout>
-</ScrollView>
+            <TextView
+                android:id="@+id/btnDeleteNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_pill_danger_soft"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/editor_btn_delete"
+                android:textColor="@color/accent_danger"
+                android:textSize="@dimen/text_size_input"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

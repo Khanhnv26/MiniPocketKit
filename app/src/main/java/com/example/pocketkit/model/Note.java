@@ -1,6 +1,5 @@
 package com.example.pocketkit.model;
 
-
 import java.io.Serializable;
 
 import lombok.AllArgsConstructor;
@@ -15,6 +14,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class Note implements Serializable {
+
+    public static final String EXTRA_NOTE_ITEM = "note_item";
+
     private int id;
     private String title;
     private String content;
@@ -22,5 +24,4 @@ public class Note implements Serializable {
     private int isPinned;
     private int isDone;
     private String updatedAt;
-
 }

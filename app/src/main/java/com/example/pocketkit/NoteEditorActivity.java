@@ -2,185 +2,185 @@ package com.example.pocketkit;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.IntentCompat;
 
 import com.example.pocketkit.database.DatabaseHelper;
+import com.example.pocketkit.databinding.ActivityNoteEditorBinding;
 import com.example.pocketkit.model.Note;
+import com.example.pocketkit.ui.FrostUiHelper;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 public class NoteEditorActivity extends AppCompatActivity {
 
-    private EditText edtTitle, edtContent;
-    private Spinner spnSubject;
-    private CheckBox cbPin;
-    private TextView tvHeader, btnSave, btnDelete, btnBack, btnAddCategoryInEditor;
+    private static final String STATE_SELECTED_CATEGORY = "state_editor_category";
+    private static final String STATE_PINNED = "state_editor_pinned";
 
+    private ActivityNoteEditorBinding binding;
     private DatabaseHelper dbHelper;
-    private Note existingNote = null;
-    private final List<String> categoryList = new ArrayList<>();
-    private ArrayAdapter<String> categoryAdapter;
+    private Note existingNote;
+    private String selectedCategory;
+    private boolean isPinned;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_note_editor);
+        binding = ActivityNoteEditorBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         dbHelper = new DatabaseHelper(this);
+        selectedCategory = getString(R.string.note_default_category);
 
-        edtTitle = findViewById(R.id.edtNoteTitle);
-        spnSubject = findViewById(R.id.spnNoteSubject);
-        edtContent = findViewById(R.id.edtNoteContent);
-        cbPin = findViewById(R.id.cbPinNote);
-        tvHeader = findViewById(R.id.tvEditorHeader);
-        btnSave = findViewById(R.id.btnSaveNote);
-        btnDelete = findViewById(R.id.btnDeleteNote);
-        btnBack = findViewById(R.id.btnBackEditor);
-        btnAddCategoryInEditor = findViewById(R.id.btnAddCategoryInEditor);
+        FrostUiHelper.setupEdgeToEdgeAndBackdrop(
+                this,
+                binding.editorRoot,
+                binding.editorScrollView,
+                binding.ambientBackdrop.ambientBackdropView,
+                null
+        );
 
-        String initialCategory = null;
-        if (getIntent().hasExtra("note_item")) {
-            existingNote = IntentCompat.getSerializableExtra(getIntent(), "note_item", Note.class);
+        if (getIntent().hasExtra(Note.EXTRA_NOTE_ITEM)) {
+            existingNote = IntentCompat.getSerializableExtra(getIntent(), Note.EXTRA_NOTE_ITEM, Note.class);
             if (existingNote != null) {
-                tvHeader.setText("Chỉnh sửa ghi chú");
-                edtTitle.setText(existingNote.getTitle());
-                initialCategory = existingNote.getSubject();
-                edtContent.setText(existingNote.getContent());
-                cbPin.setChecked(existingNote.getIsPinned() == 1);
-                btnDelete.setVisibility(View.VISIBLE);
-            }
-        }
-
-        setupCategorySpinner(initialCategory);
-
-        btnAddCategoryInEditor.setOnClickListener(v -> showAddCategoryDialog());
-        btnBack.setOnClickListener(v -> finish());
-        btnSave.setOnClickListener(v -> saveNote());
-        btnDelete.setOnClickListener(v -> confirmDelete());
-    }
-
-    private void setupCategorySpinner(String selectedCategory) {
-        loadCategories(selectedCategory);
-
-        spnSubject.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String item = categoryList.get(position);
-                if ("+ Thêm phân loại mới...".equals(item)) {
-                    showAddCategoryDialog();
+                binding.tvEditorHeader.setText(R.string.editor_title_edit);
+                binding.edtNoteTitle.setText(existingNote.getTitle());
+                binding.edtNoteContent.setText(existingNote.getContent());
+                if (existingNote.getSubject() != null && !existingNote.getSubject().trim().isEmpty()) {
+                    selectedCategory = existingNote.getSubject().trim();
                 }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
-    }
-
-    private void loadCategories(String preselect) {
-        categoryList.clear();
-        Set<String> unique = new LinkedHashSet<>();
-        unique.add("Chung");
-        unique.addAll(dbHelper.getAllCategories());
-        categoryList.addAll(unique);
-        categoryList.add("+ Thêm phân loại mới...");
-
-        categoryAdapter = new ArrayAdapter<>(this, R.layout.item_spinner_selected, categoryList);
-        categoryAdapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
-        spnSubject.setAdapter(categoryAdapter);
-
-        if (preselect != null && !preselect.trim().isEmpty()) {
-            int pos = categoryList.indexOf(preselect.trim());
-            if (pos >= 0) {
-                spnSubject.setSelection(pos);
-            } else {
-                int insertPos = Math.max(0, categoryList.size() - 1);
-                categoryList.add(insertPos, preselect.trim());
-                categoryAdapter.notifyDataSetChanged();
-                spnSubject.setSelection(insertPos);
+                isPinned = existingNote.getIsPinned() == 1;
+                binding.btnDeleteNote.setVisibility(View.VISIBLE);
             }
         }
+
+        if (savedInstanceState != null) {
+            selectedCategory = savedInstanceState.getString(STATE_SELECTED_CATEGORY, selectedCategory);
+            isPinned = savedInstanceState.getBoolean(STATE_PINNED, isPinned);
+        }
+
+        renderCategoryChips();
+        updatePinUi(false);
+
+        binding.layoutPinToggle.setOnClickListener(v -> {
+            isPinned = !isPinned;
+            updatePinUi(true);
+        });
+        binding.btnBackEditor.setOnClickListener(v -> finish());
+        binding.btnSaveNote.setOnClickListener(v -> saveNote());
+        binding.btnDeleteNote.setOnClickListener(v -> confirmDelete());
     }
 
-    private void showAddCategoryDialog() {
-        EditText input = new EditText(this);
-        input.setHint("Tên phân loại (VD: MAS291, PRN211...)");
-        int pad = dpToPx(20);
-        input.setPadding(pad, pad, pad, pad);
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(STATE_SELECTED_CATEGORY, selectedCategory);
+        outState.putBoolean(STATE_PINNED, isPinned);
+        super.onSaveInstanceState(outState);
+    }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Thêm phân loại mới")
-                .setView(input)
-                .setPositiveButton("Thêm", (dialog, which) -> {
-                    String name = input.getText().toString().trim();
-                    if (!name.isEmpty()) {
-                        dbHelper.insertCategory(name);
-                        loadCategories(name);
-                        Toast.makeText(this, "Đã thêm môn: " + name, Toast.LENGTH_SHORT).show();
-                    } else {
-                        spnSubject.setSelection(0);
-                    }
-                })
-                .setNegativeButton("Hủy", (dialog, which) -> spnSubject.setSelection(0))
-                .setOnCancelListener(dialog -> spnSubject.setSelection(0))
-                .show();
+    private void renderCategoryChips() {
+        binding.layoutEditorCategories.removeAllViews();
+
+        String defaultCategory = getString(R.string.note_default_category);
+        Set<String> uniqueCategories = new LinkedHashSet<>();
+        uniqueCategories.add(defaultCategory);
+        uniqueCategories.addAll(dbHelper.getAllCategories());
+        if (selectedCategory != null && !selectedCategory.trim().isEmpty()) {
+            uniqueCategories.add(selectedCategory.trim());
+        }
+
+        for (String category : uniqueCategories) {
+            boolean selected = category.equals(selectedCategory);
+            TextView chip = FrostUiHelper.createCategoryChip(
+                    this,
+                    binding.layoutEditorCategories,
+                    category,
+                    selected,
+                    false
+            );
+            chip.setOnClickListener(v -> {
+                selectedCategory = category;
+                renderCategoryChips();
+            });
+            binding.layoutEditorCategories.addView(chip);
+        }
+
+        TextView addChip = FrostUiHelper.createCategoryChip(
+                this,
+                binding.layoutEditorCategories,
+                getString(R.string.notes_category_add_chip),
+                false,
+                true
+        );
+        addChip.setOnClickListener(v -> FrostUiHelper.showAddCategoryDialog(this, name -> {
+            dbHelper.insertCategory(name);
+            selectedCategory = name;
+            renderCategoryChips();
+            Toast.makeText(this, getString(R.string.notes_category_added_toast, name), Toast.LENGTH_SHORT).show();
+        }));
+        binding.layoutEditorCategories.addView(addChip);
+    }
+
+    private void updatePinUi(boolean animate) {
+        float targetX = isPinned ? FrostUiHelper.dpToPx(this, 22) : 0f;
+        binding.pinSwitchTrack.setBackgroundResource(
+                isPinned ? R.drawable.bg_switch_track_on : R.drawable.bg_switch_track_off
+        );
+        binding.ivEditorPinIcon.setColorFilter(
+                ContextCompat.getColor(this, isPinned ? R.color.accent_sapphire : R.color.ink_secondary)
+        );
+        if (animate && FrostUiHelper.areAnimationsEnabled(this)) {
+            binding.pinSwitchThumb.animate().translationX(targetX).setDuration(180L).start();
+        } else {
+            binding.pinSwitchThumb.setTranslationX(targetX);
+        }
     }
 
     private void saveNote() {
-        String title = edtTitle.getText().toString().trim();
-        String content = edtContent.getText().toString().trim();
-        int isPinned = cbPin.isChecked() ? 1 : 0;
-
-        String subject = "Chung";
-        if (spnSubject.getSelectedItem() != null) {
-            String selected = spnSubject.getSelectedItem().toString();
-            if (!"+ Thêm phân loại mới...".equals(selected) && !selected.trim().isEmpty()) {
-                subject = selected.trim();
-            }
-        }
+        String title = binding.edtNoteTitle.getText().toString().trim();
+        String content = binding.edtNoteContent.getText().toString().trim();
+        String subject = selectedCategory != null && !selectedCategory.trim().isEmpty()
+                ? selectedCategory.trim()
+                : getString(R.string.note_default_category);
+        int pinnedFlag = isPinned ? 1 : 0;
 
         if (title.isEmpty()) {
-            edtTitle.setError("Tiêu đề không được để trống!");
-            edtTitle.requestFocus();
+            binding.edtNoteTitle.setError(getString(R.string.editor_error_empty_title));
+            binding.edtNoteTitle.requestFocus();
             return;
         }
 
-        String now = new SimpleDateFormat("dd/MM HH:mm", Locale.getDefault()).format(new Date());
+        String pattern = getString(R.string.note_timestamp_format);
+        String now = new SimpleDateFormat(pattern, Locale.forLanguageTag("vi-VN")).format(new Date());
 
         if (existingNote == null) {
             Note note = Note.builder()
                     .title(title)
                     .content(content)
                     .subject(subject)
-                    .isPinned(isPinned)
+                    .isPinned(pinnedFlag)
                     .isDone(0)
                     .updatedAt(now)
                     .build();
             dbHelper.insertNote(note);
-            Toast.makeText(this, "Đã tạo ghi chú mới!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.editor_toast_created, Toast.LENGTH_SHORT).show();
         } else {
             existingNote.setTitle(title);
             existingNote.setSubject(subject);
             existingNote.setContent(content);
-            existingNote.setIsPinned(isPinned);
+            existingNote.setIsPinned(pinnedFlag);
             existingNote.setUpdatedAt(now);
             dbHelper.updateNote(existingNote);
-            Toast.makeText(this, "Đã cập nhật ghi chú!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.editor_toast_updated, Toast.LENGTH_SHORT).show();
         }
         finish();
     }
@@ -189,19 +189,17 @@ public class NoteEditorActivity extends AppCompatActivity {
         if (existingNote == null) {
             return;
         }
-        new AlertDialog.Builder(this)
-                .setTitle("Xóa ghi chú")
-                .setMessage("Bạn có chắc muốn xóa ghi chú này không?")
-                .setPositiveButton("Xóa", (dialog, which) -> {
+        FrostUiHelper.showConfirmDialog(
+                this,
+                R.string.notes_delete_note_title,
+                getString(R.string.editor_delete_confirm_message),
+                R.string.notes_dialog_delete_confirm,
+                true,
+                () -> {
                     dbHelper.deleteNote(existingNote.getId());
-                    Toast.makeText(this, "Đã xóa ghi chú", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.notes_note_deleted_toast, Toast.LENGTH_SHORT).show();
                     finish();
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
-
-    private int dpToPx(int dp) {
-        return Math.round(dp * getResources().getDisplayMetrics().density);
+                }
+        );
     }
 }

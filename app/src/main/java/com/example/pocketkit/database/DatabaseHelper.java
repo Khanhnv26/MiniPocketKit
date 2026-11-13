@@ -6,18 +6,21 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
+import com.example.pocketkit.R;
 import com.example.pocketkit.model.Note;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    public static final String FILTER_ALL = "ALL";
+    public static final String FILTER_PINNED = "PINNED";
+
     private static final String DATABASE_NAME = "CampusKit.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     private static final String TABLE_NOTES = "notes";
     private static final String COL_ID = "id";
@@ -32,13 +35,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_CAT_ID = "id";
     private static final String COL_CAT_NAME = "name";
 
-    public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    private final Context appContext;
+
+    public DatabaseHelper(@NonNull Context context) {
+        super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
+        this.appContext = context.getApplicationContext();
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
         db.execSQL("CREATE TABLE " + TABLE_NOTES + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_TITLE + " TEXT NOT NULL, " +
@@ -52,20 +57,72 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_CAT_NAME + " TEXT UNIQUE NOT NULL)");
 
-        db.execSQL("INSERT INTO " + TABLE_CATEGORIES + " (" + COL_CAT_NAME + ") VALUES ('PRM392')");
-        db.execSQL("INSERT INTO " + TABLE_CATEGORIES + " (" + COL_CAT_NAME + ") VALUES ('SWP391')");
-
-        db.execSQL("INSERT INTO " + TABLE_NOTES + " (title, content, subject, is_pinned, is_done, updated_at) " +
-                "VALUES ('Ôn thi Practical Exam PRM392', 'Nắm vững SQLiteOpenHelper, RecyclerView Adapter và Intent.', 'PRM392', 1, 0, '10:30 hôm nay')");
-        db.execSQL("INSERT INTO " + TABLE_NOTES + " (title, content, subject, is_pinned, is_done, updated_at) " +
-                "VALUES ('Nộp báo cáo Sprint 2 SWP391', 'Hoàn thiện tài liệu SRS và sơ đồ kiến trúc.', 'SWP391', 0, 1, 'Hôm qua')");
+        seedInitialData(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORIES);
-        onCreate(db);
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_NOTES + " (" +
+                COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_TITLE + " TEXT NOT NULL, " +
+                COL_CONTENT + " TEXT, " +
+                COL_SUBJECT + " TEXT, " +
+                COL_IS_PINNED + " INTEGER DEFAULT 0, " +
+                COL_IS_DONE + " INTEGER DEFAULT 0, " +
+                COL_UPDATED_AT + " TEXT)");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_CATEGORIES + " (" +
+                COL_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_CAT_NAME + " TEXT UNIQUE NOT NULL)");
+
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NOTES, null)) {
+            if (cursor.moveToFirst() && cursor.getInt(0) == 0) {
+                seedInitialData(db);
+            }
+        }
+    }
+
+    private void seedInitialData(SQLiteDatabase db) {
+        String cat1 = appContext.getString(R.string.note_seed_category_1);
+        String cat2 = appContext.getString(R.string.note_seed_category_2);
+
+        insertCategoryInternal(db, cat1);
+        insertCategoryInternal(db, cat2);
+
+        insertNoteInternal(db, Note.builder()
+                .title(appContext.getString(R.string.note_seed_title_1))
+                .content(appContext.getString(R.string.note_seed_content_1))
+                .subject(cat1)
+                .isPinned(1)
+                .isDone(0)
+                .updatedAt(appContext.getString(R.string.note_seed_time_1))
+                .build());
+
+        insertNoteInternal(db, Note.builder()
+                .title(appContext.getString(R.string.note_seed_title_2))
+                .content(appContext.getString(R.string.note_seed_content_2))
+                .subject(cat2)
+                .isPinned(0)
+                .isDone(1)
+                .updatedAt(appContext.getString(R.string.note_seed_time_2))
+                .build());
+    }
+
+    private void insertCategoryInternal(SQLiteDatabase db, String name) {
+        ContentValues values = new ContentValues();
+        values.put(COL_CAT_NAME, name.trim());
+        db.insertWithOnConflict(TABLE_CATEGORIES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+    }
+
+    private void insertNoteInternal(SQLiteDatabase db, Note note) {
+        ContentValues values = new ContentValues();
+        values.put(COL_TITLE, note.getTitle());
+        values.put(COL_CONTENT, note.getContent());
+        values.put(COL_SUBJECT, note.getSubject());
+        values.put(COL_IS_PINNED, note.getIsPinned());
+        values.put(COL_IS_DONE, note.getIsDone());
+        values.put(COL_UPDATED_AT, note.getUpdatedAt());
+        db.insert(TABLE_NOTES, null, values);
     }
 
     public long insertCategory(String name) {
@@ -75,15 +132,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insertWithOnConflict(TABLE_CATEGORIES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
+    public void deleteCategory(String categoryName) {
+        if (categoryName == null || categoryName.trim().isEmpty()) {
+            return;
+        }
+        String fallback = appContext.getString(R.string.note_default_category);
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues updateValues = new ContentValues();
+            updateValues.put(COL_SUBJECT, fallback);
+            db.update(TABLE_NOTES, updateValues, COL_SUBJECT + " = ?", new String[]{categoryName});
+            db.delete(TABLE_CATEGORIES, COL_CAT_NAME + " = ?", new String[]{categoryName});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public List<String> getAllCategories() {
         List<String> list = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_CATEGORIES, new String[]{COL_CAT_NAME}, null, null, null, null, COL_CAT_ID + " ASC");
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                list.add(cursor.getString(0));
-            } while (cursor.moveToNext());
-            cursor.close();
+        try (Cursor cursor = db.query(TABLE_CATEGORIES, new String[]{COL_CAT_NAME}, null, null, null, null, COL_CAT_ID + " ASC")) {
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(cursor.getString(0));
+                } while (cursor.moveToNext());
+            }
         }
         return list;
     }
@@ -109,19 +184,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             where.append(" AND (")
-                    .append(COL_TITLE)
-                    .append(" LIKE ? OR ")
+                    .append(COL_TITLE).append(" LIKE ? OR ")
                     .append(COL_CONTENT).append(" LIKE ? OR ")
                     .append(COL_SUBJECT).append(" LIKE ?)");
 
-            String q = "%" + keyword.trim() + "%";
-            args.add(q);
-            args.add(q);
-            args.add(q);
+            String query = "%" + keyword.trim() + "%";
+            args.add(query);
+            args.add(query);
+            args.add(query);
         }
 
-        if(category != null && !category.equals("ALL")) {
-            if(category.equals("PINNED")) {
+        if (category != null && !FILTER_ALL.equals(category)) {
+            if (FILTER_PINNED.equals(category)) {
                 where.append(" AND ").append(COL_IS_PINNED).append(" = 1");
             } else {
                 where.append(" AND ").append(COL_SUBJECT).append(" = ?");
@@ -129,9 +203,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        String orderBy = COL_IS_PINNED + " DESC, " + COL_ID + " DESC";
-        Cursor cursor = db.query(TABLE_NOTES, null, where.toString(), args.toArray(new String[0]), null, null, orderBy);
-        if (cursor != null) {
+        String orderBy = COL_IS_DONE + " ASC, " + COL_IS_PINNED + " DESC, " + COL_ID + " DESC";
+        try (Cursor cursor = db.query(TABLE_NOTES, null, where.toString(), args.toArray(new String[0]), null, null, orderBy)) {
             if (cursor.moveToFirst()) {
                 do {
                     Note note = Note.builder()
@@ -146,7 +219,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     list.add(note);
                 } while (cursor.moveToNext());
             }
-            cursor.close();
         }
         return list;
     }
@@ -160,11 +232,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COL_IS_DONE, note.getIsDone());
         values.put(COL_IS_PINNED, note.getIsPinned());
         values.put(COL_UPDATED_AT, note.getUpdatedAt());
-        return db.update(TABLE_NOTES, values, COL_ID + " = ? ", new String[]{String.valueOf(note.getId())});
+        return db.update(TABLE_NOTES, values, COL_ID + " = ?", new String[]{String.valueOf(note.getId())});
     }
 
     public int deleteNote(int id) {
         SQLiteDatabase db = getWritableDatabase();
-        return db.delete(TABLE_NOTES, COL_ID + " = ? ", new String[]{String.valueOf(id)});
+        return db.delete(TABLE_NOTES, COL_ID + " = ?", new String[]{String.valueOf(id)});
     }
 }
