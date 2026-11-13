@@ -1,36 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
-    <color name="bg_screen">#FF0F0D1C</color>
-    <color name="card_bg">#FF1E1B2E</color>
-    <color name="card_stroke">#00000000</color>
-    <color name="text_title">#FFFFFFFF</color>
-    <color name="text_subtitle">#FFA5A3BF</color>
-    <color name="divider_color">#FF2A2740</color>
-    <color name="icon_color">#FFFFFFFF</color>
-    <color name="coral_accent">#FFFF758C</color>
+    <color name="bg_screen">#FFEBF1F8</color>
+    <color name="card_bg">#CCFFFFFF</color>
+    <color name="card_stroke">#FFD9E5F2</color>
+    <color name="text_title">#FF0F172A</color>
+    <color name="text_subtitle">#FF475569</color>
+    <color name="divider_color">#FFD6E2EE</color>
+    <color name="icon_color">#FF0F172A</color>
+    <color name="coral_accent">#FF007AFF</color>
 
-<color name="squircle_sapphire_bg">#FF283548</color>
-    <color name="squircle_sapphire_icon">#FF60A5FA</color>
-    
-    <color name="squircle_rose_bg">#FF40222C</color>
-    <color name="squircle_rose_icon">#FFF43F5E</color>
-    
-    <color name="squircle_emerald_bg">#FF163E2C</color>
-    <color name="squircle_emerald_icon">#FF34D399</color>
-    
-    <color name="squircle_amber_bg">#FF483214</color>
-    <color name="squircle_amber_icon">#FFFBBF24</color>
-    
-    <color name="squircle_cyan_bg">#FF16394A</color>
-    <color name="squircle_cyan_icon">#FF38BDF8</color>
-    
-    <color name="squircle_violet_bg">#FF352054</color>
-    <color name="squircle_violet_icon">#FFA78BFA</color>
-    
-    <color name="squircle_coral_bg">#FF422428</color>
-    <color name="squircle_coral_icon">#FFF87171</color>
-    
-    <color name="squircle_teal_bg">#FF163E2C</color>
-    <color name="squircle_teal_icon">#FF34D399</color>
+    <color name="squircle_sapphire_bg">#1A007AFF</color>
+    <color name="squircle_sapphire_icon">#FF007AFF</color>
+    <color name="squircle_rose_bg">#1ADC2626</color>
+    <color name="squircle_rose_icon">#FFDC2626</color>
+    <color name="squircle_emerald_bg">#1A14B8A6</color>
+    <color name="squircle_emerald_icon">#FF0F766E</color>
+    <color name="squircle_amber_bg">#1A007AFF</color>
+    <color name="squircle_amber_icon">#FF007AFF</color>
+    <color name="squircle_cyan_bg">#1A38BDF8</color>
+    <color name="squircle_cyan_icon">#FF0284C7</color>
+    <color name="squircle_violet_bg">#1A007AFF</color>
+    <color name="squircle_violet_icon">#FF007AFF</color>
+    <color name="squircle_coral_bg">#1A007AFF</color>
+    <color name="squircle_coral_icon">#FF007AFF</color>
+    <color name="squircle_teal_bg">#1A14B8A6</color>
+    <color name="squircle_teal_icon">#FF0F766E</color>
 </resources>

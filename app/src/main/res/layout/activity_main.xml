@@ -1,13 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dashboard_background">
+    android:background="@drawable/bg_ambient_canvas">
+
+    <FrameLayout
+        android:id="@+id/ambientBackdropView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <View
+            android:layout_width="320dp"
+            android:layout_height="320dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="-64dp"
+            android:layout_marginEnd="-80dp"
+            android:background="@drawable/bg_orb_sky" />
+
+        <View
+            android:layout_width="290dp"
+            android:layout_height="290dp"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="-90dp"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/bg_orb_mint" />
+
+        <View
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="-60dp"
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/bg_orb_ice" />
+    </FrameLayout>
 
     <ScrollView
-        android:id="@+id/main_scroll_view"
+        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -15,932 +45,230 @@
         android:scrollbars="none">
 
         <LinearLayout
-            style="@style/Dashboard.Column"
-            android:paddingHorizontal="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="18dp"
             android:paddingTop="14dp"
-            android:paddingBottom="96dp">
+            android:paddingBottom="108dp">
 
             <LinearLayout
+                android:id="@+id/dashboardHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_marginBottom="16dp"
                 android:gravity="center_vertical"
-                android:id="@+id/dashboard_header"
-                android:layout_marginBottom="12dp">
+                android:orientation="horizontal">
 
                 <LinearLayout
-                    style="@style/Dashboard.Column"
                     android:layout_width="0dp"
-                    android:layout_weight="1">
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:text="Hôm nay"
-                        android:id="@+id/dashboard_date"
-                        android:textStyle="bold"
-                        android:textSize="11sp" />
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:text="Mini Pocket Kit"
-                        android:textColor="@color/dashboard_text"
-                        android:textStyle="bold"
-                        android:textSize="25sp"
-                        android:fontFamily="sans-serif-black"
-                        android:accessibilityHeading="true" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                    <LinearLayout
-                        android:id="@+id/theme_switch"
+                    <TextView
+                        android:id="@+id/tvHeaderDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:background="@drawable/dashboard_pill"
-                        android:backgroundTint="@color/dashboard_segment"
-                        android:padding="3dp"
-                        android:layout_marginEnd="8dp">
-                        <TextView
-                            android:id="@+id/theme_light"
-                            style="@style/Dashboard.Action"
-                            android:text="Sáng"
-                            android:textSize="11sp"
-                            android:minHeight="30dp"
-                            android:paddingHorizontal="8dp" />
-                        <TextView
-                            android:id="@+id/theme_dark"
-                            style="@style/Dashboard.Action"
-                            android:text="Tối"
-                            android:textSize="11sp"
-                            android:minHeight="30dp"
-                            android:paddingHorizontal="8dp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:background="@drawable/shape_avatar_circle"
-                        android:gravity="center"
-                        android:text="KN"
-                        android:textColor="#10B981"
+                        android:text="THỨ SÁU, 13 THÁNG 11"
+                        android:textColor="@color/accent_sapphire"
                         android:textSize="12sp"
                         android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvHeaderTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="sans-serif-black"
+                        android:text="Mini Pocket Kit"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="26sp" />
                 </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@drawable/shape_input_rounded"
-                android:paddingHorizontal="14dp"
-                android:layout_marginBottom="14dp">
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_search"
-                    app:tint="@color/dashboard_secondary"
-                    android:importantForAccessibility="no" />
 
                 <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="Tìm môn học, ghi chú, lịch học..."
-                    android:textColor="@color/dashboard_secondary"
-                    android:textSize="13sp"
-                    android:layout_marginStart="10dp" />
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_ocr"
-                    app:tint="@color/dashboard_secondary"
-                    android:importantForAccessibility="no" />
+                    android:id="@+id/btnHeaderProfile"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_pill_secondary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:gravity="center"
+                    android:text="KN"
+                    android:textColor="@color/accent_sapphire"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Dashboard.Card"
-                android:id="@+id/dashboard_calendar_card">
-                <LinearLayout
-                    style="@style/Dashboard.Column"
-                    android:padding="12dp">
+            <include
+                android:id="@+id/tabHome"
+                layout="@layout/tab_home" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="LỊCH HỌC TRONG TUẦN"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:layout_width="0dp"
-                            android:layout_weight="1" />
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="Tuần 7 · Block 5"
-                            android:textColor="@color/dashboard_accent"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+            <include
+                android:id="@+id/tabCalendar"
+                layout="@layout/tab_calendar"
+                android:visibility="gone" />
 
-                    <LinearLayout
-                        android:id="@+id/layoutCalendarDays"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center">
+            <include
+                android:id="@+id/tabTools"
+                layout="@layout/tab_tools"
+                android:visibility="gone" />
 
-                        <LinearLayout
-                            android:id="@+id/dayBtn0"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp"
-                            android:background="@drawable/shape_calendar_day_normal"
-                            android:clickable="true"
-                            android:focusable="true">
-                            <TextView
-                                android:id="@+id/tvDayName0"
-                                style="@style/Dashboard.Label"
-                                android:text="T2"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:id="@+id/tvDayNum0"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="09"
-                                android:textColor="@color/dashboard_text"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                            <View
-                                android:id="@+id/dotDay0"
-                                android:layout_width="4dp"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="3dp"
-                                android:background="@drawable/shape_calendar_dot"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                        <Space android:layout_width="2dp" android:layout_height="1dp" />
-
-                        <LinearLayout
-                            android:id="@+id/dayBtn1"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp"
-                            android:background="@drawable/shape_calendar_day_normal"
-                            android:clickable="true"
-                            android:focusable="true">
-                            <TextView
-                                android:id="@+id/tvDayName1"
-                                style="@style/Dashboard.Label"
-                                android:text="T3"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:id="@+id/tvDayNum1"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="10"
-                                android:textColor="@color/dashboard_text"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                            <View
-                                android:id="@+id/dotDay1"
-                                android:layout_width="4dp"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="3dp"
-                                android:background="@drawable/shape_calendar_dot"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                        <Space android:layout_width="2dp" android:layout_height="1dp" />
-
-                        <LinearLayout
-                            android:id="@+id/dayBtn2"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp"
-                            android:background="@drawable/shape_calendar_day_normal"
-                            android:clickable="true"
-                            android:focusable="true">
-                            <TextView
-                                android:id="@+id/tvDayName2"
-                                style="@style/Dashboard.Label"
-                                android:text="T4"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:id="@+id/tvDayNum2"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="11"
-                                android:textColor="@color/dashboard_text"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                            <View
-                                android:id="@+id/dotDay2"
-                                android:layout_width="4dp"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="3dp"
-                                android:background="@drawable/shape_calendar_dot"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                        <Space android:layout_width="2dp" android:layout_height="1dp" />
-
-                        <LinearLayout
-                            android:id="@+id/dayBtn3"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp"
-                            android:background="@drawable/shape_calendar_day_selected"
-                            android:clickable="true"
-                            android:focusable="true">
-                            <TextView
-                                android:id="@+id/tvDayName3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="T5"
-                                android:textColor="@color/dashboard_capsule_active_text"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:id="@+id/tvDayNum3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="12"
-                                android:textColor="@color/dashboard_capsule_active_text"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                            <View
-                                android:id="@+id/dotDay3"
-                                android:layout_width="4dp"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="3dp"
-                                android:background="@drawable/shape_calendar_dot"
-                                android:visibility="visible" />
-                        </LinearLayout>
-                        <Space android:layout_width="2dp" android:layout_height="1dp" />
-
-                        <LinearLayout
-                            android:id="@+id/dayBtn4"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp"
-                            android:background="@drawable/shape_calendar_day_normal"
-                            android:clickable="true"
-                            android:focusable="true">
-                            <TextView
-                                android:id="@+id/tvDayName4"
-                                style="@style/Dashboard.Label"
-                                android:text="T6"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:id="@+id/tvDayNum4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="13"
-                                android:textColor="@color/dashboard_text"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                            <View
-                                android:id="@+id/dotDay4"
-                                android:layout_width="4dp"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="3dp"
-                                android:background="@drawable/shape_calendar_dot"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                        <Space android:layout_width="2dp" android:layout_height="1dp" />
-
-                        <LinearLayout
-                            android:id="@+id/dayBtn5"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp"
-                            android:background="@drawable/shape_calendar_day_normal"
-                            android:clickable="true"
-                            android:focusable="true">
-                            <TextView
-                                android:id="@+id/tvDayName5"
-                                style="@style/Dashboard.Label"
-                                android:text="T7"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:id="@+id/tvDayNum5"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="14"
-                                android:textColor="@color/dashboard_text"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                            <View
-                                android:id="@+id/dotDay5"
-                                android:layout_width="4dp"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="3dp"
-                                android:background="@drawable/shape_calendar_dot"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                        <Space android:layout_width="2dp" android:layout_height="1dp" />
-
-                        <LinearLayout
-                            android:id="@+id/dayBtn6"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="8dp"
-                            android:background="@drawable/shape_calendar_day_normal"
-                            android:clickable="true"
-                            android:focusable="true">
-                            <TextView
-                                android:id="@+id/tvDayName6"
-                                style="@style/Dashboard.Label"
-                                android:text="CN"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:id="@+id/tvDayNum6"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="15"
-                                android:textColor="@color/dashboard_text"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                            <View
-                                android:id="@+id/dotDay6"
-                                android:layout_width="4dp"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="3dp"
-                                android:background="@drawable/shape_calendar_dot"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp">
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:text="LỊCH HỌC HÔM NAY"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_weight="1" />
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:text="2 ca học"
-                        android:textSize="11sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="20dp"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:gravity="center_horizontal"
-                        android:layout_marginEnd="8dp">
-
-                        <View
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:background="@drawable/shape_timeline_dot_active"
-                            android:layout_marginTop="16dp" />
-
-                        <View
-                            android:layout_width="2dp"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:background="@color/dashboard_timeline_line" />
-
-                        <View
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
-                            android:background="@drawable/shape_timeline_dot_normal"
-                            android:layout_marginBottom="16dp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <com.google.android.material.card.MaterialCardView
-                            style="@style/Dashboard.Card"
-                            android:id="@+id/cardToolTimetable"
-                            app:cardBackgroundColor="@color/dashboard_card_dark"
-                            app:strokeColor="@color/dashboard_card_dark_stroke"
-                            app:cardCornerRadius="22dp"
-                            app:cardElevation="3dp"
-                            android:layout_marginBottom="8dp">
-
-                            <LinearLayout
-                                style="@style/Dashboard.Column"
-                                android:padding="16dp">
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical">
-                                    <TextView
-                                        android:id="@+id/tvTimetableBadge"
-                                        style="@style/Dashboard.Label"
-                                        android:text="● TIẾT HỌC KẾ TIẾP"
-                                        android:textColor="@color/dashboard_green"
-                                        android:layout_width="0dp"
-                                        android:layout_weight="1"
-                                        android:textSize="11sp"
-                                        android:textStyle="bold" />
-                                    <TextView
-                                        android:id="@+id/tvTimetableTime"
-                                        style="@style/Dashboard.Label"
-                                        android:text="Ca 2 · 09:15 - 11:45"
-                                        android:textColor="#FFFFFF"
-                                        android:textSize="11sp"
-                                        android:textStyle="bold" />
-                                </LinearLayout>
-
-                                <TextView
-                                    android:id="@+id/tvTimetableSubject"
-                                    style="@style/Dashboard.Label"
-                                    android:text="PRM392 · Lập trình Android"
-                                    android:textColor="#FFFFFF"
-                                    android:textStyle="bold"
-                                    android:textSize="16sp"
-                                    android:fontFamily="sans-serif-black"
-                                    android:layout_marginTop="6dp" />
-
-                                <TextView
-                                    android:id="@+id/tvTimetableRoom"
-                                    style="@style/Dashboard.Label"
-                                    android:text="Phòng 302 (Tòa Alpha) · GV Thầy Hoàng"
-                                    android:textColor="#D1D1D6"
-                                    android:textSize="12sp"
-                                    android:layout_marginTop="3dp" />
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical"
-                                    android:layout_marginTop="12dp">
-
-                                    <TextView
-                                        android:layout_width="26dp"
-                                        android:layout_height="26dp"
-                                        android:background="@drawable/shape_avatar_circle"
-                                        android:gravity="center"
-                                        android:text="TH"
-                                        android:textColor="#34D399"
-                                        android:textSize="11sp"
-                                        android:textStyle="bold" />
-
-                                    <TextView
-                                        style="@style/Dashboard.Label"
-                                        android:text="Điểm danh EduNext"
-                                        android:textColor="#A1A1AA"
-                                        android:textSize="11sp"
-                                        android:layout_marginStart="8dp"
-                                        android:layout_width="0dp"
-                                        android:layout_weight="1" />
-
-                                    <ImageView
-                                        android:layout_width="26dp"
-                                        android:layout_height="26dp"
-                                        android:background="@drawable/shape_btn_check_square"
-                                        android:src="@drawable/ic_check"
-                                        android:scaleType="centerInside"
-                                        android:contentDescription="Hoàn tất" />
-                                </LinearLayout>
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:background="@drawable/shape_input_rounded"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="10dp">
-
-                            <LinearLayout
-                                style="@style/Dashboard.Column"
-                                android:layout_width="0dp"
-                                android:layout_weight="1">
-                                <TextView
-                                    style="@style/Dashboard.Label"
-                                    android:text="SWP391 · Dự án Phần mềm"
-                                    android:textColor="@color/dashboard_text"
-                                    android:textStyle="bold"
-                                    android:textSize="13sp" />
-                                <TextView
-                                    style="@style/Dashboard.Label"
-                                    android:text="Phòng 204 · GV Cô Mai"
-                                    android:textSize="11sp"
-                                    android:layout_marginTop="1dp" />
-                            </LinearLayout>
-
-                            <TextView
-                                style="@style/Dashboard.Label"
-                                android:text="13:00 - 15:30"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp">
-                    <TextView
-                        style="@style/Dashboard.Label"
-                        android:text="DỰ ÁN &amp; GHI CHÚ"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:layout_width="0dp"
-                        android:layout_weight="1" />
-                    <TextView
-                        android:id="@+id/cardToolNotes"
-                        style="@style/Dashboard.Label"
-                        android:text="Xem tất cả →"
-                        android:textColor="@color/dashboard_accent"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:clickable="true"
-                        android:focusable="true" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.card.MaterialCardView
-                        style="@style/Dashboard.Card"
-                        android:id="@+id/cardPinnedNote"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="135dp"
-                        android:layout_marginEnd="6dp"
-                        android:layout_marginBottom="0dp"
-                        app:cardBackgroundColor="@color/dashboard_card_dark"
-                        app:strokeColor="@color/dashboard_card_dark_stroke"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <LinearLayout
-                            style="@style/Dashboard.Column"
-                            android:padding="12dp"
-                            android:layout_height="match_parent">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <TextView
-                                    style="@style/Dashboard.Label"
-                                    android:text="📌 ĐÃ GHIM"
-                                    android:textColor="#FBBF24"
-                                    android:textSize="9sp"
-                                    android:textStyle="bold" />
-                                <TextView
-                                    android:id="@+id/tvPinnedSubject"
-                                    style="@style/Dashboard.Label"
-                                    android:text="● PRM392"
-                                    android:textColor="#60A5FA"
-                                    android:textSize="10sp"
-                                    android:textStyle="bold"
-                                    android:layout_marginStart="4dp"
-                                    android:layout_width="0dp"
-                                    android:layout_weight="1"
-                                    android:ellipsize="end"
-                                    android:singleLine="true" />
-                            </LinearLayout>
-
-                            <TextView
-                                android:id="@+id/tvPinnedTitle"
-                                style="@style/Dashboard.Label"
-                                android:text="Ôn thi Practical Exam"
-                                android:textColor="#FFFFFF"
-                                android:textStyle="bold"
-                                android:textSize="13sp"
-                                android:maxLines="1"
-                                android:ellipsize="end"
-                                android:layout_marginTop="4dp" />
-
-                            <TextView
-                                android:id="@+id/tvPinnedContent"
-                                style="@style/Dashboard.Label"
-                                android:text="SQLite &amp; RecyclerView Adapter..."
-                                android:textColor="#A1A1AA"
-                                android:maxLines="2"
-                                android:ellipsize="end"
-                                android:textSize="11sp"
-                                android:layout_marginTop="2dp" />
-
-                            <Space
-                                android:layout_width="1dp"
-                                android:layout_height="0dp"
-                                android:layout_weight="1" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <TextView
-                                    android:id="@+id/tvPinnedTime"
-                                    style="@style/Dashboard.Label"
-                                    android:text="10:30"
-                                    android:textColor="#71717A"
-                                    android:textSize="10sp"
-                                    android:layout_width="0dp"
-                                    android:layout_weight="1" />
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:background="@drawable/shape_circle_arrow"
-                                    android:src="@drawable/ic_chevron_right"
-                                    android:scaleType="centerInside"
-                                    app:tint="#FFFFFF"
-                                    android:importantForAccessibility="no" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        style="@style/Dashboard.Card"
-                        android:id="@+id/cardBentoProject"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="135dp"
-                        android:layout_marginStart="6dp"
-                        android:layout_marginBottom="0dp"
-                        app:cardBackgroundColor="@color/dashboard_card_lavender"
-                        app:strokeColor="@color/dashboard_card_lavender_stroke"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="0dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <LinearLayout
-                            style="@style/Dashboard.Column"
-                            android:padding="12dp"
-                            android:layout_height="match_parent">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <TextView
-                                    style="@style/Dashboard.Label"
-                                    android:text="EXE201"
-                                    android:textColor="@color/dashboard_card_lavender_text"
-                                    android:textSize="10sp"
-                                    android:textStyle="bold" />
-                                <TextView
-                                    style="@style/Dashboard.Label"
-                                    android:text="Nhóm 4"
-                                    android:textColor="@color/dashboard_secondary"
-                                    android:textSize="10sp"
-                                    android:layout_marginStart="6dp" />
-                            </LinearLayout>
-
-                            <TextView
-                                style="@style/Dashboard.Label"
-                                android:text="Pitch Deck MVP"
-                                android:textColor="@color/dashboard_card_lavender_text"
-                                android:textStyle="bold"
-                                android:textSize="13sp"
-                                android:maxLines="1"
-                                android:ellipsize="end"
-                                android:layout_marginTop="4dp" />
-
-                            <TextView
-                                style="@style/Dashboard.Label"
-                                android:text="Chuẩn bị 10 slide cho tuần 8"
-                                android:textColor="@color/dashboard_secondary"
-                                android:maxLines="2"
-                                android:ellipsize="end"
-                                android:textSize="11sp"
-                                android:layout_marginTop="2dp" />
-
-                            <Space
-                                android:layout_width="1dp"
-                                android:layout_height="0dp"
-                                android:layout_weight="1" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <TextView
-                                    style="@style/Dashboard.Label"
-                                    android:text="80% Xong"
-                                    android:textColor="@color/dashboard_card_lavender_text"
-                                    android:textStyle="bold"
-                                    android:textSize="10sp"
-                                    android:layout_width="0dp"
-                                    android:layout_weight="1" />
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:background="@drawable/shape_circle_arrow_light"
-                                    android:src="@drawable/ic_chevron_right"
-                                    android:scaleType="centerInside"
-                                    app:tint="@color/dashboard_card_lavender_text"
-                                    android:importantForAccessibility="no" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-            </LinearLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Dashboard.Card"
-                android:id="@+id/dashboard_tasks">
-                <LinearLayout
-                    style="@style/Dashboard.Column"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-                        <TextView
-                            style="@style/Dashboard.Label"
-                            android:text="NHIỆM VỤ CẦN LÀM"
-                            android:textColor="@color/dashboard_text"
-                            android:textStyle="bold"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:textSize="13sp" />
-                        <TextView
-                            android:id="@+id/task_count"
-                            style="@style/Dashboard.Label"
-                            android:text="1 việc còn lại"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <CheckBox
-                        android:id="@+id/task_lab"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="38dp"
-                        android:text="Nộp bài Lab 3 Android Studio"
-                        android:textColor="@color/dashboard_text"
-                        android:textSize="13sp"
-                        android:checked="false"
-                        android:buttonTint="@color/dashboard_accent" />
-
-                    <CheckBox
-                        android:id="@+id/task_slides"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="38dp"
-                        android:text="Đọc trước Slide RecyclerView"
-                        android:textColor="@color/dashboard_text"
-                        android:textSize="13sp"
-                        android:checked="true"
-                        android:buttonTint="@color/dashboard_accent" />
-
-                    <CheckBox
-                        android:id="@+id/task_attendance"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="38dp"
-                        android:text="Điểm danh EduNext tiết sáng"
-                        android:textColor="@color/dashboard_text"
-                        android:textSize="13sp"
-                        android:checked="true"
-                        android:buttonTint="@color/dashboard_accent" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            <include
+                android:id="@+id/tabProfile"
+                layout="@layout/tab_profile"
+                android:visibility="gone" />
 
         </LinearLayout>
     </ScrollView>
 
-    <com.google.android.material.card.MaterialCardView
+    <LinearLayout
+        android:id="@+id/bottomDockContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp"
-        app:cardBackgroundColor="@color/dashboard_dock"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="8dp"
-        app:strokeColor="@color/dashboard_glass_stroke"
-        app:strokeWidth="1dp">
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="14dp">
 
         <LinearLayout
+            android:id="@+id/dockBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:background="@drawable/bg_dock_bar"
+            android:baselineAligned="false"
             android:gravity="center_vertical"
+            android:minHeight="64dp"
+            android:orientation="horizontal"
             android:paddingHorizontal="6dp"
-            android:paddingVertical="4dp">
+            android:paddingVertical="6dp">
 
-            <TextView
-                android:id="@+id/tab_today"
-                style="@style/Dashboard.Tab"
-                android:text="Hôm nay"
-                android:drawableTop="@drawable/ic_home" />
-
-            <TextView
-                android:id="@+id/tab_schedule"
-                style="@style/Dashboard.Tab"
-                android:text="Lịch học"
-                android:drawableTop="@drawable/ic_timetable" />
-
-            <ImageButton
-                android:id="@+id/btnDockAdd"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="@drawable/shape_fab_dock"
-                android:src="@drawable/ic_add"
-                app:tint="@color/dashboard_surface"
-                android:layout_marginHorizontal="4dp"
-                android:contentDescription="Tạo mới"
+            <LinearLayout
+                android:id="@+id/dockTabHome"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_dock_active_pill"
                 android:clickable="true"
-                android:focusable="true" />
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="52dp"
+                android:orientation="vertical"
+                android:paddingVertical="6dp">
 
-            <TextView
-                android:id="@+id/tab_tools"
-                style="@style/Dashboard.Tab"
-                android:text="Tiện ích"
-                android:drawableTop="@drawable/ic_all" />
+                <ImageView
+                    android:id="@+id/ivDockHome"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Hôm nay"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/accent_sapphire" />
 
-            <TextView
-                android:id="@+id/tab_documents"
-                style="@style/Dashboard.Tab"
-                android:text="Hồ sơ"
-                android:drawableTop="@drawable/ic_profile" />
+                <TextView
+                    android:id="@+id/tvDockHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Hôm nay"
+                    android:textColor="@color/accent_sapphire"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dockTabCalendar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="52dp"
+                android:orientation="vertical"
+                android:paddingVertical="6dp">
+
+                <ImageView
+                    android:id="@+id/ivDockCalendar"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Lịch học"
+                    android:src="@drawable/ic_timetable"
+                    app:tint="@color/ink_secondary" />
+
+                <TextView
+                    android:id="@+id/tvDockCalendar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Lịch học"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dockTabTools"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="52dp"
+                android:orientation="vertical"
+                android:paddingVertical="6dp">
+
+                <ImageView
+                    android:id="@+id/ivDockTools"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Tiện ích"
+                    android:src="@drawable/ic_all"
+                    app:tint="@color/ink_secondary" />
+
+                <TextView
+                    android:id="@+id/tvDockTools"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Tiện ích"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dockTabProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="52dp"
+                android:orientation="vertical"
+                android:paddingVertical="6dp">
+
+                <ImageView
+                    android:id="@+id/ivDockProfile"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="Hồ sơ"
+                    android:src="@drawable/ic_profile"
+                    app:tint="@color/ink_secondary" />
+
+                <TextView
+                    android:id="@+id/tvDockProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Hồ sơ"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
+    </LinearLayout>
 </FrameLayout>

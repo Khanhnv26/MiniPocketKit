@@ -1,72 +1,102 @@
 package com.example.pocketkit;
 
 import android.animation.ValueAnimator;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
+import android.graphics.Paint;
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.provider.Settings;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityMainBinding;
 import com.example.pocketkit.model.Note;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String STATE_NIGHT_MODE = "dashboard_night_mode";
-    private static final String STATE_SELECTED_TAB = "dashboard_selected_tab";
+    private static final String STATE_SELECTED_TAB = "state_selected_tab";
+    private static final String STATE_SELECTED_DAY = "state_selected_day";
+    private static final String STATE_URGENT_SUBMITTED = "state_urgent_submitted";
+    private static final String STATE_COMPRESS_PRESET = "state_compress_preset";
+    private static final String STATE_OCR_SAMPLE = "state_ocr_sample";
+    private static final String STATE_TIMER_MS = "state_timer_ms";
+    private static final long FOCUS_DURATION_MS = 25L * 60L * 1000L;
 
     private ActivityMainBinding binding;
     private DatabaseHelper dbHelper;
-    private Note currentPinnedNote = null;
-    private TextView[] tabs;
+    private Note currentPinnedNote;
+
     private int selectedTab = 0;
+    private int selectedDayIndex = 2;
+    private boolean urgentSubmitted = false;
+    private int selectedCompressPreset = 0;
+    private int selectedOcrSample = 0;
+    private long remainingTimerMs = FOCUS_DURATION_MS;
+    private boolean timerRunning = false;
+    private CountDownTimer focusTimer;
 
-    private static class DaySchedule {
-        final String badge;
-        final String time;
-        final String subject;
-        final String room;
+    private final List<TaskItem> taskItems = new ArrayList<>();
+    private final Map<Integer, List<ScheduleSlot>> scheduleMap = new LinkedHashMap<>();
 
-        DaySchedule(String badge, String time, String subject, String room) {
-            this.badge = badge;
-            this.time = time;
-            this.subject = subject;
-            this.room = room;
+    private static class TaskItem {
+        final String title;
+        final String meta;
+        final String tag;
+        boolean done;
+
+        TaskItem(String title, String meta, String tag, boolean done) {
+            this.title = title;
+            this.meta = meta;
+            this.tag = tag;
+            this.done = done;
         }
     }
 
-    private final DaySchedule[] weekSchedules = new DaySchedule[]{
-            new DaySchedule("● ĐÃ KẾT THÚC", "Ca 1 · 07:30 - 09:00", "SWP391 · Phát triển dự án phần mềm", "Phòng 401 (Tòa Beta) · GV Cô Mai"),
-            new DaySchedule("● ĐÃ KẾT THÚC", "Ca 3 · 13:00 - 15:30", "MAS291 · Thống kê ứng dụng", "Phòng 204 (Tòa Alpha) · GV Thầy Dũng"),
-            new DaySchedule("● ĐÃ KẾT THÚC", "Ca 4 · 15:45 - 18:00", "PRN211 · Lập trình C# .NET", "Phòng Lab 3 (Tòa Gamma) · GV Thầy Long"),
-            new DaySchedule("● TIẾT HỌC KẾ TIẾP", "Ca 2 · 09:15 - 11:45", "PRM392 · Lập trình Android", "Phòng 302 (Tòa Alpha) · GV Thầy Hoàng"),
-            new DaySchedule("● NGÀY MAI", "Ca 2 · 09:15 - 11:45", "EXE201 · Khởi nghiệp sáng tạo", "Hội trường A (Tòa Delta) · GV Thầy Tuấn"),
-            new DaySchedule("● CUỐI TUẦN", "Ca 3 · 14:00 - 16:00", "SWP391 · Họp Sprint 2 Review", "Online Google Meet · Nhóm trưởng"),
-            new DaySchedule("● NGÀY NGHỈ", "Cả ngày", "Tự học & Chuẩn bị bài tuần mới", "Thư viện Tòa Alpha · Tự do")
-    };
+    private static class ScheduleSlot {
+        final String time;
+        final String room;
+        final String subject;
+        final String lecturer;
 
-    private View[] dayButtons;
-    private TextView[] dayNames;
-    private TextView[] dayNums;
-    private View[] dayDots;
+        ScheduleSlot(String time, String room, String subject, String lecturer) {
+            this.time = time;
+            this.room = room;
+            this.subject = subject;
+            this.lecturer = lecturer;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,311 +106,621 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0, systemBars.top, 0, systemBars.bottom);
-            return insets;
-        });
-
-        Locale vietnamese = Locale.forLanguageTag("vi-VN");
-        binding.dashboardDate.setText(new SimpleDateFormat("EEEE, d 'tháng' M", vietnamese)
-                .format(new Date()).toUpperCase(vietnamese));
-        if (savedInstanceState != null) {
-            selectedTab = savedInstanceState.getInt(STATE_SELECTED_TAB);
-        }
-        setupCalendarStrip();
-        setupClickListeners();
-        adaptDashboard();
-        if (savedInstanceState == null) {
-            animateDashboard();
-        } else if (savedInstanceState.getInt(STATE_NIGHT_MODE) != getNightMode()
-                && animationsEnabled()) {
-            binding.getRoot().setAlpha(0f);
-            binding.getRoot().animate().alpha(1f).setDuration(200).start();
-        }
+        configureEdgeToEdge();
+        applyBackdropBlur();
+        restoreState(savedInstanceState);
+        seedData();
+        bindHeaderDate();
+        bindHeroCard();
+        bindFocusTimer();
+        bindChecklist();
+        bindCalendarTab();
+        bindToolsTab();
+        bindProfileTab();
+        bindDockNavigation();
+        applySavedSelections();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadNotesFromDatabase();
-    }
-
-    private void loadNotesFromDatabase() {
-        if (dbHelper == null) return;
-        List<Note> pinnedNotes = dbHelper.getNotesFiltered("", "PINNED");
-        if (!pinnedNotes.isEmpty()) {
-            currentPinnedNote = pinnedNotes.get(0);
-            binding.cardPinnedNote.setVisibility(View.VISIBLE);
-            binding.tvPinnedSubject.setText("● " + currentPinnedNote.getSubject());
-            binding.tvPinnedTitle.setText(currentPinnedNote.getTitle());
-            binding.tvPinnedContent.setText(currentPinnedNote.getContent());
-            binding.tvPinnedTime.setText(currentPinnedNote.getUpdatedAt());
-        } else {
-            List<Note> allNotes = dbHelper.getNotesFiltered("", "ALL");
-            if (!allNotes.isEmpty()) {
-                currentPinnedNote = allNotes.get(0);
-                binding.cardPinnedNote.setVisibility(View.VISIBLE);
-                binding.tvPinnedSubject.setText("● " + currentPinnedNote.getSubject());
-                binding.tvPinnedTitle.setText(currentPinnedNote.getTitle());
-                binding.tvPinnedContent.setText(currentPinnedNote.getContent());
-                binding.tvPinnedTime.setText(currentPinnedNote.getUpdatedAt());
-            } else {
-                binding.cardPinnedNote.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    private void setupCalendarStrip() {
-        dayButtons = new View[]{
-                binding.dayBtn0, binding.dayBtn1, binding.dayBtn2,
-                binding.dayBtn3, binding.dayBtn4, binding.dayBtn5, binding.dayBtn6
-        };
-        dayNames = new TextView[]{
-                binding.tvDayName0, binding.tvDayName1, binding.tvDayName2,
-                binding.tvDayName3, binding.tvDayName4, binding.tvDayName5, binding.tvDayName6
-        };
-        dayNums = new TextView[]{
-                binding.tvDayNum0, binding.tvDayNum1, binding.tvDayNum2,
-                binding.tvDayNum3, binding.tvDayNum4, binding.tvDayNum5, binding.tvDayNum6
-        };
-        dayDots = new View[]{
-                binding.dotDay0, binding.dotDay1, binding.dotDay2,
-                binding.dotDay3, binding.dotDay4, binding.dotDay5, binding.dotDay6
-        };
-
-        for (int i = 0; i < dayButtons.length; i++) {
-            final int dayIdx = i;
-            dayButtons[i].setOnClickListener(v -> selectCalendarDay(dayIdx));
-        }
-        selectCalendarDay(3);
-    }
-
-    private void selectCalendarDay(int dayIdx) {
-        int activeColor = ContextCompat.getColor(this, R.color.dashboard_capsule_active_text);
-        int inactiveColor = ContextCompat.getColor(this, R.color.dashboard_secondary);
-        int textColor = ContextCompat.getColor(this, R.color.dashboard_text);
-
-        for (int i = 0; i < dayButtons.length; i++) {
-            if (i == dayIdx) {
-                dayButtons[i].setBackgroundResource(R.drawable.shape_calendar_day_selected);
-                dayNames[i].setTextColor(activeColor);
-                dayNums[i].setTextColor(activeColor);
-                if (dayDots[i] != null) dayDots[i].setVisibility(View.VISIBLE);
-            } else {
-                dayButtons[i].setBackgroundResource(R.drawable.shape_calendar_day_normal);
-                dayNames[i].setTextColor(inactiveColor);
-                dayNums[i].setTextColor(textColor);
-                if (dayDots[i] != null) dayDots[i].setVisibility(View.GONE);
-            }
-        }
-
-        DaySchedule schedule = weekSchedules[dayIdx];
-        binding.tvTimetableBadge.setText(schedule.badge);
-        binding.tvTimetableTime.setText(schedule.time);
-        binding.tvTimetableSubject.setText(schedule.subject);
-        binding.tvTimetableRoom.setText(schedule.room);
+        refreshNotesIntegration();
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt(STATE_NIGHT_MODE, getNightMode());
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putInt(STATE_SELECTED_TAB, selectedTab);
+        outState.putInt(STATE_SELECTED_DAY, selectedDayIndex);
+        outState.putBoolean(STATE_URGENT_SUBMITTED, urgentSubmitted);
+        outState.putInt(STATE_COMPRESS_PRESET, selectedCompressPreset);
+        outState.putInt(STATE_OCR_SAMPLE, selectedOcrSample);
+        outState.putLong(STATE_TIMER_MS, remainingTimerMs);
         super.onSaveInstanceState(outState);
     }
 
-    private int getNightMode() {
-        return getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+    @Override
+    protected void onDestroy() {
+        if (focusTimer != null) {
+            focusTimer.cancel();
+            focusTimer = null;
+        }
+        super.onDestroy();
     }
 
-    private boolean animationsEnabled() {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O || ValueAnimator.areAnimatorsEnabled();
+    private void configureEdgeToEdge() {
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), binding.getRoot());
+        if (controller != null) {
+            controller.setAppearanceLightStatusBars(true);
+            controller.setAppearanceLightNavigationBars(true);
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.rootContainer, (view, windowInsets) -> {
+            Insets bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            binding.mainScrollView.setPadding(
+                    bars.left,
+                    bars.top,
+                    bars.right,
+                    0
+            );
+            binding.bottomDockContainer.setPadding(
+                    dpToPx(16) + bars.left,
+                    0,
+                    dpToPx(16) + bars.right,
+                    dpToPx(14) + bars.bottom
+            );
+            return windowInsets;
+        });
     }
 
-    private void animateDashboard() {
-        if (!animationsEnabled()) {
+    private void applyBackdropBlur() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            binding.ambientBackdropView.setRenderEffect(
+                    RenderEffect.createBlurEffect(110f, 110f, Shader.TileMode.CLAMP)
+            );
+        }
+    }
+
+    private void restoreState(Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
             return;
         }
-        View[] sections = {
-                binding.dashboardHeader,
-                binding.dashboardCalendarCard,
-                binding.cardToolTimetable,
-                binding.cardPinnedNote,
-                binding.cardBentoProject,
-                binding.dashboardTasks
-        };
-        float offset = 12 * getResources().getDisplayMetrics().density;
-        long stagger = 30L;
-        for (int index = 0; index < sections.length; index++) {
-            View section = sections[index];
-            if (section == null) continue;
-            section.setAlpha(0f);
-            section.setTranslationY(offset);
-            section.animate()
-                    .alpha(1f)
-                    .translationY(0f)
-                    .setDuration(320)
-                    .setStartDelay(index * stagger)
-                    .start();
+        selectedTab = savedInstanceState.getInt(STATE_SELECTED_TAB, 0);
+        selectedDayIndex = savedInstanceState.getInt(STATE_SELECTED_DAY, 2);
+        urgentSubmitted = savedInstanceState.getBoolean(STATE_URGENT_SUBMITTED, false);
+        selectedCompressPreset = savedInstanceState.getInt(STATE_COMPRESS_PRESET, 0);
+        selectedOcrSample = savedInstanceState.getInt(STATE_OCR_SAMPLE, 0);
+        remainingTimerMs = savedInstanceState.getLong(STATE_TIMER_MS, FOCUS_DURATION_MS);
+    }
+
+    private void seedData() {
+        taskItems.clear();
+        taskItems.add(new TaskItem("Hoàn thiện giao diện báo cáo tuần", "Cơ sở dữ liệu · Hôm nay", "Bài tập", false));
+        taskItems.add(new TaskItem("Ôn tập chương 4 Quản lý bộ nhớ", "Hệ điều hành · 30 phút", "Ôn thi", false));
+        taskItems.add(new TaskItem("Gửi biên bản họp nhóm", "Dự án phần mềm · Xong sáng nay", "Nhóm", true));
+
+        scheduleMap.clear();
+        List<ScheduleSlot> t2 = new ArrayList<>();
+        t2.add(new ScheduleSlot("07:30 - 09:45", "Phòng A204", "Cơ sở dữ liệu nâng cao", "Giảng viên Nguyễn Minh Anh"));
+        t2.add(new ScheduleSlot("13:30 - 15:45", "Phòng Lab 02", "Lập trình Di động", "Giảng viên Trần Quốc Bảo"));
+        scheduleMap.put(0, t2);
+
+        List<ScheduleSlot> t3 = new ArrayList<>();
+        t3.add(new ScheduleSlot("09:55 - 12:10", "Phòng B301", "Hệ điều hành", "Giảng viên Lê Thu Hà"));
+        scheduleMap.put(1, t3);
+
+        List<ScheduleSlot> t4 = new ArrayList<>();
+        t4.add(new ScheduleSlot("07:30 - 09:45", "Phòng A302", "Lập trình Di động", "Giảng viên Trần Quốc Bảo"));
+        t4.add(new ScheduleSlot("13:30 - 15:45", "Phòng C105", "Phát triển Web hiện đại", "Giảng viên Phạm Đức Huy"));
+        scheduleMap.put(2, t4);
+
+        List<ScheduleSlot> t5 = new ArrayList<>();
+        t5.add(new ScheduleSlot("09:55 - 12:10", "Phòng A401", "Thiết kế giao diện người dùng", "Giảng viên Vũ Ngọc Lan"));
+        scheduleMap.put(3, t5);
+
+        List<ScheduleSlot> t6 = new ArrayList<>();
+        t6.add(new ScheduleSlot("13:30 - 15:45", "Phòng Lab 04", "Thực hành Dự án Phần mềm", "Giảng viên Nguyễn Minh Anh"));
+        scheduleMap.put(4, t6);
+
+        List<ScheduleSlot> t7 = new ArrayList<>();
+        t7.add(new ScheduleSlot("08:30 - 10:30", "Thư viện tầng 2", "Tổng hợp đề cương ôn tập cuối kỳ", "Tự học theo nhóm"));
+        scheduleMap.put(5, t7);
+    }
+
+    private void bindHeaderDate() {
+        Locale vi = Locale.forLanguageTag("vi-VN");
+        String formatted = new SimpleDateFormat("EEEE, d 'tháng' M", vi).format(new Date());
+        binding.tvHeaderDate.setText(formatted.toUpperCase(vi));
+        binding.btnHeaderProfile.setOnClickListener(v -> switchTab(3));
+    }
+
+    private void bindHeroCard() {
+        updateSpotlightUi(false);
+        binding.tabHome.btnSpotlightAction.setOnClickListener(v -> {
+            urgentSubmitted = !urgentSubmitted;
+            updateSpotlightUi(true);
+            String msg = urgentSubmitted ? "Đã đánh dấu hoàn thành Lab 04" : "Đã khôi phục trạng thái chưa nộp";
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void updateSpotlightUi(boolean animate) {
+        if (urgentSubmitted) {
+            binding.tabHome.tvSpotlightBadge.setText("TIẾT HỌC TIẾP THEO");
+            binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
+            binding.tabHome.tvSpotlightTitle.setText("Lập trình Di động · Phòng A302");
+            binding.tabHome.tvSpotlightSub.setText("Bắt đầu lúc 13:30 · Đã hoàn thành Lab 04");
+            binding.tabHome.btnSpotlightAction.setText("Hoàn tác");
+            binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_secondary);
+            binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.ink_primary));
+            binding.tabHome.ringsView.setDeadlineProgress(1.0f, animate);
+            binding.tabHome.tvRingDeadlineValue.setText("100%");
+        } else {
+            binding.tabHome.tvSpotlightBadge.setText("NGAY LÚC NÀY");
+            binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_sapphire));
+            binding.tabHome.tvSpotlightTitle.setText("Nộp Lab 04 · Lập trình Di động");
+            binding.tabHome.tvSpotlightSub.setText("Hạn 17:00 hôm nay · Còn 2 giờ");
+            binding.tabHome.btnSpotlightAction.setText("Nộp ngay");
+            binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_primary);
+            binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.white));
+            binding.tabHome.ringsView.setDeadlineProgress(0.68f, animate);
+            binding.tabHome.tvRingDeadlineValue.setText("68%");
         }
+        binding.tabHome.ringsView.setClassProgress(0.85f, animate);
+        binding.tabHome.tvRingClassValue.setText("85%");
     }
 
-    private void adaptDashboard() {
-        boolean dark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
-        binding.dashboardDate.setTextColor(getColor(dark ? R.color.dashboard_secondary : R.color.dashboard_accent));
-    }
-
-    private void updateTaskCount() {
-        int count = 0;
-        if (!binding.taskLab.isChecked()) count++;
-        if (!binding.taskSlides.isChecked()) count++;
-        if (!binding.taskAttendance.isChecked()) count++;
-        binding.taskCount.setText(getString(R.string.dashboard_tasks_left, count));
-    }
-
-    private void selectTab(int index, boolean animate) {
-        selectedTab = index;
-        for (int i = 0; i < tabs.length; i++) {
-            boolean active = i == index;
-            tabs[i].setSelected(active);
-            int color = getColor(active ? R.color.dashboard_accent : R.color.dashboard_secondary);
-            tabs[i].setTextColor(color);
-            tabs[i].getCompoundDrawablesRelative()[1].setTint(color);
-            if (active && animate && animationsEnabled()) {
-                tabs[i].setScaleX(0.92f);
-                tabs[i].setScaleY(0.92f);
-                tabs[i].animate().scaleX(1f).scaleY(1f).setDuration(160).start();
+    private void bindFocusTimer() {
+        updateTimerUi(false);
+        binding.tabHome.btnTimerToggle.setOnClickListener(v -> {
+            if (timerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
             }
+        });
+        binding.tabHome.btnTimerReset.setOnClickListener(v -> resetTimer());
+    }
+
+    private void startTimer() {
+        if (focusTimer != null) {
+            focusTimer.cancel();
         }
+        timerRunning = true;
+        binding.tabHome.btnTimerToggle.setText("Tạm dừng");
+        binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_dark);
+        focusTimer = new CountDownTimer(remainingTimerMs, 1000L) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                remainingTimerMs = millisUntilFinished;
+                updateTimerUi(false);
+            }
+
+            @Override
+            public void onFinish() {
+                remainingTimerMs = 0L;
+                timerRunning = false;
+                binding.tabHome.btnTimerToggle.setText("Bắt đầu");
+                binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
+                updateTimerUi(true);
+                Toast.makeText(MainActivity.this, "Hoàn thành phiên tập trung 25 phút", Toast.LENGTH_SHORT).show();
+            }
+        }.start();
     }
 
-    private void showAppearanceOptions() {
-        PocketKitApplication application = (PocketKitApplication) getApplication();
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.dashboard_appearance)
-                .setSingleChoiceItems(R.array.dashboard_theme_options, application.getThemeChoice(),
-                        (dialog, choice) -> {
-                            dialog.dismiss();
-                            application.setThemeChoice(choice);
-                        })
-                .show();
+    private void pauseTimer() {
+        if (focusTimer != null) {
+            focusTimer.cancel();
+            focusTimer = null;
+        }
+        timerRunning = false;
+        binding.tabHome.btnTimerToggle.setText("Tiếp tục");
+        binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
     }
 
-    private void showToolsBottomSheet() {
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View sheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_all_tools, null);
-        dialog.setContentView(sheetView);
-
-        sheetView.findViewById(R.id.btnSheetFocus).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Đồng hồ Pomodoro 25 phút");
-        });
-        sheetView.findViewById(R.id.btnSheetGpa).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Tính điểm GPA & Dự đoán qua môn");
-        });
-        sheetView.findViewById(R.id.btnSheetDeadline).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Hạn nộp bài Assignment 1 (Còn 2 ngày)");
-        });
-        sheetView.findViewById(R.id.btnSheetOcr).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Quét slide & Trích xuất tiếng Việt");
-        });
-        sheetView.findViewById(R.id.btnSheetCompress).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Nén ảnh CCCD & Thẻ SV (< 500KB)");
-        });
-        sheetView.findViewById(R.id.btnSheetPdf).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Bộ tiện ích PDF");
-        });
-        sheetView.findViewById(R.id.btnSheetSplitBill).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Chia tiền trọ & Điện nước");
-        });
-        sheetView.findViewById(R.id.btnSheetRandom).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Vòng quay bốc thăm nhóm");
-        });
-        sheetView.findViewById(R.id.btnSheetQr).setOnClickListener(v -> {
-            dialog.dismiss();
-            showToast("Mã QR thanh toán & Wi-Fi");
-        });
-
-        dialog.show();
+    private void resetTimer() {
+        if (focusTimer != null) {
+            focusTimer.cancel();
+            focusTimer = null;
+        }
+        timerRunning = false;
+        remainingTimerMs = FOCUS_DURATION_MS;
+        binding.tabHome.btnTimerToggle.setText("Bắt đầu");
+        binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
+        updateTimerUi(true);
     }
 
-    private void setupClickListeners() {
-        PocketKitApplication application = (PocketKitApplication) getApplication();
-        binding.themeLight.setOnClickListener(v -> application.setThemeChoice(1));
-        binding.themeDark.setOnClickListener(v -> application.setThemeChoice(2));
-        boolean dark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
-        TextView activeTheme = dark ? binding.themeDark : binding.themeLight;
-        activeTheme.setSelected(true);
-        activeTheme.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.dashboard_surface)));
-        View.OnLongClickListener appearanceOptions = v -> {
-            showAppearanceOptions();
-            return true;
-        };
-        binding.themeLight.setOnLongClickListener(appearanceOptions);
-        binding.themeDark.setOnLongClickListener(appearanceOptions);
+    private void updateTimerUi(boolean animate) {
+        long totalSeconds = remainingTimerMs / 1000L;
+        long minutes = totalSeconds / 60L;
+        long seconds = totalSeconds % 60L;
+        binding.tabHome.tvTimerDisplay.setText(String.format(Locale.US, "%02d:%02d", minutes, seconds));
+        float elapsedFraction = 1f - ((float) remainingTimerMs / (float) FOCUS_DURATION_MS);
+        float focusRingProgress = Math.max(0.40f, Math.min(1.0f, 0.40f + 0.60f * elapsedFraction));
+        binding.tabHome.ringsView.setFocusProgress(focusRingProgress, animate);
+        binding.tabHome.tvRingFocusValue.setText(Math.round(focusRingProgress * 100f) + "%");
+    }
 
-        tabs = new TextView[]{binding.tabToday, binding.tabSchedule, binding.tabTools, binding.tabDocuments};
-        binding.tabToday.setOnClickListener(v -> selectTab(0, true));
-        binding.tabSchedule.setOnClickListener(v -> {
-            selectTab(1, true);
-            showToast("Thời khóa biểu tuần 7 · Block 5");
+    private void bindChecklist() {
+        renderChecklist();
+        binding.tabHome.btnHomeOpenNotes.setOnClickListener(v -> openNotesActivity());
+        binding.tabHome.btnAddTask.setOnClickListener(v -> addNewTaskFromInput());
+        binding.tabHome.edtNewTask.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                addNewTaskFromInput();
+                return true;
+            }
+            return false;
         });
-        binding.tabTools.setOnClickListener(v -> {
-            selectTab(2, true);
-            showToolsBottomSheet();
-        });
-        binding.tabDocuments.setOnClickListener(v -> {
-            selectTab(3, true);
-            showToast("Hồ sơ sinh viên FPT University");
-        });
-        selectTab(selectedTab, false);
-
-        binding.taskLab.setOnCheckedChangeListener((button, checked) -> updateTaskCount());
-        binding.taskSlides.setOnCheckedChangeListener((button, checked) -> updateTaskCount());
-        binding.taskAttendance.setOnCheckedChangeListener((button, checked) -> updateTaskCount());
-        binding.taskCount.post(this::updateTaskCount);
-
-        binding.cardPinnedNote.setOnClickListener(v -> {
+        binding.tabHome.layoutPinnedNoteBar.setOnClickListener(v -> {
             if (currentPinnedNote != null) {
                 Intent intent = new Intent(this, NoteEditorActivity.class);
                 intent.putExtra("note_item", currentPinnedNote);
                 startActivity(intent);
             }
         });
+    }
 
-        binding.cardBentoProject.setOnClickListener(v ->
-                showToast("Dự án Khởi nghiệp EXE201 · Nhóm 4")
-        );
+    private void addNewTaskFromInput() {
+        String text = binding.tabHome.edtNewTask.getText().toString().trim();
+        if (text.isEmpty()) {
+            return;
+        }
+        taskItems.add(0, new TaskItem(text, "Thêm nhanh · Hôm nay", "Cá nhân", false));
+        binding.tabHome.edtNewTask.setText("");
+        renderChecklist();
+    }
 
-        binding.btnDockAdd.setOnClickListener(v -> {
-            Intent intent = new Intent(this, NoteEditorActivity.class);
-            startActivity(intent);
+    private void renderChecklist() {
+        LinearLayout container = binding.tabHome.checklistContainer;
+        container.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(this);
+        int remainingCount = 0;
+
+        for (TaskItem item : taskItems) {
+            if (!item.done) {
+                remainingCount++;
+            }
+            View row = inflater.inflate(R.layout.item_checklist_task, container, false);
+            View checkBox = row.findViewById(R.id.taskCheckBox);
+            ImageView ivCheck = row.findViewById(R.id.ivTaskCheck);
+            TextView tvTitle = row.findViewById(R.id.tvTaskTitle);
+            TextView tvMeta = row.findViewById(R.id.tvTaskMeta);
+            TextView tvTag = row.findViewById(R.id.tvTaskTag);
+
+            tvTitle.setText(item.title);
+            tvMeta.setText(item.meta);
+            tvTag.setText(item.tag);
+
+            applyTaskRowStyle(checkBox, ivCheck, tvTitle, tvTag, item.done);
+
+            row.setOnClickListener(v -> {
+                item.done = !item.done;
+                renderChecklist();
+            });
+            container.addView(row);
+        }
+
+        binding.tabHome.tvChecklistCount.setText(remainingCount + "/" + taskItems.size() + " việc");
+    }
+
+    private void applyTaskRowStyle(View checkBox, ImageView ivCheck, TextView tvTitle, TextView tvTag, boolean done) {
+        if (done) {
+            checkBox.setBackgroundResource(R.drawable.bg_check_checked);
+            ivCheck.setVisibility(View.VISIBLE);
+            tvTitle.setPaintFlags(tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            tvTitle.setTextColor(ContextCompat.getColor(this, R.color.ink_muted));
+            tvTag.setBackgroundResource(R.drawable.bg_pill_success_soft);
+            tvTag.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
+        } else {
+            checkBox.setBackgroundResource(R.drawable.bg_check_unchecked);
+            ivCheck.setVisibility(View.GONE);
+            tvTitle.setPaintFlags(tvTitle.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+            tvTitle.setTextColor(ContextCompat.getColor(this, R.color.ink_primary));
+            tvTag.setBackgroundResource(R.drawable.bg_pill_neutral_soft);
+            tvTag.setTextColor(ContextCompat.getColor(this, R.color.ink_secondary));
+        }
+    }
+
+    private void refreshNotesIntegration() {
+        if (dbHelper == null) {
+            return;
+        }
+        List<Note> pinned = dbHelper.getNotesFiltered("", "PINNED");
+        List<Note> all = dbHelper.getNotesFiltered("", "ALL");
+
+        if (!pinned.isEmpty()) {
+            currentPinnedNote = pinned.get(0);
+        } else if (!all.isEmpty()) {
+            currentPinnedNote = all.get(0);
+        } else {
+            currentPinnedNote = null;
+        }
+
+        if (currentPinnedNote != null) {
+            binding.tabHome.layoutPinnedNoteBar.setVisibility(View.VISIBLE);
+            String subject = currentPinnedNote.getSubject() != null ? currentPinnedNote.getSubject() : "Chung";
+            binding.tabHome.tvPinnedNoteSummary.setText(subject + " · " + currentPinnedNote.getTitle());
+        } else {
+            binding.tabHome.layoutPinnedNoteBar.setVisibility(View.GONE);
+        }
+
+        binding.tabTools.tvToolNotesCount.setText("Đang lưu " + all.size() + " ghi chú ngoại tuyến");
+    }
+
+    private void bindCalendarTab() {
+        TextView[] chips = new TextView[]{
+                binding.tabCalendar.chipDayT2,
+                binding.tabCalendar.chipDayT3,
+                binding.tabCalendar.chipDayT4,
+                binding.tabCalendar.chipDayT5,
+                binding.tabCalendar.chipDayT6,
+                binding.tabCalendar.chipDayT7
+        };
+        for (int i = 0; i < chips.length; i++) {
+            final int index = i;
+            chips[i].setOnClickListener(v -> selectScheduleDay(index));
+        }
+    }
+
+    private void selectScheduleDay(int dayIndex) {
+        selectedDayIndex = dayIndex;
+        TextView[] chips = new TextView[]{
+                binding.tabCalendar.chipDayT2,
+                binding.tabCalendar.chipDayT3,
+                binding.tabCalendar.chipDayT4,
+                binding.tabCalendar.chipDayT5,
+                binding.tabCalendar.chipDayT6,
+                binding.tabCalendar.chipDayT7
+        };
+        String[] dayLabels = new String[]{
+                "Lịch học Thứ Hai",
+                "Lịch học Thứ Ba",
+                "Lịch học Thứ Tư",
+                "Lịch học Thứ Năm",
+                "Lịch học Thứ Sáu",
+                "Lịch học Thứ Bảy"
+        };
+
+        for (int i = 0; i < chips.length; i++) {
+            boolean active = i == dayIndex;
+            chips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+            chips[i].setTextColor(ContextCompat.getColor(this, active ? R.color.white : R.color.ink_primary));
+        }
+
+        binding.tabCalendar.tvCalendarDayTitle.setText(dayLabels[dayIndex]);
+        List<ScheduleSlot> slots = scheduleMap.get(dayIndex);
+        int count = slots != null ? slots.size() : 0;
+        binding.tabCalendar.tvCalendarCountBadge.setText(count + " ca học");
+
+        LinearLayout container = binding.tabCalendar.scheduleContainer;
+        container.removeAllViews();
+        if (slots == null) {
+            return;
+        }
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (ScheduleSlot slot : slots) {
+            View card = inflater.inflate(R.layout.item_schedule_slot, container, false);
+            ((TextView) card.findViewById(R.id.tvSlotTime)).setText(slot.time);
+            ((TextView) card.findViewById(R.id.tvSlotRoom)).setText(slot.room);
+            ((TextView) card.findViewById(R.id.tvSlotSubject)).setText(slot.subject);
+            ((TextView) card.findViewById(R.id.tvSlotLecturer)).setText(slot.lecturer);
+            container.addView(card);
+        }
+    }
+
+    private void bindToolsTab() {
+        binding.tabTools.chipCompress100.setOnClickListener(v -> selectCompressPreset(0));
+        binding.tabTools.chipCompress500.setOnClickListener(v -> selectCompressPreset(1));
+        binding.tabTools.chipCompress3x4.setOnClickListener(v -> selectCompressPreset(2));
+        binding.tabTools.btnRunCompress.setOnClickListener(v -> {
+            String presetName = selectedCompressPreset == 0 ? "dưới 100 KB"
+                    : (selectedCompressPreset == 1 ? "dưới 500 KB" : "chuẩn ảnh thẻ 3x4");
+            Toast.makeText(this, "Đã sẵn sàng cấu hình nén ảnh " + presetName, Toast.LENGTH_SHORT).show();
         });
 
-        binding.cardToolNotes.setOnClickListener(v -> {
-            Intent intent = new Intent(this, NotesActivity.class);
-            if (animationsEnabled()) {
-                ActivityOptionsCompat transition = ActivityOptionsCompat.makeCustomAnimation(
-                        this, R.anim.dashboard_enter, R.anim.dashboard_exit);
-                startActivity(intent, transition.toBundle());
-            } else {
-                startActivity(intent);
+        binding.tabTools.chipOcrSample1.setOnClickListener(v -> selectOcrSample(0));
+        binding.tabTools.chipOcrSample2.setOnClickListener(v -> selectOcrSample(1));
+        binding.tabTools.btnCopyOcr.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null) {
+                ClipData clip = ClipData.newPlainText("ocr_text", binding.tabTools.tvOcrOutput.getText());
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(this, "Đã sao chép nội dung OCR vào bộ nhớ tạm", Toast.LENGTH_SHORT).show();
             }
         });
 
-        binding.cardToolTimetable.setOnClickListener(v ->
-                showToast("Thời khóa biểu: Ca 2 · PRM392 (Phòng 302)")
+        binding.tabTools.btnToolOpenNotes.setOnClickListener(v -> openNotesActivity());
+        binding.tabTools.btnToolNewNote.setOnClickListener(v ->
+                startActivity(new Intent(this, NoteEditorActivity.class))
         );
     }
 
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    private void selectCompressPreset(int preset) {
+        selectedCompressPreset = preset;
+        TextView[] chips = new TextView[]{
+                binding.tabTools.chipCompress100,
+                binding.tabTools.chipCompress500,
+                binding.tabTools.chipCompress3x4
+        };
+        for (int i = 0; i < chips.length; i++) {
+            boolean active = i == preset;
+            chips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+            chips[i].setTextColor(ContextCompat.getColor(this, active ? R.color.white : R.color.ink_primary));
+        }
+
+        if (preset == 0) {
+            binding.tabTools.tvCompressSpec.setText("Định dạng JPEG · Chất lượng 82% · 1280 x 960 px");
+            binding.tabTools.tvCompressEstimate.setText("Ảnh gốc 3.4 MB giảm còn 94 KB");
+        } else if (preset == 1) {
+            binding.tabTools.tvCompressSpec.setText("Định dạng JPEG · Chất lượng 92% · 2048 x 1536 px");
+            binding.tabTools.tvCompressEstimate.setText("Ảnh gốc 3.4 MB giảm còn 420 KB");
+        } else {
+            binding.tabTools.tvCompressSpec.setText("Ảnh chân dung 3x4 · 300 DPI · Nền sáng đồng nhất");
+            binding.tabTools.tvCompressEstimate.setText("Kích thước chuẩn 354 x 472 px · 148 KB");
+        }
+    }
+
+    private void selectOcrSample(int sample) {
+        selectedOcrSample = sample;
+        boolean s1 = sample == 0;
+        binding.tabTools.chipOcrSample1.setBackgroundResource(s1 ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+        binding.tabTools.chipOcrSample1.setTextColor(ContextCompat.getColor(this, s1 ? R.color.white : R.color.ink_primary));
+        binding.tabTools.chipOcrSample2.setBackgroundResource(!s1 ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+        binding.tabTools.chipOcrSample2.setTextColor(ContextCompat.getColor(this, !s1 ? R.color.white : R.color.ink_primary));
+
+        if (s1) {
+            binding.tabTools.tvOcrOutput.setText(
+                    "Chương 5: Thiết kế giao diện thích ứng\n"
+                            + "1. Đảm bảo vùng chạm tối thiểu 48dp cho mọi nút tương tác.\n"
+                            + "2. Giữ tỷ lệ tương phản chữ trên nền kính tối thiểu 4.5:1."
+            );
+        } else {
+            binding.tabTools.tvOcrOutput.setText(
+                    "Biên bản họp nhóm tuần 07\n"
+                            + "Hoàn thiện module nén ảnh hồ sơ trước thứ Sáu.\n"
+                            + "Kiểm thử tích hợp SQLite trên thiết bị API 24 trở lên."
+            );
+        }
+    }
+
+    private void bindProfileTab() {
+        updateGpaSimulation(binding.tabProfile.seekSimulatedScore.getProgress());
+        binding.tabProfile.seekSimulatedScore.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                updateGpaSimulation(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+        binding.tabProfile.btnProfileNotes.setOnClickListener(v -> openNotesActivity());
+    }
+
+    private void updateGpaSimulation(int progressValue) {
+        float scoreTen = progressValue / 10f;
+        float scoreFour = scoreTen * 0.4f;
+        float projectedGpa = Math.min(4.0f, (3.44f * 0.85f) + (scoreFour * 0.15f));
+
+        binding.tabProfile.tvSimulatedScore.setText(String.format(Locale.US, "Điểm dự kiến học phần hiện tại: %.1f / 10", scoreTen));
+        binding.tabProfile.tvGpaProjected.setText(String.format(Locale.US, "%.2f / 4.0", projectedGpa));
+        binding.tabProfile.pbGpaMeter.setProgress(Math.round(projectedGpa * 100f));
+
+        if (projectedGpa >= 3.60f) {
+            binding.tabProfile.tvGpaRankBadge.setText("Xuất sắc");
+            binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_success_soft);
+            binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
+        } else if (projectedGpa >= 3.20f) {
+            binding.tabProfile.tvGpaRankBadge.setText("Giỏi");
+            binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_accent_soft);
+            binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_sapphire));
+        } else {
+            binding.tabProfile.tvGpaRankBadge.setText("Khá");
+            binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_neutral_soft);
+            binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.ink_secondary));
+        }
+    }
+
+    private void bindDockNavigation() {
+        binding.dockTabHome.setOnClickListener(v -> switchTab(0));
+        binding.dockTabCalendar.setOnClickListener(v -> switchTab(1));
+        binding.dockTabTools.setOnClickListener(v -> switchTab(2));
+        binding.dockTabProfile.setOnClickListener(v -> switchTab(3));
+    }
+
+    private void applySavedSelections() {
+        selectScheduleDay(selectedDayIndex);
+        selectCompressPreset(selectedCompressPreset);
+        selectOcrSample(selectedOcrSample);
+        switchTab(selectedTab);
+    }
+
+    private void switchTab(int index) {
+        selectedTab = index;
+
+        View[] containers = new View[]{
+                binding.tabHome.getRoot(),
+                binding.tabCalendar.getRoot(),
+                binding.tabTools.getRoot(),
+                binding.tabProfile.getRoot()
+        };
+        LinearLayout[] dockTabs = new LinearLayout[]{
+                binding.dockTabHome,
+                binding.dockTabCalendar,
+                binding.dockTabTools,
+                binding.dockTabProfile
+        };
+        ImageView[] dockIcons = new ImageView[]{
+                binding.ivDockHome,
+                binding.ivDockCalendar,
+                binding.ivDockTools,
+                binding.ivDockProfile
+        };
+        TextView[] dockLabels = new TextView[]{
+                binding.tvDockHome,
+                binding.tvDockCalendar,
+                binding.tvDockTools,
+                binding.tvDockProfile
+        };
+        String[] headers = new String[]{
+                "Mini Pocket Kit",
+                "Lịch học tuần",
+                "Tiện ích nhanh",
+                "Hồ sơ học tập"
+        };
+
+        int activeColor = ContextCompat.getColor(this, R.color.accent_sapphire);
+        int inactiveColor = ContextCompat.getColor(this, R.color.ink_secondary);
+
+        binding.tvHeaderTitle.setText(headers[index]);
+
+        for (int i = 0; i < containers.length; i++) {
+            boolean active = i == index;
+            containers[i].setVisibility(active ? View.VISIBLE : View.GONE);
+            if (active) {
+                dockTabs[i].setBackgroundResource(R.drawable.bg_dock_active_pill);
+                dockIcons[i].setColorFilter(activeColor);
+                dockLabels[i].setTextColor(activeColor);
+                dockLabels[i].setTypeface(null, Typeface.BOLD);
+            } else {
+                dockTabs[i].setBackgroundResource(android.R.color.transparent);
+                dockIcons[i].setColorFilter(inactiveColor);
+                dockLabels[i].setTextColor(inactiveColor);
+                dockLabels[i].setTypeface(null, Typeface.NORMAL);
+            }
+        }
+        binding.mainScrollView.scrollTo(0, 0);
+    }
+
+    private void openNotesActivity() {
+        Intent intent = new Intent(this, NotesActivity.class);
+        if (areAnimationsEnabled()) {
+            ActivityOptionsCompat transition = ActivityOptionsCompat.makeCustomAnimation(
+                    this, R.anim.dashboard_enter, R.anim.dashboard_exit);
+            startActivity(intent, transition.toBundle());
+        } else {
+            startActivity(intent);
+        }
+    }
+
+    private boolean areAnimationsEnabled() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return ValueAnimator.areAnimatorsEnabled();
+        }
+        float scale = Settings.Global.getFloat(
+                getContentResolver(),
+                Settings.Global.ANIMATOR_DURATION_SCALE,
+                1.0f
+        );
+        return scale != 0f;
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 }

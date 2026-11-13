@@ -1,25 +1,25 @@
 <resources>
-    <color name="dashboard_background">#F2F2F7</color>
-    <color name="dashboard_surface">#FFFFFF</color>
-    <color name="dashboard_secondary">#64646D</color>
-    <color name="dashboard_text">#08080A</color>
-    <color name="dashboard_segment">#E5E5EA</color>
-    <color name="dashboard_dock">#F4F4F8</color>
-    <color name="dashboard_deadline_text">#C52923</color>
-    <color name="dashboard_green_text">#157B36</color>
-    <color name="dashboard_accent">#0068DD</color>
-    <color name="dashboard_red">#FF453A</color>
-    <color name="dashboard_green">#28CC56</color>
-    <color name="dashboard_teal">#00C2BD</color>
-    <color name="dashboard_glass_stroke">#14000000</color>
-    <color name="dashboard_capsule_active">#121215</color>
-    <color name="dashboard_capsule_active_text">#FFFFFF</color>
-    <color name="dashboard_card_dark">#121215</color>
-    <color name="dashboard_card_dark_stroke">#1AFFFFFF</color>
-    <color name="dashboard_card_lavender">#F5F3FF</color>
-    <color name="dashboard_card_lavender_stroke">#1A8B5CF6</color>
-    <color name="dashboard_card_lavender_text">#5B21B6</color>
-    <color name="dashboard_timeline_line">#E5E7EB</color>
+    <color name="dashboard_background">#FFEBF1F8</color>
+    <color name="dashboard_surface">#D9FFFFFF</color>
+    <color name="dashboard_secondary">#FF475569</color>
+    <color name="dashboard_text">#FF0F172A</color>
+    <color name="dashboard_segment">#FFE2E8F0</color>
+    <color name="dashboard_dock">#EEFFFFFF</color>
+    <color name="dashboard_deadline_text">#FFDC2626</color>
+    <color name="dashboard_green_text">#FF0F766E</color>
+    <color name="dashboard_accent">#FF007AFF</color>
+    <color name="dashboard_red">#FFDC2626</color>
+    <color name="dashboard_green">#FF14B8A6</color>
+    <color name="dashboard_teal">#FF38BDF8</color>
+    <color name="dashboard_glass_stroke">#FFD9E5F2</color>
+    <color name="dashboard_capsule_active">#FF007AFF</color>
+    <color name="dashboard_capsule_active_text">#FFFFFFFF</color>
+    <color name="dashboard_card_dark">#FF0F172A</color>
+    <color name="dashboard_card_dark_stroke">#33FFFFFF</color>
+    <color name="dashboard_card_lavender">#E0FFFFFF</color>
+    <color name="dashboard_card_lavender_stroke">#FFD9E5F2</color>
+    <color name="dashboard_card_lavender_text">#FF0F172A</color>
+    <color name="dashboard_timeline_line">#FFD6E2EE</color>
 
     <string name="dashboard_appearance">Giao diện</string>
     <string name="dashboard_tasks_left">%1$d việc còn lại</string>
@@ -34,7 +34,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginBottom">12dp</item>
         <item name="cardBackgroundColor">@color/dashboard_surface</item>
-        <item name="cardCornerRadius">22dp</item>
+        <item name="cardCornerRadius">24dp</item>
         <item name="cardElevation">0dp</item>
         <item name="strokeWidth">1dp</item>
         <item name="strokeColor">@color/dashboard_glass_stroke</item>
@@ -57,7 +57,7 @@
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:fontFeatureSettings">tnum</item>
         <item name="android:textColor">@color/dashboard_text</item>
-        <item name="android:textSize">33sp</item>
+        <item name="android:textSize">32sp</item>
         <item name="android:layout_marginTop">4dp</item>
         <item name="android:includeFontPadding">false</item>
     </style>
@@ -66,14 +66,16 @@
         <item name="android:background">@drawable/dashboard_pill</item>
         <item name="android:backgroundTint">@color/dashboard_segment</item>
         <item name="android:foreground">?attr/selectableItemBackground</item>
-        <item name="android:clipToOutline">true</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
         <item name="android:gravity">center</item>
-        <item name="android:minHeight">36dp</item>
-        <item name="android:paddingHorizontal">10dp</item>
-        <item name="android:paddingVertical">4dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
         <item name="android:textColor">@color/dashboard_text</item>
+        <item name="android:textSize">13sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
@@ -86,8 +88,9 @@
         <item name="android:drawablePadding">3dp</item>
         <item name="android:gravity">center</item>
         <item name="android:minHeight">48dp</item>
-        <item name="android:paddingVertical">3dp</item>
-        <item name="android:textSize">11sp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 </resources>
