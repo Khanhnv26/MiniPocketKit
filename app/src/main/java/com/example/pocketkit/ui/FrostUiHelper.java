@@ -1,6 +1,7 @@
 package com.example.pocketkit.ui;
 
 import android.animation.ValueAnimator;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.RenderEffect;
@@ -18,9 +19,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -34,11 +38,36 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.pocketkit.R;
+import com.example.pocketkit.model.ScheduleSlot;
+import com.example.pocketkit.transfer.ScheduleTransferHelper;
+
+import java.util.List;
+import java.util.Locale;
 
 public final class FrostUiHelper {
 
     public interface OnCategoryCreatedListener {
         void onCategoryCreated(@NonNull String categoryName);
+    }
+
+    public interface OnScheduleSavedListener {
+        void onScheduleSaved(@NonNull ScheduleSlot slot);
+    }
+
+    public interface OnScheduleDeletedListener {
+        void onScheduleDeleted(@NonNull ScheduleSlot slot);
+    }
+
+    public interface OnImportActionListener {
+        void onImportConfirmed(boolean replaceExisting);
+    }
+
+    public interface OnExportActionListener {
+        void onSaveSchedules(@NonNull ScheduleTransferHelper.TransferFormat format);
+
+        void onShareSchedules(@NonNull ScheduleTransferHelper.TransferFormat format);
+
+        void onExportTemplate(@NonNull ScheduleTransferHelper.TransferFormat format);
     }
 
     private FrostUiHelper() {
@@ -136,7 +165,7 @@ public final class FrostUiHelper {
     ) {
         AppCompatDialog dialog = new AppCompatDialog(context);
         dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-        View content = LayoutInflater.from(context).inflate(R.layout.dialog_frost_input, null);
+        View content = inflateDialogView(context, R.layout.dialog_frost_input);
         dialog.setContentView(content);
 
         TextView tvTitle = content.findViewById(R.id.tvDialogTitle);
@@ -183,7 +212,7 @@ public final class FrostUiHelper {
     ) {
         AppCompatDialog dialog = new AppCompatDialog(context);
         dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-        View content = LayoutInflater.from(context).inflate(R.layout.dialog_frost_confirm, null);
+        View content = inflateDialogView(context, R.layout.dialog_frost_confirm);
         dialog.setContentView(content);
 
         TextView tvTitle = content.findViewById(R.id.tvConfirmTitle);
@@ -211,6 +240,349 @@ public final class FrostUiHelper {
 
         configureFrostDialogWindow(dialog, false);
         dialog.show();
+    }
+
+    public static void showScheduleEditorDialog(
+            @NonNull Context context,
+            @Nullable ScheduleSlot existingSlot,
+            int defaultDayOfWeek,
+            @NonNull OnScheduleSavedListener saveListener,
+            @Nullable OnScheduleDeletedListener deleteListener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_schedule);
+        dialog.setContentView(content);
+
+        TextView tvTitle = content.findViewById(R.id.tvScheduleDialogTitle);
+        EditText edtSubject = content.findViewById(R.id.edtScheduleSubject);
+        EditText edtRoom = content.findViewById(R.id.edtScheduleRoom);
+        EditText edtLecturer = content.findViewById(R.id.edtScheduleLecturer);
+        EditText edtNote = content.findViewById(R.id.edtScheduleNote);
+        LinearLayout btnStartTime = content.findViewById(R.id.btnDialogStartTime);
+        LinearLayout btnEndTime = content.findViewById(R.id.btnDialogEndTime);
+        TextView tvStartTime = content.findViewById(R.id.tvDialogStartTimeValue);
+        TextView tvEndTime = content.findViewById(R.id.tvDialogEndTimeValue);
+        TextView btnCancel = content.findViewById(R.id.btnScheduleDialogCancel);
+        TextView btnSave = content.findViewById(R.id.btnScheduleDialogSave);
+        TextView btnDelete = content.findViewById(R.id.btnScheduleDialogDelete);
+
+        TextView[] dayChips = new TextView[]{
+                content.findViewById(R.id.chipDialogT2),
+                content.findViewById(R.id.chipDialogT3),
+                content.findViewById(R.id.chipDialogT4),
+                content.findViewById(R.id.chipDialogT5),
+                content.findViewById(R.id.chipDialogT6),
+                content.findViewById(R.id.chipDialogT7)
+        };
+
+        boolean editing = existingSlot != null;
+        tvTitle.setText(editing ? R.string.schedule_dialog_edit_title : R.string.schedule_dialog_add_title);
+
+        final int[] selectedDay = new int[]{
+                editing ? existingSlot.getDayOfWeek() : clampDayOfWeek(defaultDayOfWeek)
+        };
+        final String[] startTime = new String[]{
+                editing && existingSlot.getStartTime() != null
+                        ? existingSlot.getStartTime()
+                        : context.getString(R.string.schedule_default_start_time)
+        };
+        final String[] endTime = new String[]{
+                editing && existingSlot.getEndTime() != null
+                        ? existingSlot.getEndTime()
+                        : context.getString(R.string.schedule_default_end_time)
+        };
+
+        if (editing) {
+            edtSubject.setText(existingSlot.getSubject());
+            edtRoom.setText(existingSlot.getRoom());
+            edtLecturer.setText(existingSlot.getLecturer());
+            edtNote.setText(existingSlot.getNote());
+        }
+
+        Runnable refreshChips = () -> {
+            for (int i = 0; i < dayChips.length; i++) {
+                boolean active = (i + ScheduleSlot.DAY_MIN) == selectedDay[0];
+                dayChips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+                dayChips[i].setTextColor(ContextCompat.getColor(context, active ? R.color.white : R.color.ink_primary));
+            }
+        };
+        refreshChips.run();
+
+        for (int i = 0; i < dayChips.length; i++) {
+            final int dayValue = i + ScheduleSlot.DAY_MIN;
+            dayChips[i].setOnClickListener(v -> {
+                selectedDay[0] = dayValue;
+                refreshChips.run();
+            });
+        }
+
+        tvStartTime.setText(startTime[0]);
+        tvEndTime.setText(endTime[0]);
+
+        btnStartTime.setOnClickListener(v -> showTimePicker(context, startTime[0], picked -> {
+            startTime[0] = picked;
+            tvStartTime.setText(picked);
+        }));
+
+        btnEndTime.setOnClickListener(v -> showTimePicker(context, endTime[0], picked -> {
+            endTime[0] = picked;
+            tvEndTime.setText(picked);
+        }));
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        btnSave.setOnClickListener(v -> {
+            String subject = edtSubject.getText().toString().trim();
+            if (subject.isEmpty()) {
+                edtSubject.setError(context.getString(R.string.schedule_error_empty_subject));
+                edtSubject.requestFocus();
+                return;
+            }
+            int startMinutes = ScheduleSlot.toMinutes(startTime[0]);
+            int endMinutes = ScheduleSlot.toMinutes(endTime[0]);
+            if (startMinutes < 0 || endMinutes <= startMinutes) {
+                Toast.makeText(context, R.string.schedule_error_invalid_time, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            ScheduleSlot result = ScheduleSlot.builder()
+                    .id(editing ? existingSlot.getId() : 0)
+                    .dayOfWeek(selectedDay[0])
+                    .startTime(startTime[0])
+                    .endTime(endTime[0])
+                    .subject(subject)
+                    .room(edtRoom.getText().toString().trim())
+                    .lecturer(edtLecturer.getText().toString().trim())
+                    .note(edtNote.getText().toString().trim())
+                    .build();
+            dialog.dismiss();
+            saveListener.onScheduleSaved(result);
+        });
+
+        if (editing && deleteListener != null) {
+            btnDelete.setVisibility(View.VISIBLE);
+            btnDelete.setOnClickListener(v -> {
+                dialog.dismiss();
+                deleteListener.onScheduleDeleted(existingSlot);
+            });
+        }
+
+        configureFrostDialogWindow(dialog, !editing);
+        dialog.show();
+    }
+
+    public static void showImportPreviewDialog(
+            @NonNull Context context,
+            @NonNull String fileName,
+            @NonNull ScheduleTransferHelper.ImportResult result,
+            @NonNull OnImportActionListener listener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_schedule_import);
+        dialog.setContentView(content);
+
+        TextView tvSummary = content.findViewById(R.id.tvImportSummary);
+        TextView tvIssues = content.findViewById(R.id.tvImportIssues);
+        TextView btnMerge = content.findViewById(R.id.btnImportMerge);
+        TextView btnReplace = content.findViewById(R.id.btnImportReplace);
+        TextView btnCancel = content.findViewById(R.id.btnImportCancel);
+
+        tvSummary.setText(context.getString(
+                R.string.schedule_import_summary_format,
+                fileName,
+                getFormatDisplayLabel(context, result.detectedFormat),
+                result.validSlots.size(),
+                result.totalRows
+        ));
+
+        if (!result.issues.isEmpty()) {
+            tvIssues.setVisibility(View.VISIBLE);
+            tvIssues.setText(context.getString(
+                    R.string.schedule_import_skipped_format,
+                    result.issues.size(),
+                    formatIssueSamples(context, result.issues)
+            ));
+        }
+
+        btnMerge.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.onImportConfirmed(false);
+        });
+
+        btnReplace.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.onImportConfirmed(true);
+        });
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        configureFrostDialogWindow(dialog, false);
+        dialog.show();
+    }
+
+    public static void showExportOptionsDialog(
+            @NonNull Context context,
+            int totalSlots,
+            @NonNull OnExportActionListener listener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_schedule_export);
+        dialog.setContentView(content);
+
+        TextView tvSummary = content.findViewById(R.id.tvExportSummary);
+        TextView chipXlsx = content.findViewById(R.id.chipExportXlsx);
+        TextView chipCsv = content.findViewById(R.id.chipExportCsv);
+        TextView chipJson = content.findViewById(R.id.chipExportJson);
+        TextView btnSave = content.findViewById(R.id.btnExportSave);
+        TextView btnShare = content.findViewById(R.id.btnExportShare);
+        TextView btnTemplate = content.findViewById(R.id.btnExportTemplate);
+        TextView btnClose = content.findViewById(R.id.btnExportClose);
+
+        tvSummary.setText(context.getString(R.string.schedule_export_summary_format, totalSlots));
+
+        final ScheduleTransferHelper.TransferFormat[] selectedFormat = new ScheduleTransferHelper.TransferFormat[]{
+                ScheduleTransferHelper.TransferFormat.XLSX
+        };
+        TextView[] formatChips = new TextView[]{chipXlsx, chipCsv, chipJson};
+        ScheduleTransferHelper.TransferFormat[] formats = new ScheduleTransferHelper.TransferFormat[]{
+                ScheduleTransferHelper.TransferFormat.XLSX,
+                ScheduleTransferHelper.TransferFormat.CSV,
+                ScheduleTransferHelper.TransferFormat.JSON
+        };
+
+        Runnable refreshFormatChips = () -> {
+            for (int i = 0; i < formatChips.length; i++) {
+                boolean active = formats[i] == selectedFormat[0];
+                formatChips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+                formatChips[i].setTextColor(ContextCompat.getColor(context, active ? R.color.white : R.color.ink_primary));
+            }
+        };
+        refreshFormatChips.run();
+
+        for (int i = 0; i < formatChips.length; i++) {
+            final ScheduleTransferHelper.TransferFormat fmt = formats[i];
+            formatChips[i].setOnClickListener(v -> {
+                selectedFormat[0] = fmt;
+                refreshFormatChips.run();
+            });
+        }
+
+        btnSave.setOnClickListener(v -> {
+            if (totalSlots <= 0) {
+                Toast.makeText(context, R.string.schedule_export_empty_error, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            dialog.dismiss();
+            listener.onSaveSchedules(selectedFormat[0]);
+        });
+
+        btnShare.setOnClickListener(v -> {
+            if (totalSlots <= 0) {
+                Toast.makeText(context, R.string.schedule_export_empty_error, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            dialog.dismiss();
+            listener.onShareSchedules(selectedFormat[0]);
+        });
+
+        btnTemplate.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.onExportTemplate(selectedFormat[0]);
+        });
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        configureFrostDialogWindow(dialog, false);
+        dialog.show();
+    }
+
+    @NonNull
+    public static String getFormatDisplayLabel(
+            @NonNull Context context,
+            @NonNull ScheduleTransferHelper.TransferFormat format
+    ) {
+        switch (format) {
+            case XLSX:
+                return context.getString(R.string.schedule_export_format_xlsx);
+            case CSV:
+                return context.getString(R.string.schedule_export_format_csv);
+            case JSON:
+            default:
+                return context.getString(R.string.schedule_export_format_json);
+        }
+    }
+
+    private interface OnTimePickedListener {
+        void onTimePicked(@NonNull String formattedTime);
+    }
+
+    private static void showTimePicker(
+            @NonNull Context context,
+            @NonNull String currentTime,
+            @NonNull OnTimePickedListener listener
+    ) {
+        int totalMinutes = ScheduleSlot.toMinutes(currentTime);
+        int initHour = totalMinutes >= 0 ? totalMinutes / 60 : 7;
+        int initMinute = totalMinutes >= 0 ? totalMinutes % 60 : 30;
+        new TimePickerDialog(
+                context,
+                (view, hourOfDay, minute) -> listener.onTimePicked(
+                        String.format(Locale.US, "%02d:%02d", hourOfDay, minute)
+                ),
+                initHour,
+                initMinute,
+                true
+        ).show();
+    }
+
+    private static String formatIssueSamples(
+            @NonNull Context context,
+            @NonNull List<ScheduleTransferHelper.RowIssue> issues
+    ) {
+        StringBuilder sb = new StringBuilder();
+        int limit = Math.min(2, issues.size());
+        for (int i = 0; i < limit; i++) {
+            ScheduleTransferHelper.RowIssue issue = issues.get(i);
+            if (i > 0) {
+                sb.append("; ");
+            }
+            sb.append(context.getString(
+                    R.string.schedule_import_issue_row_format,
+                    issue.rowNumber,
+                    getIssueReason(context, issue.issueType)
+            ));
+        }
+        return sb.toString();
+    }
+
+    private static String getIssueReason(
+            @NonNull Context context,
+            @NonNull ScheduleTransferHelper.IssueType type
+    ) {
+        switch (type) {
+            case INVALID_DAY:
+                return context.getString(R.string.schedule_import_issue_day);
+            case INVALID_TIME:
+                return context.getString(R.string.schedule_import_issue_time);
+            case INVALID_RANGE:
+                return context.getString(R.string.schedule_import_issue_range);
+            case EMPTY_SUBJECT:
+            default:
+                return context.getString(R.string.schedule_import_issue_subject);
+        }
+    }
+
+    private static int clampDayOfWeek(int dayOfWeek) {
+        if (dayOfWeek < ScheduleSlot.DAY_MIN || dayOfWeek > ScheduleSlot.DAY_MAX) {
+            return ScheduleSlot.DAY_MIN;
+        }
+        return dayOfWeek;
+    }
+
+    private static View inflateDialogView(@NonNull Context context, @LayoutRes int layoutRes) {
+        return LayoutInflater.from(context).inflate(layoutRes, new FrameLayout(context), false);
     }
 
     private static void configureFrostDialogWindow(@NonNull AppCompatDialog dialog, boolean showKeyboard) {

@@ -8,10 +8,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/section_gap"
         android:background="@drawable/bg_glass_hero"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,9 +28,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="HỌC KỲ THU · TUẦN 07"
+                    android:text="@string/schedule_kicker"
                     android:textColor="@color/accent_sapphire"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/text_size_caption"
                     android:textStyle="bold" />
 
                 <TextView
@@ -38,9 +38,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Lịch học Thứ Tư"
+                    android:text="@string/schedule_day_full_4"
                     android:textColor="@color/ink_primary"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/text_size_header_day"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -49,11 +49,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_pill_success_soft"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
-                android:text="2 ca học"
+                android:paddingHorizontal="@dimen/badge_padding_h"
+                android:paddingVertical="@dimen/badge_padding_v"
                 android:textColor="@color/accent_mint_text"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -61,7 +60,7 @@
             android:id="@+id/dayChipRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/section_gap"
             android:orientation="horizontal">
 
             <TextView
@@ -73,92 +72,200 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="T2"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/schedule_day_short_2"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipDayT3"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/day_chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="T3"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/schedule_day_short_3"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipDayT4"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/day_chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_selected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="T4"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/schedule_day_short_4"
                 android:textColor="@color/white"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipDayT5"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/day_chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="T5"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/schedule_day_short_5"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipDayT6"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/day_chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="T6"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/schedule_day_short_6"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipDayT7"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/day_chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="T7"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/schedule_day_short_7"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/card_gap"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnScheduleAdd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.15"
+                android:background="@drawable/bg_pill_primary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:paddingHorizontal="@dimen/chip_gap"
+                android:singleLine="true"
+                android:text="@string/schedule_action_add"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnScheduleImport"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/chip_gap"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pill_secondary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:paddingHorizontal="@dimen/chip_gap"
+                android:singleLine="true"
+                android:text="@string/schedule_action_import"
+                android:textColor="@color/ink_primary"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnScheduleExport"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/chip_gap"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pill_accent_soft"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:paddingHorizontal="@dimen/chip_gap"
+                android:singleLine="true"
+                android:text="@string/schedule_action_export"
+                android:textColor="@color/accent_sapphire"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/cardCalendarEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/card_gap"
+        android:background="@drawable/bg_glass_card"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/card_padding"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/schedule_empty_title"
+            android:textColor="@color/ink_primary"
+            android:textSize="@dimen/text_size_card_title"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dialog_label_gap"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="@string/schedule_empty_subtitle"
+            android:textColor="@color/ink_secondary"
+            android:textSize="@dimen/text_size_body" />
+
+        <TextView
+            android:id="@+id/btnScheduleEmptyAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/section_gap"
+            android:background="@drawable/bg_pill_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_target_min"
+            android:paddingHorizontal="@dimen/card_padding"
+            android:text="@string/schedule_empty_action"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_body"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout

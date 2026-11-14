@@ -62,4 +62,118 @@
 
     <string name="notes_summary_pinned_bar">%1$s · %2$s</string>
     <string name="tools_notes_count_format">Đang lưu %1$d ghi chú ngoại tuyến</string>
+
+    <string name="schedule_kicker">THỜI KHÓA BIỂU TUẦN</string>
+    <string name="schedule_count_badge_format">%1$d ca học</string>
+    <string name="schedule_day_short_2">T2</string>
+    <string name="schedule_day_short_3">T3</string>
+    <string name="schedule_day_short_4">T4</string>
+    <string name="schedule_day_short_5">T5</string>
+    <string name="schedule_day_short_6">T6</string>
+    <string name="schedule_day_short_7">T7</string>
+    <string name="schedule_day_full_2">Lịch học Thứ Hai</string>
+    <string name="schedule_day_full_3">Lịch học Thứ Ba</string>
+    <string name="schedule_day_full_4">Lịch học Thứ Tư</string>
+    <string name="schedule_day_full_5">Lịch học Thứ Năm</string>
+    <string name="schedule_day_full_6">Lịch học Thứ Sáu</string>
+    <string name="schedule_day_full_7">Lịch học Thứ Bảy</string>
+    <string name="schedule_day_name_2">Thứ 2</string>
+    <string name="schedule_day_name_3">Thứ 3</string>
+    <string name="schedule_day_name_4">Thứ 4</string>
+    <string name="schedule_day_name_5">Thứ 5</string>
+    <string name="schedule_day_name_6">Thứ 6</string>
+    <string name="schedule_day_name_7">Thứ 7</string>
+    <string name="schedule_action_add">+ Thêm ca</string>
+    <string name="schedule_action_import">Nhập file</string>
+    <string name="schedule_action_export">Xuất file</string>
+    <string name="schedule_empty_title">Chưa có lịch học cho ngày này</string>
+    <string name="schedule_empty_subtitle">Bấm + Thêm ca để tạo thủ công hoặc chọn Nhập file từ Excel (.xlsx), CSV hay JSON.</string>
+    <string name="schedule_empty_action">+ Thêm ca học mới</string>
+    <string name="schedule_time_range_format">%1$s - %2$s</string>
+    <string name="schedule_room_fallback">Chưa rõ phòng</string>
+    <string name="schedule_lecturer_fallback">Chưa cập nhật giảng viên</string>
+    <string name="schedule_default_start_time">07:30</string>
+    <string name="schedule_default_end_time">09:45</string>
+
+    <string-array name="schedule_seed_rows">
+        <item>2|07:30|09:45|Cơ sở dữ liệu nâng cao|Phòng A204|Giảng viên Nguyễn Minh Anh|Ôn lại chuẩn hóa và chỉ mục</item>
+        <item>2|13:30|15:45|Lập trình Di động|Phòng Lab 02|Giảng viên Trần Quốc Bảo|</item>
+        <item>3|09:55|12:10|Hệ điều hành|Phòng B301|Giảng viên Lê Thu Hà|</item>
+        <item>4|07:30|09:45|Lập trình Di động|Phòng A302|Giảng viên Trần Quốc Bảo|</item>
+        <item>4|13:30|15:45|Phát triển Web hiện đại|Phòng C105|Giảng viên Phạm Đức Huy|</item>
+        <item>5|09:55|12:10|Thiết kế giao diện người dùng|Phòng A401|Giảng viên Vũ Ngọc Lan|</item>
+        <item>6|13:30|15:45|Thực hành Dự án Phần mềm|Phòng Lab 04|Giảng viên Nguyễn Minh Anh|Nộp báo cáo tiến độ tuần</item>
+        <item>7|08:30|10:30|Tổng hợp đề cương ôn tập cuối kỳ|Thư viện tầng 2|Tự học theo nhóm|</item>
+    </string-array>
+
+    <string name="schedule_dialog_add_title">Thêm ca học mới</string>
+    <string name="schedule_dialog_edit_title">Chỉnh sửa ca học</string>
+    <string name="schedule_dialog_subject_label">TÊN MÔN HỌC</string>
+    <string name="schedule_dialog_subject_hint">Nhập tên môn học...</string>
+    <string name="schedule_dialog_day_label">THỨ TRONG TUẦN</string>
+    <string name="schedule_dialog_time_label">KHUNG GIỜ HỌC</string>
+    <string name="schedule_dialog_start_label">Bắt đầu</string>
+    <string name="schedule_dialog_end_label">Kết thúc</string>
+    <string name="schedule_dialog_room_label">PHÒNG HỌC</string>
+    <string name="schedule_dialog_room_hint">VD: Phòng A302, Lab 04...</string>
+    <string name="schedule_dialog_lecturer_label">GIẢNG VIÊN</string>
+    <string name="schedule_dialog_lecturer_hint">VD: Giảng viên Trần Quốc Bảo</string>
+    <string name="schedule_dialog_note_label">GHI CHÚ CA HỌC</string>
+    <string name="schedule_dialog_note_hint">Mang laptop, chuẩn bị slide...</string>
+    <string name="schedule_dialog_btn_save">Lưu ca học</string>
+    <string name="schedule_dialog_btn_delete">Xóa ca học này</string>
+    <string name="schedule_error_empty_subject">Vui lòng nhập tên môn học</string>
+    <string name="schedule_error_invalid_time">Giờ kết thúc phải sau giờ bắt đầu</string>
+    <string name="schedule_toast_created">Đã thêm ca học vào %1$s</string>
+    <string name="schedule_toast_updated">Đã cập nhật ca học</string>
+    <string name="schedule_delete_title">Xóa ca học</string>
+    <string name="schedule_delete_message">Bạn muốn xóa ca học \"%1$s\" (%2$s)?</string>
+    <string name="schedule_toast_deleted">Đã xóa ca học</string>
+
+    <string name="schedule_import_title">Xem trước dữ liệu nhập</string>
+    <string name="schedule_import_file_unknown">Tệp thời khóa biểu</string>
+    <string name="schedule_import_summary_format">Tệp: %1$s (%2$s)\nTìm thấy %3$d ca học hợp lệ trong tổng %4$d dòng.</string>
+    <string name="schedule_import_skipped_format">Đã bỏ qua %1$d dòng chưa hợp lệ (%2$s).</string>
+    <string name="schedule_import_mode_hint">Chọn cách áp dụng dữ liệu mới vào thời khóa biểu hiện tại:</string>
+    <string name="schedule_import_btn_merge">Gộp thêm</string>
+    <string name="schedule_import_btn_replace">Ghi đè tất cả</string>
+    <string name="schedule_import_issue_row_format">Dòng %1$d: %2$s</string>
+    <string name="schedule_import_issue_day">thứ phải từ 2 đến 7</string>
+    <string name="schedule_import_issue_time">giờ không đúng HH:mm</string>
+    <string name="schedule_import_issue_range">giờ kết thúc phải sau giờ bắt đầu</string>
+    <string name="schedule_import_issue_subject">thiếu tên môn học</string>
+    <string name="schedule_import_parsing">Đang đọc dữ liệu lịch học...</string>
+    <string name="schedule_import_empty_error">Không tìm thấy ca học hợp lệ nào trong tệp đã chọn.</string>
+    <string name="schedule_import_legacy_xls_error">Vui lòng lưu tệp ở định dạng Excel .xlsx, .csv hoặc .json.</string>
+    <string name="schedule_import_read_error">Không thể đọc tệp đã chọn. Hãy kiểm tra định dạng Excel, CSV hoặc JSON.</string>
+    <string name="schedule_import_merged_toast">Đã gộp thêm %1$d ca học mới</string>
+    <string name="schedule_import_merged_skip_toast">Đã gộp thêm %1$d ca mới (bỏ qua %2$d ca trùng)</string>
+    <string name="schedule_import_replaced_toast">Đã thay thế toàn bộ bằng %1$d ca học</string>
+
+    <string name="schedule_export_title">Xuất và chia sẻ lịch học</string>
+    <string name="schedule_export_summary_format">Hiện có %1$d ca học trong tuần sẵn sàng để lưu về máy hoặc chia sẻ.</string>
+    <string name="schedule_export_format_label">CHỌN ĐỊNH DẠNG TỆP</string>
+    <string name="schedule_export_format_xlsx">Excel (.xlsx)</string>
+    <string name="schedule_export_format_csv">CSV (.csv)</string>
+    <string name="schedule_export_format_json">JSON (.json)</string>
+    <string name="schedule_export_btn_save">Lưu về máy</string>
+    <string name="schedule_export_btn_share">Chia sẻ tệp</string>
+    <string name="schedule_export_btn_template">Tải file mẫu nhập liệu</string>
+    <string name="schedule_export_btn_close">Đóng</string>
+    <string name="schedule_export_empty_error">Chưa có lịch học để xuất. Bạn có thể chọn Tải file mẫu để nhập thử.</string>
+    <string name="schedule_export_saved_toast">Đã lưu tệp lịch học thành công</string>
+    <string name="schedule_export_template_saved_toast">Đã lưu tệp mẫu nhập lịch học</string>
+    <string name="schedule_export_failed_toast">Không thể xuất tệp lịch học</string>
+    <string name="schedule_export_share_chooser">Chia sẻ thời khóa biểu</string>
+    <string name="schedule_export_share_text">Thời khóa biểu học tập xuất từ CampusKit</string>
+    <string name="schedule_export_no_share_app">Không tìm thấy ứng dụng hỗ trợ chia sẻ tệp</string>
+
+    <string name="home_spotlight_next_badge">TIẾT HỌC TIẾP THEO</string>
+    <string name="home_spotlight_active_badge">ĐANG TRONG GIỜ HỌC</string>
+    <string name="home_spotlight_title_format">%1$s · %2$s</string>
+    <string name="home_spotlight_sub_today">%1$s · %2$s</string>
+    <string name="home_spotlight_sub_day">%1$s (%2$s) · %3$s</string>
+    <string name="home_spotlight_empty_title">Chưa có lịch học tiếp theo</string>
+    <string name="home_spotlight_empty_sub">Mở tab Lịch học để thêm hoặc nhập file Excel</string>
+    <string name="home_ring_percent_format">%1$d%%</string>
 </resources>

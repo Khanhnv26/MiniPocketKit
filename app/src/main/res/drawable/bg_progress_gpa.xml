@@ -2,16 +2,18 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@android:id/background">
         <shape android:shape="rectangle">
-            <solid android:color="@color/dashboard_segment" />
-            <corners android:radius="6dp" />
+            <solid android:color="@color/frost_segment" />
+            <corners android:radius="@dimen/radius_pill" />
         </shape>
     </item>
     <item android:id="@android:id/progress">
-        <scale android:scaleWidth="100%">
+        <ScaleDrawable
+            android:scaleWidth="100%"
+            android:scaleGravity="left">
             <shape android:shape="rectangle">
                 <solid android:color="@color/accent_sapphire" />
-                <corners android:radius="6dp" />
+                <corners android:radius="@dimen/radius_pill" />
             </shape>
-        </scale>
+        </ScaleDrawable>
     </item>
 </layer-list>

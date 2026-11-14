@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="@dimen/dialog_outer_padding_h"
+    android:paddingVertical="@dimen/dialog_outer_padding_v">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_dialog_frost"
+            android:orientation="vertical"
+            android:padding="@dimen/dialog_inner_padding">
+
+            <TextView
+                android:id="@+id/tvScheduleDialogTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/ink_primary"
+                android:textSize="@dimen/text_size_dialog_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/schedule_dialog_subject_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/edtScheduleSubject"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:background="@drawable/bg_glass_inner"
+                android:hint="@string/schedule_dialog_subject_hint"
+                android:imeOptions="actionNext"
+                android:inputType="textCapSentences"
+                android:minHeight="@dimen/input_min_height"
+                android:paddingHorizontal="@dimen/chip_padding_h"
+                android:paddingVertical="@dimen/card_gap"
+                android:singleLine="true"
+                android:textColor="@color/ink_primary"
+                android:textColorHint="@color/ink_muted"
+                android:textSize="@dimen/text_size_input" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/schedule_dialog_day_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/chipDialogT2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/schedule_day_short_2"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/chipDialogT3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/day_chip_gap"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/schedule_day_short_3"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/chipDialogT4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/day_chip_gap"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/schedule_day_short_4"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/chipDialogT5"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/day_chip_gap"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/schedule_day_short_5"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/chipDialogT6"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/day_chip_gap"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/schedule_day_short_6"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/chipDialogT7"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/day_chip_gap"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/schedule_day_short_7"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_body"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/schedule_dialog_time_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/btnDialogStartTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_glass_inner"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/chip_padding_h">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/schedule_dialog_start_label"
+                        android:textColor="@color/ink_secondary"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <TextView
+                        android:id="@+id/tvDialogStartTimeValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFeatureSettings="tnum"
+                        android:textColor="@color/accent_sapphire"
+                        android:textSize="@dimen/text_size_input"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/btnDialogEndTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dialog_button_gap"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_glass_inner"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/chip_padding_h">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/schedule_dialog_end_label"
+                        android:textColor="@color/ink_secondary"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <TextView
+                        android:id="@+id/tvDialogEndTimeValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFeatureSettings="tnum"
+                        android:textColor="@color/accent_sapphire"
+                        android:textSize="@dimen/text_size_input"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/schedule_dialog_room_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/edtScheduleRoom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:background="@drawable/bg_glass_inner"
+                android:hint="@string/schedule_dialog_room_hint"
+                android:imeOptions="actionNext"
+                android:inputType="textCapWords"
+                android:minHeight="@dimen/input_min_height"
+                android:paddingHorizontal="@dimen/chip_padding_h"
+                android:paddingVertical="@dimen/card_gap"
+                android:singleLine="true"
+                android:textColor="@color/ink_primary"
+                android:textColorHint="@color/ink_muted"
+                android:textSize="@dimen/text_size_input" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/schedule_dialog_lecturer_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/edtScheduleLecturer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:background="@drawable/bg_glass_inner"
+                android:hint="@string/schedule_dialog_lecturer_hint"
+                android:imeOptions="actionNext"
+                android:inputType="textPersonName|textCapWords"
+                android:minHeight="@dimen/input_min_height"
+                android:paddingHorizontal="@dimen/chip_padding_h"
+                android:paddingVertical="@dimen/card_gap"
+                android:singleLine="true"
+                android:textColor="@color/ink_primary"
+                android:textColorHint="@color/ink_muted"
+                android:textSize="@dimen/text_size_input" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/schedule_dialog_note_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/edtScheduleNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:background="@drawable/bg_glass_inner"
+                android:hint="@string/schedule_dialog_note_hint"
+                android:imeOptions="actionDone"
+                android:inputType="textCapSentences"
+                android:maxLines="2"
+                android:minHeight="@dimen/input_min_height"
+                android:paddingHorizontal="@dimen/chip_padding_h"
+                android:paddingVertical="@dimen/card_gap"
+                android:textColor="@color/ink_primary"
+                android:textColorHint="@color/ink_muted"
+                android:textSize="@dimen/text_size_input" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/card_padding"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btnScheduleDialogCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_pill_secondary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/notes_dialog_cancel"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_input"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnScheduleDialogSave"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dialog_button_gap"
+                    android:layout_weight="1.25"
+                    android:background="@drawable/bg_pill_primary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:text="@string/schedule_dialog_btn_save"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_size_input"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnScheduleDialogDelete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_button_gap"
+                android:background="@drawable/bg_pill_danger_soft"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/schedule_dialog_btn_delete"
+                android:textColor="@color/accent_danger"
+                android:textSize="@dimen/text_size_input"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

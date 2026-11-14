@@ -10,9 +10,13 @@ import androidx.annotation.NonNull;
 
 import com.example.pocketkit.R;
 import com.example.pocketkit.model.Note;
+import com.example.pocketkit.model.ScheduleSlot;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -20,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String FILTER_PINNED = "PINNED";
 
     private static final String DATABASE_NAME = "CampusKit.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     private static final String TABLE_NOTES = "notes";
     private static final String COL_ID = "id";
@@ -35,7 +39,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_CAT_ID = "id";
     private static final String COL_CAT_NAME = "name";
 
+    private static final String TABLE_SCHEDULES = "schedules";
+    private static final String COL_SCH_ID = "id";
+    private static final String COL_SCH_DAY = "day_of_week";
+    private static final String COL_SCH_START = "start_time";
+    private static final String COL_SCH_END = "end_time";
+    private static final String COL_SCH_SUBJECT = "subject";
+    private static final String COL_SCH_ROOM = "room";
+    private static final String COL_SCH_LECTURER = "lecturer";
+    private static final String COL_SCH_NOTE = "note";
+
     private final Context appContext;
+
+    public static final class ImportSummary {
+        public final int insertedCount;
+        public final int skippedDuplicates;
+
+        public ImportSummary(int insertedCount, int skippedDuplicates) {
+            this.insertedCount = insertedCount;
+            this.skippedDuplicates = skippedDuplicates;
+        }
+    }
 
     public DatabaseHelper(@NonNull Context context) {
         super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
@@ -44,24 +68,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + TABLE_NOTES + " (" +
-                COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_TITLE + " TEXT NOT NULL, " +
-                COL_CONTENT + " TEXT, " +
-                COL_SUBJECT + " TEXT, " +
-                COL_IS_PINNED + " INTEGER DEFAULT 0, " +
-                COL_IS_DONE + " INTEGER DEFAULT 0, " +
-                COL_UPDATED_AT + " TEXT)");
-
-        db.execSQL("CREATE TABLE " + TABLE_CATEGORIES + " (" +
-                COL_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_CAT_NAME + " TEXT UNIQUE NOT NULL)");
-
-        seedInitialData(db);
+        createTablesIfNeeded(db);
+        seedInitialNotes(db);
+        seedInitialSchedules(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        createTablesIfNeeded(db);
+
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NOTES, null)) {
+            if (cursor.moveToFirst() && cursor.getInt(0) == 0) {
+                seedInitialNotes(db);
+            }
+        }
+
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_SCHEDULES, null)) {
+            if (cursor.moveToFirst() && cursor.getInt(0) == 0) {
+                seedInitialSchedules(db);
+            }
+        }
+    }
+
+    private void createTablesIfNeeded(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_NOTES + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_TITLE + " TEXT NOT NULL, " +
@@ -75,14 +104,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_CAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_CAT_NAME + " TEXT UNIQUE NOT NULL)");
 
-        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NOTES, null)) {
-            if (cursor.moveToFirst() && cursor.getInt(0) == 0) {
-                seedInitialData(db);
-            }
-        }
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SCHEDULES + " (" +
+                COL_SCH_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_SCH_DAY + " INTEGER NOT NULL, " +
+                COL_SCH_START + " TEXT NOT NULL, " +
+                COL_SCH_END + " TEXT NOT NULL, " +
+                COL_SCH_SUBJECT + " TEXT NOT NULL, " +
+                COL_SCH_ROOM + " TEXT, " +
+                COL_SCH_LECTURER + " TEXT, " +
+                COL_SCH_NOTE + " TEXT)");
     }
 
-    private void seedInitialData(SQLiteDatabase db) {
+    private void seedInitialNotes(SQLiteDatabase db) {
         String cat1 = appContext.getString(R.string.note_seed_category_1);
         String cat2 = appContext.getString(R.string.note_seed_category_2);
 
@@ -108,6 +141,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 .build());
     }
 
+    private void seedInitialSchedules(SQLiteDatabase db) {
+        String[] seedRows = appContext.getResources().getStringArray(R.array.schedule_seed_rows);
+        for (String row : seedRows) {
+            String[] parts = row.split("\\|", -1);
+            if (parts.length < 7) {
+                continue;
+            }
+            try {
+                int day = Integer.parseInt(parts[0].trim());
+                ScheduleSlot slot = ScheduleSlot.builder()
+                        .dayOfWeek(day)
+                        .startTime(parts[1].trim())
+                        .endTime(parts[2].trim())
+                        .subject(parts[3].trim())
+                        .room(parts[4].trim())
+                        .lecturer(parts[5].trim())
+                        .note(parts[6].trim())
+                        .build();
+                insertScheduleInternal(db, slot);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+    }
+
     private void insertCategoryInternal(SQLiteDatabase db, String name) {
         ContentValues values = new ContentValues();
         values.put(COL_CAT_NAME, name.trim());
@@ -123,6 +180,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COL_IS_DONE, note.getIsDone());
         values.put(COL_UPDATED_AT, note.getUpdatedAt());
         db.insert(TABLE_NOTES, null, values);
+    }
+
+    private long insertScheduleInternal(SQLiteDatabase db, ScheduleSlot slot) {
+        return db.insert(TABLE_SCHEDULES, null, toScheduleValues(slot));
+    }
+
+    private ContentValues toScheduleValues(ScheduleSlot slot) {
+        ContentValues values = new ContentValues();
+        values.put(COL_SCH_DAY, slot.getDayOfWeek());
+        values.put(COL_SCH_START, safeTrim(slot.getStartTime()));
+        values.put(COL_SCH_END, safeTrim(slot.getEndTime()));
+        values.put(COL_SCH_SUBJECT, safeTrim(slot.getSubject()));
+        values.put(COL_SCH_ROOM, safeTrim(slot.getRoom()));
+        values.put(COL_SCH_LECTURER, safeTrim(slot.getLecturer()));
+        values.put(COL_SCH_NOTE, safeTrim(slot.getNote()));
+        return values;
+    }
+
+    private String safeTrim(String text) {
+        return text == null ? "" : text.trim();
+    }
+
+    private ScheduleSlot readScheduleCursor(Cursor cursor) {
+        return ScheduleSlot.builder()
+                .id(cursor.getInt(cursor.getColumnIndexOrThrow(COL_SCH_ID)))
+                .dayOfWeek(cursor.getInt(cursor.getColumnIndexOrThrow(COL_SCH_DAY)))
+                .startTime(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCH_START)))
+                .endTime(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCH_END)))
+                .subject(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCH_SUBJECT)))
+                .room(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCH_ROOM)))
+                .lecturer(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCH_LECTURER)))
+                .note(cursor.getString(cursor.getColumnIndexOrThrow(COL_SCH_NOTE)))
+                .build();
+    }
+
+    private String buildScheduleKey(ScheduleSlot slot) {
+        return slot.getDayOfWeek()
+                + "|" + safeTrim(slot.getStartTime())
+                + "|" + safeTrim(slot.getEndTime())
+                + "|" + safeTrim(slot.getSubject()).toLowerCase(Locale.ROOT);
     }
 
     public long insertCategory(String name) {
@@ -238,5 +335,118 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public int deleteNote(int id) {
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(TABLE_NOTES, COL_ID + " = ?", new String[]{String.valueOf(id)});
+    }
+
+    public long insertSchedule(@NonNull ScheduleSlot slot) {
+        SQLiteDatabase db = getWritableDatabase();
+        return insertScheduleInternal(db, slot);
+    }
+
+    public int updateSchedule(@NonNull ScheduleSlot slot) {
+        SQLiteDatabase db = getWritableDatabase();
+        return db.update(TABLE_SCHEDULES, toScheduleValues(slot), COL_SCH_ID + " = ?", new String[]{String.valueOf(slot.getId())});
+    }
+
+    public int deleteSchedule(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+        return db.delete(TABLE_SCHEDULES, COL_SCH_ID + " = ?", new String[]{String.valueOf(id)});
+    }
+
+    public List<ScheduleSlot> getSchedulesByDay(int dayOfWeek) {
+        List<ScheduleSlot> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        String orderBy = COL_SCH_START + " ASC, " + COL_SCH_END + " ASC, " + COL_SCH_ID + " ASC";
+        try (Cursor cursor = db.query(
+                TABLE_SCHEDULES,
+                null,
+                COL_SCH_DAY + " = ?",
+                new String[]{String.valueOf(dayOfWeek)},
+                null,
+                null,
+                orderBy
+        )) {
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(readScheduleCursor(cursor));
+                } while (cursor.moveToNext());
+            }
+        }
+        return list;
+    }
+
+    public List<ScheduleSlot> getAllSchedules() {
+        List<ScheduleSlot> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        String orderBy = COL_SCH_DAY + " ASC, " + COL_SCH_START + " ASC, " + COL_SCH_END + " ASC, " + COL_SCH_ID + " ASC";
+        try (Cursor cursor = db.query(TABLE_SCHEDULES, null, null, null, null, null, orderBy)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(readScheduleCursor(cursor));
+                } while (cursor.moveToNext());
+            }
+        }
+        return list;
+    }
+
+    public int getTotalScheduleCount() {
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_SCHEDULES, null)) {
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+        }
+        return 0;
+    }
+
+    public ImportSummary importSchedules(@NonNull List<ScheduleSlot> incomingSlots, boolean replaceExisting) {
+        SQLiteDatabase db = getWritableDatabase();
+        Set<String> existingKeys = new HashSet<>();
+        int inserted = 0;
+        int skipped = 0;
+
+        db.beginTransaction();
+        try {
+            if (replaceExisting) {
+                db.delete(TABLE_SCHEDULES, null, null);
+            } else {
+                try (Cursor cursor = db.query(
+                        TABLE_SCHEDULES,
+                        new String[]{COL_SCH_DAY, COL_SCH_START, COL_SCH_END, COL_SCH_SUBJECT},
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                )) {
+                    if (cursor.moveToFirst()) {
+                        do {
+                            ScheduleSlot existing = ScheduleSlot.builder()
+                                    .dayOfWeek(cursor.getInt(0))
+                                    .startTime(cursor.getString(1))
+                                    .endTime(cursor.getString(2))
+                                    .subject(cursor.getString(3))
+                                    .build();
+                            existingKeys.add(buildScheduleKey(existing));
+                        } while (cursor.moveToNext());
+                    }
+                }
+            }
+
+            for (ScheduleSlot slot : incomingSlots) {
+                String key = buildScheduleKey(slot);
+                if (existingKeys.contains(key)) {
+                    skipped++;
+                    continue;
+                }
+                if (insertScheduleInternal(db, slot) > 0) {
+                    existingKeys.add(key);
+                    inserted++;
+                }
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        return new ImportSummary(inserted, skipped);
     }
 }

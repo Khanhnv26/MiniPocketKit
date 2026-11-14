@@ -2,10 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
+    android:layout_marginBottom="@dimen/card_gap"
     android:background="@drawable/bg_glass_card"
+    android:clickable="true"
+    android:focusable="true"
     android:orientation="vertical"
-    android:padding="18dp">
+    android:padding="@dimen/card_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,21 +20,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_pill_accent_soft"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="6dp"
+            android:fontFeatureSettings="tnum"
+            android:paddingHorizontal="@dimen/badge_padding_h"
+            android:paddingVertical="@dimen/badge_padding_v"
             android:textColor="@color/accent_sapphire"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_caption"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvSlotRoom"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="@dimen/dialog_button_gap"
             android:layout_weight="1"
             android:gravity="end"
             android:textColor="@color/ink_secondary"
-            android:textSize="13sp"
+            android:textSize="@dimen/text_size_body"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -40,9 +43,9 @@
         android:id="@+id/tvSlotSubject"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/dialog_button_gap"
         android:textColor="@color/ink_primary"
-        android:textSize="17sp"
+        android:textSize="@dimen/text_size_section_title"
         android:textStyle="bold" />
 
     <TextView
@@ -51,5 +54,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textColor="@color/ink_secondary"
-        android:textSize="13sp" />
+        android:textSize="@dimen/text_size_body" />
+
+    <TextView
+        android:id="@+id/tvSlotNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/ink_muted"
+        android:textSize="@dimen/text_size_caption"
+        android:visibility="gone" />
 </LinearLayout>
