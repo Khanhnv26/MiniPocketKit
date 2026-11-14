@@ -265,7 +265,7 @@ public final class FrostUiHelper {
         TextView tvEndTime = content.findViewById(R.id.tvDialogEndTimeValue);
         TextView btnCancel = content.findViewById(R.id.btnScheduleDialogCancel);
         TextView btnSave = content.findViewById(R.id.btnScheduleDialogSave);
-        TextView btnDelete = content.findViewById(R.id.btnScheduleDialogDelete);
+        View btnDelete = content.findViewById(R.id.btnScheduleDialogDelete);
 
         TextView[] dayChips = new TextView[]{
                 content.findViewById(R.id.chipDialogT2),
