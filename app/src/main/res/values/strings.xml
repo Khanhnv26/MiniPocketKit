@@ -115,9 +115,9 @@
     <string name="schedule_dialog_start_label">Bắt đầu</string>
     <string name="schedule_dialog_end_label">Kết thúc</string>
     <string name="schedule_dialog_room_label">PHÒNG HỌC</string>
-    <string name="schedule_dialog_room_hint">VD: Phòng A302, Lab 04...</string>
+    <string name="schedule_dialog_room_hint">VD: A302</string>
     <string name="schedule_dialog_lecturer_label">GIẢNG VIÊN</string>
-    <string name="schedule_dialog_lecturer_hint">VD: Giảng viên Trần Quốc Bảo</string>
+    <string name="schedule_dialog_lecturer_hint">Nhập tên giảng viên</string>
     <string name="schedule_dialog_note_label">GHI CHÚ CA HỌC</string>
     <string name="schedule_dialog_note_hint">Mang laptop, chuẩn bị slide...</string>
     <string name="schedule_dialog_btn_save">Lưu ca học</string>

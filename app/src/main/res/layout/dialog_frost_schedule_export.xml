@@ -49,17 +49,17 @@
                 android:id="@+id/chipExportXlsx"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1.15"
+                android:layout_weight="1.1"
                 android:background="@drawable/bg_chip_selected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:minHeight="@dimen/touch_target_min"
-                android:paddingHorizontal="@dimen/chip_gap"
+                android:paddingHorizontal="4dp"
                 android:singleLine="true"
                 android:text="@string/schedule_export_format_xlsx"
                 android:textColor="@color/white"
-                android:textSize="@dimen/text_size_body"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
 
             <TextView
@@ -67,17 +67,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/day_chip_gap"
-                android:layout_weight="1"
+                android:layout_weight="0.95"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:minHeight="@dimen/touch_target_min"
-                android:paddingHorizontal="@dimen/chip_gap"
+                android:paddingHorizontal="4dp"
                 android:singleLine="true"
                 android:text="@string/schedule_export_format_csv"
                 android:textColor="@color/ink_primary"
-                android:textSize="@dimen/text_size_body"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
 
             <TextView
@@ -85,17 +85,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/day_chip_gap"
-                android:layout_weight="1"
+                android:layout_weight="1.0"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:minHeight="@dimen/touch_target_min"
-                android:paddingHorizontal="@dimen/chip_gap"
+                android:paddingHorizontal="4dp"
                 android:singleLine="true"
                 android:text="@string/schedule_export_format_json"
                 android:textColor="@color/ink_primary"
-                android:textSize="@dimen/text_size_body"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
         </LinearLayout>
 
