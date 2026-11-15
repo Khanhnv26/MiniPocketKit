@@ -9,10 +9,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/section_gap"
         android:background="@drawable/bg_glass_card"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -21,42 +21,42 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="@dimen/icon_size_lg"
+                android:layout_height="@dimen/icon_size_lg"
                 android:background="@drawable/bg_icon_badge"
-                android:contentDescription="Nén ảnh hồ sơ"
-                android:padding="9dp"
+                android:contentDescription="@string/tools_compress_title"
+                android:padding="@dimen/icon_badge_padding"
                 android:src="@drawable/ic_compress"
                 app:tint="@color/accent_sapphire" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="@dimen/card_gap"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nén ảnh hồ sơ"
+                    android:text="@string/tools_compress_title"
                     android:textColor="@color/ink_primary"
-                    android:textSize="17sp"
+                    android:textSize="@dimen/text_size_section_title"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chuẩn hóa dung lượng nộp biểu mẫu"
+                    android:text="@string/tools_compress_subtitle"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="@dimen/text_size_body" />
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/section_gap"
             android:orientation="horizontal">
 
             <TextView
@@ -68,70 +68,70 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="Dưới 100 KB"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_compress_chip_100"
                 android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipCompress500"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="Dưới 500 KB"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_compress_chip_500"
                 android:textColor="@color/ink_primary"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipCompress3x4"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="Ảnh thẻ 3x4"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_compress_chip_3x4"
                 android:textColor="@color/ink_primary"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/card_gap"
             android:background="@drawable/bg_glass_inner"
             android:orientation="vertical"
-            android:padding="14dp">
+            android:padding="@dimen/card_padding_compact">
 
             <TextView
                 android:id="@+id/tvCompressSpec"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Định dạng JPEG · Chất lượng 82%"
+                android:text="@string/tools_compress_spec_100"
                 android:textColor="@color/ink_primary"
-                android:textSize="14sp"
+                android:textSize="@dimen/text_size_input"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvCompressEstimate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="Ảnh gốc 3.4 MB giảm còn 94 KB"
+                android:layout_marginTop="@dimen/tiny_gap"
+                android:text="@string/tools_compress_estimate_100"
                 android:textColor="@color/accent_mint_text"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -139,25 +139,25 @@
             android:id="@+id/btnRunCompress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/card_gap"
             android:background="@drawable/bg_pill_primary"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:minHeight="48dp"
-            android:text="Nén ảnh ngay"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/tools_compress_btn_run"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_input"
             android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/section_gap"
         android:background="@drawable/bg_glass_card"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -166,42 +166,42 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="@dimen/icon_size_lg"
+                android:layout_height="@dimen/icon_size_lg"
                 android:background="@drawable/bg_icon_badge"
-                android:contentDescription="Quét slide OCR"
-                android:padding="9dp"
+                android:contentDescription="@string/tools_ocr_desc"
+                android:padding="@dimen/icon_badge_padding"
                 android:src="@drawable/ic_ocr"
                 app:tint="@color/accent_sapphire" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="@dimen/card_gap"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Quét slide (OCR)"
+                    android:text="@string/tools_ocr_title"
                     android:textColor="@color/ink_primary"
-                    android:textSize="17sp"
+                    android:textSize="@dimen/text_size_section_title"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trích xuất nhanh văn bản tiếng Việt"
+                    android:text="@string/tools_ocr_subtitle"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="@dimen/text_size_body" />
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/section_gap"
             android:orientation="horizontal">
 
             <TextView
@@ -213,26 +213,26 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="Slide bài giảng"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_ocr_chip_slide"
                 android:textColor="@color/white"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipOcrSample2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/chip_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip_unselected"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="Biên bản nhóm"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_ocr_chip_meeting"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -240,26 +240,27 @@
             android:id="@+id/tvOcrOutput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/card_gap"
             android:background="@drawable/bg_glass_inner"
-            android:lineSpacingExtra="4dp"
-            android:padding="14dp"
+            android:lineSpacingExtra="@dimen/line_spacing_md"
+            android:padding="@dimen/card_padding_compact"
+            android:text="@string/tools_ocr_sample_slide"
             android:textColor="@color/ink_primary"
-            android:textSize="13sp" />
+            android:textSize="@dimen/text_size_body" />
 
         <TextView
             android:id="@+id/btnCopyOcr"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/card_gap"
             android:background="@drawable/bg_pill_primary"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:minHeight="48dp"
-            android:text="Sao chép văn bản"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/tools_ocr_btn_copy"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_input"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -268,7 +269,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_glass_card"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -277,43 +278,43 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="@dimen/icon_size_lg"
+                android:layout_height="@dimen/icon_size_lg"
                 android:background="@drawable/bg_icon_badge"
-                android:contentDescription="Sổ ghi chú"
-                android:padding="9dp"
+                android:contentDescription="@string/notes_screen_title"
+                android:padding="@dimen/icon_badge_padding"
                 android:src="@drawable/ic_notes"
                 app:tint="@color/accent_sapphire" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="@dimen/card_gap"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sổ ghi chú ngoại tuyến"
+                    android:text="@string/tools_notes_title"
                     android:textColor="@color/ink_primary"
-                    android:textSize="17sp"
+                    android:textSize="@dimen/text_size_section_title"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvToolNotesCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Lưu trữ SQLite theo từng môn học"
+                    android:text="@string/tools_notes_subtitle_placeholder"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="@dimen/text_size_body" />
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="@dimen/section_gap"
             android:orientation="horizontal">
 
             <TextView
@@ -325,26 +326,26 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="Mở danh sách"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_notes_btn_open"
                 android:textColor="@color/ink_primary"
-                android:textSize="14sp"
+                android:textSize="@dimen/text_size_input"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/btnToolNewNote"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="@dimen/dialog_button_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_pill_primary"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:text="Tạo ghi chú"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_notes_btn_new"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="@dimen/text_size_input"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>

@@ -6,9 +6,13 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_ambient_canvas">
 
-    <include
-        android:id="@+id/ambientBackdrop"
-        layout="@layout/layout_ambient_backdrop" />
+    <FrameLayout
+        android:id="@+id/ambientBackdropView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/layout_ambient_backdrop" />
+    </FrameLayout>
 
     <ScrollView
         android:id="@+id/editorScrollView"
@@ -24,27 +28,28 @@
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/screen_padding_h"
             android:paddingTop="@dimen/screen_padding_top"
-            android:paddingBottom="40dp">
+            android:paddingBottom="@dimen/editor_bottom_padding">
 
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/section_gap"
-                android:minHeight="@dimen/touch_target_min">
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/touch_target_min"
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/btnBackEditor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="start|center_vertical"
                     android:background="@drawable/bg_pill_secondary"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center_vertical"
                     android:minHeight="@dimen/touch_target_min"
                     android:orientation="horizontal"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="14dp">
+                    android:paddingStart="@dimen/pill_compact_padding_h"
+                    android:paddingEnd="@dimen/chip_padding_h">
 
                     <ImageView
                         android:layout_width="@dimen/icon_size_md"
@@ -56,7 +61,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="2dp"
+                        android:layout_marginStart="@dimen/micro_gap"
                         android:text="@string/editor_back"
                         android:textColor="@color/ink_primary"
                         android:textSize="@dimen/text_size_body"
@@ -65,10 +70,10 @@
 
                 <TextView
                     android:id="@+id/tvEditorHeader"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginHorizontal="108dp"
+                    android:layout_marginHorizontal="@dimen/chip_gap"
+                    android:layout_weight="1"
                     android:ellipsize="end"
                     android:gravity="center"
                     android:maxLines="1"
@@ -76,7 +81,19 @@
                     android:textColor="@color/ink_primary"
                     android:textSize="@dimen/text_size_section_title"
                     android:textStyle="bold" />
-            </FrameLayout>
+
+                <ImageButton
+                    android:id="@+id/btnDeleteNote"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
+                    android:background="@drawable/bg_pill_danger_soft"
+                    android:clickable="true"
+                    android:contentDescription="@string/editor_btn_delete"
+                    android:focusable="true"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_delete"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -98,14 +115,14 @@
                     android:id="@+id/edtNoteTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/chip_gap"
                     android:layout_marginBottom="@dimen/section_gap"
                     android:background="@drawable/bg_glass_inner"
                     android:hint="@string/editor_hint_title"
                     android:importantForAutofill="no"
                     android:inputType="textCapSentences"
                     android:minHeight="@dimen/input_min_height"
-                    android:paddingHorizontal="14dp"
+                    android:paddingHorizontal="@dimen/chip_padding_h"
                     android:textColor="@color/ink_primary"
                     android:textColorHint="@color/ink_secondary"
                     android:textSize="@dimen/text_size_input" />
@@ -121,7 +138,7 @@
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/chip_gap"
                     android:layout_marginBottom="@dimen/section_gap"
                     android:clipToPadding="false"
                     android:scrollbars="none">
@@ -146,7 +163,7 @@
                     android:id="@+id/edtNoteContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/chip_gap"
                     android:layout_marginBottom="@dimen/section_gap"
                     android:background="@drawable/bg_glass_inner"
                     android:gravity="top|start"
@@ -154,14 +171,14 @@
                     android:importantForAutofill="no"
                     android:inputType="textMultiLine|textCapSentences"
                     android:minHeight="@dimen/editor_content_min_height"
-                    android:padding="14dp"
+                    android:padding="@dimen/card_padding_compact"
                     android:textColor="@color/ink_primary"
                     android:textColorHint="@color/ink_secondary"
                     android:textSize="@dimen/text_size_input" />
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
+                    android:layout_height="@dimen/hairline_height"
                     android:layout_marginBottom="@dimen/card_gap"
                     android:background="@drawable/divider_hairline" />
 
@@ -175,8 +192,8 @@
                     android:gravity="center_vertical"
                     android:minHeight="@dimen/touch_target_min"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="8dp">
+                    android:paddingHorizontal="@dimen/chip_padding_h"
+                    android:paddingVertical="@dimen/chip_padding_v">
 
                     <ImageView
                         android:id="@+id/ivEditorPinIcon"
@@ -189,7 +206,7 @@
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="@dimen/dialog_button_gap"
                         android:layout_weight="1"
                         android:text="@string/editor_pin_label"
                         android:textColor="@color/ink_primary"
@@ -198,16 +215,16 @@
 
                     <FrameLayout
                         android:id="@+id/pinSwitchTrack"
-                        android:layout_width="52dp"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="12dp"
+                        android:layout_width="@dimen/switch_width"
+                        android:layout_height="@dimen/switch_height"
+                        android:layout_marginStart="@dimen/card_gap"
                         android:background="@drawable/bg_switch_track_off"
-                        android:padding="3dp">
+                        android:padding="@dimen/switch_padding">
 
                         <View
                             android:id="@+id/pinSwitchThumb"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="@dimen/switch_thumb_size"
+                            android:layout_height="@dimen/switch_thumb_size"
                             android:background="@drawable/bg_switch_thumb" />
                     </FrameLayout>
                 </LinearLayout>
@@ -226,22 +243,6 @@
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size_input"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/btnDeleteNote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_pill_danger_soft"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="@dimen/touch_target_min"
-                android:text="@string/editor_btn_delete"
-                android:textColor="@color/accent_danger"
-                android:textSize="@dimen/text_size_input"
-                android:textStyle="bold"
-                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

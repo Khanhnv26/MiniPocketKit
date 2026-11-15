@@ -44,10 +44,6 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    implementation(libs.jakarta.validation)
-
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
     implementation(libs.gson)
 
     testImplementation(libs.junit)

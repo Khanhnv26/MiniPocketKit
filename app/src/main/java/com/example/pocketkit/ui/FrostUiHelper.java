@@ -41,7 +41,9 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import com.example.pocketkit.R;
 import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.ScheduleSlot;
+import com.example.pocketkit.model.StudentProfile;
 import com.example.pocketkit.model.StudyTask;
+import com.example.pocketkit.profile.ProfileGpaHelper;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 
 import java.util.Calendar;
@@ -82,6 +84,10 @@ public final class FrostUiHelper {
         void onExportTemplate(@NonNull ScheduleTransferHelper.TransferFormat format);
     }
 
+    public interface OnProfileSavedListener {
+        void onProfileSaved(@NonNull StudentProfile profile);
+    }
+
     private FrostUiHelper() {
     }
 
@@ -104,8 +110,8 @@ public final class FrostUiHelper {
             );
         }
 
-        final int bottomPadH = activity.getResources().getDimensionPixelSize(R.dimen.dock_horizontal_padding);
-        final int bottomPadB = activity.getResources().getDimensionPixelSize(R.dimen.dock_bottom_padding);
+        final int bottomMarginH = activity.getResources().getDimensionPixelSize(R.dimen.dock_horizontal_padding);
+        final int bottomMarginB = activity.getResources().getDimensionPixelSize(R.dimen.dock_bottom_padding);
         final int topPadLeft = topContentView.getPaddingLeft();
         final int topPadTop = topContentView.getPaddingTop();
         final int topPadRight = topContentView.getPaddingRight();
@@ -119,13 +125,12 @@ public final class FrostUiHelper {
                     topPadRight + bars.right,
                     bottomBarView == null ? topPadBottom + bars.bottom : topPadBottom
             );
-            if (bottomBarView != null) {
-                bottomBarView.setPadding(
-                        bottomPadH + bars.left,
-                        bottomBarView.getPaddingTop(),
-                        bottomPadH + bars.right,
-                        bottomPadB + bars.bottom
-                );
+            if (bottomBarView != null && bottomBarView.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) bottomBarView.getLayoutParams();
+                lp.leftMargin = bottomMarginH + bars.left;
+                lp.rightMargin = bottomMarginH + bars.right;
+                lp.bottomMargin = bottomMarginB + bars.bottom;
+                bottomBarView.setLayoutParams(lp);
             }
             return windowInsets;
         });
@@ -271,8 +276,8 @@ public final class FrostUiHelper {
         EditText edtRoom = content.findViewById(R.id.edtScheduleRoom);
         EditText edtLecturer = content.findViewById(R.id.edtScheduleLecturer);
         EditText edtNote = content.findViewById(R.id.edtScheduleNote);
-        LinearLayout btnStartTime = content.findViewById(R.id.btnDialogStartTime);
-        LinearLayout btnEndTime = content.findViewById(R.id.btnDialogEndTime);
+        View btnStartTime = content.findViewById(R.id.btnDialogStartTime);
+        View btnEndTime = content.findViewById(R.id.btnDialogEndTime);
         TextView tvStartTime = content.findViewById(R.id.tvDialogStartTimeValue);
         TextView tvEndTime = content.findViewById(R.id.tvDialogEndTimeValue);
         TextView btnCancel = content.findViewById(R.id.btnScheduleDialogCancel);
@@ -676,6 +681,154 @@ public final class FrostUiHelper {
 
         configureFrostDialogWindow(dialog, false);
         dialog.show();
+    }
+
+    public static void showProfileEditorDialog(
+            @NonNull Context context,
+            @NonNull StudentProfile currentProfile,
+            @NonNull OnProfileSavedListener listener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_profile);
+        dialog.setContentView(content);
+
+        EditText edtName = content.findViewById(R.id.edtProfileName);
+        EditText edtMajor = content.findViewById(R.id.edtProfileMajor);
+        EditText edtEarned = content.findViewById(R.id.edtProfileEarnedCredits);
+        EditText edtTotal = content.findViewById(R.id.edtProfileTotalCredits);
+        EditText edtAttendance = content.findViewById(R.id.edtProfileAttendance);
+        EditText edtBaselineGpa = content.findViewById(R.id.edtProfileBaselineGpa);
+        EditText edtTermCredits = content.findViewById(R.id.edtProfileTermCredits);
+        TextView btnCancel = content.findViewById(R.id.btnProfileDialogCancel);
+        TextView btnSave = content.findViewById(R.id.btnProfileDialogSave);
+
+        edtName.setText(currentProfile.getFullName());
+        edtMajor.setText(currentProfile.getMajorAndCohort());
+        edtEarned.setText(String.valueOf(currentProfile.getEarnedCredits()));
+        edtTotal.setText(String.valueOf(currentProfile.getTotalCredits()));
+        edtAttendance.setText(String.valueOf(currentProfile.getAttendancePercent()));
+        edtBaselineGpa.setText(String.format(Locale.US, "%.2f", currentProfile.getBaselineGpa()));
+        edtTermCredits.setText(String.valueOf(currentProfile.getCurrentTermCredits()));
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnSave.setOnClickListener(v -> {
+            String fullName = edtName.getText().toString().trim();
+            String major = edtMajor.getText().toString().trim();
+            int earned = parseIntOrInvalid(edtEarned.getText().toString());
+            int total = parseIntOrInvalid(edtTotal.getText().toString());
+            int attendance = parseIntOrInvalid(edtAttendance.getText().toString());
+            float baselineGpa = parseFloatOrNaN(edtBaselineGpa.getText().toString());
+            int termCredits = parseIntOrInvalid(edtTermCredits.getText().toString());
+
+            ProfileGpaHelper.ValidationError error = ProfileGpaHelper.validateProfile(
+                    fullName,
+                    earned,
+                    total,
+                    attendance,
+                    baselineGpa,
+                    termCredits
+            );
+            if (error != ProfileGpaHelper.ValidationError.NONE) {
+                showProfileValidationError(
+                        context,
+                        error,
+                        edtName,
+                        edtEarned,
+                        edtTotal,
+                        edtAttendance,
+                        edtBaselineGpa,
+                        edtTermCredits
+                );
+                return;
+            }
+
+            StudentProfile updated = StudentProfile.builder()
+                    .fullName(fullName)
+                    .majorAndCohort(major)
+                    .earnedCredits(earned)
+                    .totalCredits(total)
+                    .attendancePercent(attendance)
+                    .baselineGpa(baselineGpa)
+                    .currentTermCredits(termCredits)
+                    .build();
+            dialog.dismiss();
+            listener.onProfileSaved(updated);
+        });
+
+        configureFrostDialogWindow(dialog, false);
+        dialog.show();
+    }
+
+    private static void showProfileValidationError(
+            @NonNull Context context,
+            @NonNull ProfileGpaHelper.ValidationError error,
+            @NonNull EditText edtName,
+            @NonNull EditText edtEarned,
+            @NonNull EditText edtTotal,
+            @NonNull EditText edtAttendance,
+            @NonNull EditText edtBaselineGpa,
+            @NonNull EditText edtTermCredits
+    ) {
+        switch (error) {
+            case EMPTY_NAME:
+                setFieldError(edtName, context.getString(R.string.profile_dialog_error_name));
+                break;
+            case INVALID_EARNED_CREDITS:
+                setFieldError(edtEarned, context.getString(R.string.profile_dialog_error_earned));
+                break;
+            case INVALID_TOTAL_CREDITS:
+                setFieldError(edtTotal, context.getString(R.string.profile_dialog_error_total));
+                break;
+            case EARNED_EXCEEDS_TOTAL:
+                setFieldError(edtEarned, context.getString(R.string.profile_dialog_error_earned_exceeds));
+                break;
+            case INVALID_ATTENDANCE:
+                setFieldError(edtAttendance, context.getString(R.string.profile_dialog_error_attendance));
+                break;
+            case INVALID_BASELINE_GPA:
+                setFieldError(edtBaselineGpa, context.getString(R.string.profile_dialog_error_gpa));
+                break;
+            case INVALID_TERM_CREDITS:
+            default:
+                setFieldError(edtTermCredits, context.getString(R.string.profile_dialog_error_term_credits));
+                break;
+        }
+    }
+
+    private static void setFieldError(@NonNull EditText field, @NonNull String message) {
+        field.setError(message);
+        field.requestFocus();
+    }
+
+    private static int parseIntOrInvalid(@Nullable String raw) {
+        if (raw == null) {
+            return -1;
+        }
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(trimmed);
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+    }
+
+    private static float parseFloatOrNaN(@Nullable String raw) {
+        if (raw == null) {
+            return Float.NaN;
+        }
+        String normalized = raw.trim().replace(',', '.');
+        if (normalized.isEmpty()) {
+            return Float.NaN;
+        }
+        try {
+            return Float.parseFloat(normalized);
+        } catch (NumberFormatException ignored) {
+            return Float.NaN;
+        }
     }
 
     @NonNull

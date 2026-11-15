@@ -347,10 +347,11 @@ public final class HomeSummaryHelper {
             }
             long totalHours = totalMinutes / 60L;
             if (totalHours < 24L) {
-                return context.getString(R.string.task_overdue_hours, (int) totalHours);
+                int hours = (int) totalHours;
+                return context.getResources().getQuantityString(R.plurals.task_overdue_hours, hours, hours);
             }
-            long totalDays = Math.max(1L, totalHours / 24L);
-            return context.getString(R.string.task_overdue_days, (int) totalDays);
+            int days = (int) Math.max(1L, totalHours / 24L);
+            return context.getResources().getQuantityString(R.plurals.task_overdue_days, days, days);
         }
         long totalMinutes = Math.max(1L, (diff + MILLIS_PER_MINUTE - 1L) / MILLIS_PER_MINUTE);
         if (totalMinutes < 60L) {
@@ -358,10 +359,11 @@ public final class HomeSummaryHelper {
         }
         long totalHours = totalMinutes / 60L;
         if (totalHours < 24L) {
-            return context.getString(R.string.task_remaining_hours, (int) totalHours);
+            int hours = (int) totalHours;
+            return context.getResources().getQuantityString(R.plurals.task_remaining_hours, hours, hours);
         }
-        long totalDays = Math.max(1L, totalHours / 24L);
-        return context.getString(R.string.task_remaining_days, (int) totalDays);
+        int days = (int) Math.max(1L, totalHours / 24L);
+        return context.getResources().getQuantityString(R.plurals.task_remaining_days, days, days);
     }
 
     private static boolean isSameDay(long firstMillis, long secondMillis) {

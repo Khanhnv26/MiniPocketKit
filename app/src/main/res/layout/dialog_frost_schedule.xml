@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/dialog_outer_padding_h"
-    android:paddingVertical="@dimen/dialog_outer_padding_v">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_dialog_frost"
-        android:orientation="vertical"
-        android:padding="@dimen/card_padding">
+    android:layout_marginHorizontal="@dimen/dialog_outer_padding_h"
+    android:layout_marginVertical="@dimen/dialog_outer_padding_v"
+    android:background="@drawable/bg_dialog_frost"
+    android:orientation="vertical"
+    android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -206,7 +202,7 @@
                     android:baselineAligned="false"
                     android:orientation="horizontal">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:id="@+id/btnDialogStartTime"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -214,30 +210,33 @@
                         android:background="@drawable/bg_dialog_input"
                         android:clickable="true"
                         android:focusable="true"
-                        android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
-                        android:orientation="horizontal"
                         android:paddingHorizontal="@dimen/badge_padding_h">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/schedule_dialog_start_label"
-                            android:textColor="@color/ink_secondary"
-                            android:textSize="@dimen/text_size_caption" />
 
                         <TextView
                             android:id="@+id/tvDialogStartTimeValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
                             android:fontFeatureSettings="tnum"
                             android:textColor="@color/accent_sapphire"
                             android:textSize="@dimen/text_size_input"
                             android:textStyle="bold" />
-                    </LinearLayout>
 
-                    <LinearLayout
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="@dimen/chip_gap"
+                            android:layout_toStartOf="@id/tvDialogStartTimeValue"
+                            android:text="@string/schedule_dialog_start_label"
+                            android:textColor="@color/ink_secondary"
+                            android:textSize="@dimen/text_size_caption" />
+                    </RelativeLayout>
+
+                    <RelativeLayout
                         android:id="@+id/btnDialogEndTime"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -246,28 +245,31 @@
                         android:background="@drawable/bg_dialog_input"
                         android:clickable="true"
                         android:focusable="true"
-                        android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
-                        android:orientation="horizontal"
                         android:paddingHorizontal="@dimen/badge_padding_h">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/schedule_dialog_end_label"
-                            android:textColor="@color/ink_secondary"
-                            android:textSize="@dimen/text_size_caption" />
 
                         <TextView
                             android:id="@+id/tvDialogEndTimeValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
                             android:fontFeatureSettings="tnum"
                             android:textColor="@color/accent_sapphire"
                             android:textSize="@dimen/text_size_input"
                             android:textStyle="bold" />
-                    </LinearLayout>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="@dimen/chip_gap"
+                            android:layout_toStartOf="@id/tvDialogEndTimeValue"
+                            android:text="@string/schedule_dialog_end_label"
+                            android:textColor="@color/ink_secondary"
+                            android:textSize="@dimen/text_size_caption" />
+                    </RelativeLayout>
                 </LinearLayout>
 
                 <LinearLayout
@@ -412,5 +414,4 @@
                 android:textSize="@dimen/text_size_input"
                 android:textStyle="bold" />
         </LinearLayout>
-    </LinearLayout>
-</FrameLayout>
+</LinearLayout>

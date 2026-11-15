@@ -46,8 +46,8 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
                 this,
                 binding.notesRoot,
                 binding.notesContentContainer,
-                binding.ambientBackdrop.ambientBackdropView,
-                binding.bottomCtaContainer
+                binding.ambientBackdropView,
+                binding.btnAddNote
         );
 
         binding.rvNotes.setLayoutManager(new LinearLayoutManager(this));
@@ -93,7 +93,9 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
         String query = binding.edtSearchNote.getText().toString();
         List<Note> notes = dbHelper.getNotesFiltered(query, currentCategory);
         adapter.setNotes(notes);
-        binding.tvNotesSummaryCount.setText(getString(R.string.notes_count_badge_format, notes.size()));
+        binding.tvNotesSummaryCount.setText(
+                getResources().getQuantityString(R.plurals.notes_count_badge_format, notes.size(), notes.size())
+        );
 
         if (notes.isEmpty()) {
             boolean filtered = !query.trim().isEmpty() || !DatabaseHelper.FILTER_ALL.equals(currentCategory);

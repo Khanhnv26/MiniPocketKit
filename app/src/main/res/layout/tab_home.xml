@@ -137,7 +137,7 @@
                     android:id="@+id/tvSpotlightTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
+                    android:layout_marginTop="@dimen/tiny_gap"
                     android:textColor="@color/ink_primary"
                     android:textSize="@dimen/text_size_spotlight_title"
                     android:textStyle="bold" />
@@ -146,7 +146,7 @@
                     android:id="@+id/tvSpotlightSub"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="@dimen/micro_gap"
                     android:textColor="@color/ink_secondary"
                     android:textSize="@dimen/text_size_body" />
             </LinearLayout>
@@ -342,7 +342,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_glass_inner"
-            android:lineSpacingExtra="4dp"
+            android:lineSpacingExtra="@dimen/line_spacing_md"
             android:padding="@dimen/card_padding_compact"
             android:text="@string/home_checklist_empty"
             android:textColor="@color/ink_secondary"

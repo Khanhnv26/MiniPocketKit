@@ -6,6 +6,7 @@ import com.example.pocketkit.model.StudyTask;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -68,11 +69,11 @@ public class HomeSummaryHelperTest {
         long soonAt = fixedTime(2026, Calendar.NOVEMBER, 16, 17, 0);
         long laterAt = fixedTime(2026, Calendar.NOVEMBER, 19, 23, 59);
 
-        List<StudyTask> tasks = Arrays.asList(
+        List<StudyTask> tasks = new ArrayList<>(Arrays.asList(
                 StudyTask.builder().id(1).title("Completed Deadline").dueAtMillis(overdueAt).done(true).build(),
                 StudyTask.builder().id(2).title("Far Deadline").dueAtMillis(laterAt).done(false).build(),
                 StudyTask.builder().id(3).title("Soon Deadline").dueAtMillis(soonAt).done(false).build()
-        );
+        ));
         List<ScheduleSlot> schedules = Collections.singletonList(
                 ScheduleSlot.builder().id(10).dayOfWeek(Calendar.MONDAY).startTime("13:00").endTime("15:00").subject("Mobile").build()
         );

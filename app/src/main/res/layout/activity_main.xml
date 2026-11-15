@@ -6,9 +6,13 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_ambient_canvas">
 
-    <include
-        android:id="@+id/ambientBackdrop"
-        layout="@layout/layout_ambient_backdrop" />
+    <FrameLayout
+        android:id="@+id/ambientBackdropView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/layout_ambient_backdrop" />
+    </FrameLayout>
 
     <ScrollView
         android:id="@+id/mainScrollView"
@@ -22,15 +26,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="18dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="108dp">
+            android:paddingHorizontal="@dimen/screen_padding_h"
+            android:paddingTop="@dimen/screen_padding_top"
+            android:paddingBottom="@dimen/notes_list_bottom_padding">
 
             <LinearLayout
                 android:id="@+id/dashboardHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/header_section_gap"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -44,34 +48,35 @@
                         android:id="@+id/tvHeaderDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="THỨ SÁU, 13 THÁNG 11"
+                        android:text="@string/home_date_placeholder"
                         android:textColor="@color/accent_sapphire"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/text_size_caption"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvHeaderTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="@dimen/micro_gap"
                         android:fontFamily="sans-serif-black"
-                        android:text="Mini Pocket Kit"
+                        android:text="@string/tab_header_home"
                         android:textColor="@color/ink_primary"
-                        android:textSize="26sp" />
+                        android:textSize="@dimen/text_size_screen_title" />
                 </LinearLayout>
 
                 <TextView
                     android:id="@+id/btnHeaderProfile"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="@dimen/touch_target_min"
+                    android:layout_height="@dimen/touch_target_min"
                     android:background="@drawable/bg_pill_secondary"
                     android:clickable="true"
+                    android:contentDescription="@string/header_profile_desc"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
-                    android:text="KN"
+                    android:text="@string/profile_default_initials"
                     android:textColor="@color/accent_sapphire"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/text_size_input"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -98,151 +103,143 @@
     </ScrollView>
 
     <LinearLayout
-        android:id="@+id/bottomDockContainer"
+        android:id="@+id/dockBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:paddingHorizontal="16dp"
-        android:paddingBottom="14dp">
+        android:layout_marginHorizontal="@dimen/dock_horizontal_padding"
+        android:layout_marginBottom="@dimen/dock_bottom_padding"
+        android:background="@drawable/bg_dock_bar"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/dock_min_height"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/dock_padding_h"
+        android:paddingVertical="@dimen/dock_padding_v">
 
         <LinearLayout
-            android:id="@+id/dockBar"
-            android:layout_width="match_parent"
+            android:id="@+id/dockTabHome"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_dock_bar"
-            android:baselineAligned="false"
-            android:gravity="center_vertical"
-            android:minHeight="64dp"
-            android:orientation="horizontal"
-            android:paddingHorizontal="6dp"
-            android:paddingVertical="6dp">
+            android:layout_weight="1"
+            android:background="@drawable/bg_dock_active_pill"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/dock_tab_min_height"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/dock_padding_v">
 
-            <LinearLayout
-                android:id="@+id/dockTabHome"
-                android:layout_width="0dp"
+            <ImageView
+                android:id="@+id/ivDockHome"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:contentDescription="@string/dock_tab_home"
+                android:src="@drawable/ic_home"
+                app:tint="@color/accent_sapphire" />
+
+            <TextView
+                android:id="@+id/tvDockHome"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_dock_active_pill"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="52dp"
-                android:orientation="vertical"
-                android:paddingVertical="6dp">
+                android:layout_marginTop="@dimen/micro_gap"
+                android:text="@string/dock_tab_home"
+                android:textColor="@color/accent_sapphire"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+        </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/ivDockHome"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="Hôm nay"
-                    android:src="@drawable/ic_home"
-                    app:tint="@color/accent_sapphire" />
+        <LinearLayout
+            android:id="@+id/dockTabCalendar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/dock_tab_min_height"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/dock_padding_v">
 
-                <TextView
-                    android:id="@+id/tvDockHome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Hôm nay"
-                    android:textColor="@color/accent_sapphire"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+            <ImageView
+                android:id="@+id/ivDockCalendar"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:contentDescription="@string/dock_tab_calendar"
+                android:src="@drawable/ic_timetable"
+                app:tint="@color/ink_secondary" />
 
-            <LinearLayout
-                android:id="@+id/dockTabCalendar"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvDockCalendar"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="52dp"
-                android:orientation="vertical"
-                android:paddingVertical="6dp">
+                android:layout_marginTop="@dimen/micro_gap"
+                android:text="@string/dock_tab_calendar"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption" />
+        </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/ivDockCalendar"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="Lịch học"
-                    android:src="@drawable/ic_timetable"
-                    app:tint="@color/ink_secondary" />
+        <LinearLayout
+            android:id="@+id/dockTabTools"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/dock_tab_min_height"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/dock_padding_v">
 
-                <TextView
-                    android:id="@+id/tvDockCalendar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Lịch học"
-                    android:textColor="@color/ink_secondary"
-                    android:textSize="12sp" />
-            </LinearLayout>
+            <ImageView
+                android:id="@+id/ivDockTools"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:contentDescription="@string/dock_tab_tools"
+                android:src="@drawable/ic_all"
+                app:tint="@color/ink_secondary" />
 
-            <LinearLayout
-                android:id="@+id/dockTabTools"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvDockTools"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="52dp"
-                android:orientation="vertical"
-                android:paddingVertical="6dp">
+                android:layout_marginTop="@dimen/micro_gap"
+                android:text="@string/dock_tab_tools"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption" />
+        </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/ivDockTools"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="Tiện ích"
-                    android:src="@drawable/ic_all"
-                    app:tint="@color/ink_secondary" />
+        <LinearLayout
+            android:id="@+id/dockTabProfile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/dock_tab_min_height"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/dock_padding_v">
 
-                <TextView
-                    android:id="@+id/tvDockTools"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Tiện ích"
-                    android:textColor="@color/ink_secondary"
-                    android:textSize="12sp" />
-            </LinearLayout>
+            <ImageView
+                android:id="@+id/ivDockProfile"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
+                android:contentDescription="@string/dock_tab_profile"
+                android:src="@drawable/ic_profile"
+                app:tint="@color/ink_secondary" />
 
-            <LinearLayout
-                android:id="@+id/dockTabProfile"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvDockProfile"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="52dp"
-                android:orientation="vertical"
-                android:paddingVertical="6dp">
-
-                <ImageView
-                    android:id="@+id/ivDockProfile"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="Hồ sơ"
-                    android:src="@drawable/ic_profile"
-                    app:tint="@color/ink_secondary" />
-
-                <TextView
-                    android:id="@+id/tvDockProfile"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Hồ sơ"
-                    android:textColor="@color/ink_secondary"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                android:layout_marginTop="@dimen/micro_gap"
+                android:text="@string/dock_tab_profile"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

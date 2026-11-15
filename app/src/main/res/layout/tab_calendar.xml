@@ -37,7 +37,7 @@
                     android:id="@+id/tvCalendarDayTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/tight_gap"
                     android:text="@string/schedule_day_full_4"
                     android:textColor="@color/ink_primary"
                     android:textSize="@dimen/text_size_header_day"
@@ -246,7 +246,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dialog_label_gap"
             android:gravity="center"
-            android:lineSpacingExtra="4dp"
+            android:lineSpacingExtra="@dimen/line_spacing_md"
             android:text="@string/schedule_empty_subtitle"
             android:textColor="@color/ink_secondary"
             android:textSize="@dimen/text_size_body" />

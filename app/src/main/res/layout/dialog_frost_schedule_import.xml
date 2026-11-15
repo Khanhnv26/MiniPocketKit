@@ -1,108 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/dialog_outer_padding_h"
-    android:paddingVertical="@dimen/dialog_outer_padding_v">
+    android:layout_marginHorizontal="@dimen/dialog_outer_padding_h"
+    android:layout_marginVertical="@dimen/dialog_outer_padding_v"
+    android:background="@drawable/bg_dialog_frost"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_inner_padding">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/schedule_import_title"
+        android:textColor="@color/ink_primary"
+        android:textSize="@dimen/text_size_dialog_title"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvImportSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_button_gap"
+        android:lineSpacingExtra="@dimen/line_spacing_md"
+        android:textColor="@color/ink_secondary"
+        android:textSize="@dimen/text_size_input" />
+
+    <TextView
+        android:id="@+id/tvImportIssues"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/chip_gap"
+        android:background="@drawable/bg_pill_danger_soft"
+        android:lineSpacingExtra="@dimen/line_spacing_xs"
+        android:paddingHorizontal="@dimen/chip_padding_h"
+        android:paddingVertical="@dimen/badge_padding_v"
+        android:textColor="@color/accent_danger"
+        android:textSize="@dimen/text_size_caption"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_field_gap"
+        android:text="@string/schedule_import_mode_hint"
+        android:textColor="@color/ink_primary"
+        android:textSize="@dimen/text_size_body"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_dialog_frost"
-        android:orientation="vertical"
-        android:padding="@dimen/dialog_inner_padding">
+        android:layout_marginTop="@dimen/card_gap"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/btnImportMerge"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/schedule_import_title"
-            android:textColor="@color/ink_primary"
-            android:textSize="@dimen/text_size_dialog_title"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvImportSummary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dialog_button_gap"
-            android:lineSpacingExtra="4dp"
-            android:textColor="@color/ink_secondary"
-            android:textSize="@dimen/text_size_input" />
-
-        <TextView
-            android:id="@+id/tvImportIssues"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/chip_gap"
-            android:background="@drawable/bg_pill_danger_soft"
-            android:lineSpacingExtra="3dp"
-            android:paddingHorizontal="@dimen/chip_padding_h"
-            android:paddingVertical="@dimen/badge_padding_v"
-            android:textColor="@color/accent_danger"
-            android:textSize="@dimen/text_size_caption"
-            android:visibility="gone" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dialog_field_gap"
-            android:text="@string/schedule_import_mode_hint"
-            android:textColor="@color/ink_primary"
-            android:textSize="@dimen/text_size_body"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_gap"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/btnImportMerge"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_pill_primary"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="@dimen/touch_target_min"
-                android:text="@string/schedule_import_btn_merge"
-                android:textColor="@color/white"
-                android:textSize="@dimen/text_size_input"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/btnImportReplace"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/dialog_button_gap"
-                android:layout_weight="1"
-                android:background="@drawable/bg_pill_danger_soft"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="@dimen/touch_target_min"
-                android:text="@string/schedule_import_btn_replace"
-                android:textColor="@color/accent_danger"
-                android:textSize="@dimen/text_size_input"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/btnImportCancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dialog_button_gap"
-            android:background="@drawable/bg_pill_secondary"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill_primary"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
             android:minHeight="@dimen/touch_target_min"
-            android:text="@string/notes_dialog_cancel"
-            android:textColor="@color/ink_primary"
+            android:text="@string/schedule_import_btn_merge"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_input"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btnImportReplace"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dialog_button_gap"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill_danger_soft"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/schedule_import_btn_replace"
+            android:textColor="@color/accent_danger"
             android:textSize="@dimen/text_size_input"
             android:textStyle="bold" />
     </LinearLayout>
-</FrameLayout>
+
+    <TextView
+        android:id="@+id/btnImportCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_button_gap"
+        android:background="@drawable/bg_pill_secondary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/notes_dialog_cancel"
+        android:textColor="@color/ink_primary"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+</LinearLayout>

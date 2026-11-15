@@ -2,6 +2,7 @@ package com.example.pocketkit.adapter;
 
 import android.content.Context;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,13 +10,16 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pocketkit.R;
 import com.example.pocketkit.databinding.ItemNoteBinding;
 import com.example.pocketkit.model.Note;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder> {
 
@@ -31,13 +35,43 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     private final OnNoteInteractionListener listener;
 
     public NoteAdapter(List<Note> noteList, OnNoteInteractionListener listener) {
-        this.noteList = noteList;
+        this.noteList = noteList == null ? new ArrayList<>() : new ArrayList<>(noteList);
         this.listener = listener;
     }
 
     public void setNotes(List<Note> notes) {
-        this.noteList = notes;
-        notifyDataSetChanged();
+        List<Note> oldList = this.noteList;
+        List<Note> newList = notes == null ? new ArrayList<>() : new ArrayList<>(notes);
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return oldList.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return newList.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return oldList.get(oldItemPosition).getId() == newList.get(newItemPosition).getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                Note oldItem = oldList.get(oldItemPosition);
+                Note newItem = newList.get(newItemPosition);
+                return oldItem.getIsPinned() == newItem.getIsPinned()
+                        && oldItem.getIsDone() == newItem.getIsDone()
+                        && Objects.equals(oldItem.getTitle(), newItem.getTitle())
+                        && Objects.equals(oldItem.getContent(), newItem.getContent())
+                        && Objects.equals(oldItem.getSubject(), newItem.getSubject())
+                        && Objects.equals(oldItem.getUpdatedAt(), newItem.getUpdatedAt());
+            }
+        });
+        this.noteList = newList;
+        diffResult.dispatchUpdatesTo(this);
     }
 
     static class NoteViewHolder extends RecyclerView.ViewHolder {
@@ -68,7 +102,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         holder.binding.tvNoteTitle.setText(note.getTitle());
         holder.binding.tvNoteSubject.setText(subject);
         holder.binding.tvNoteTime.setText(note.getUpdatedAt() != null ? note.getUpdatedAt() : "");
-        holder.binding.ivNotePinned.setVisibility(note.getIsPinned() == 1 ? View.VISIBLE : View.GONE);
+        applyPinIcon(holder.binding, context, note.getIsPinned() == 1);
 
         if (content.isEmpty()) {
             holder.binding.tvNoteContent.setVisibility(View.GONE);
@@ -100,17 +134,31 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         });
     }
 
+    private void applyPinIcon(ItemNoteBinding binding, Context context, boolean pinned) {
+        if (!pinned) {
+            binding.tvNoteTitle.setCompoundDrawablesRelative(null, null, null, null);
+            return;
+        }
+        Drawable pinDrawable = ContextCompat.getDrawable(context, R.drawable.ic_pin);
+        if (pinDrawable != null) {
+            int size = context.getResources().getDimensionPixelSize(R.dimen.icon_size_xs);
+            pinDrawable = pinDrawable.mutate();
+            pinDrawable.setBounds(0, 0, size, size);
+        }
+        binding.tvNoteTitle.setCompoundDrawablesRelative(null, null, pinDrawable, null);
+    }
+
     private void applyDoneVisualState(ItemNoteBinding binding, Context context, boolean done) {
         if (done) {
-            binding.viewNoteCheckBox.setBackgroundResource(R.drawable.bg_check_checked);
-            binding.ivNoteCheck.setVisibility(View.VISIBLE);
+            binding.ivNoteCheckBox.setBackgroundResource(R.drawable.bg_check_checked);
+            binding.ivNoteCheckBox.setImageResource(R.drawable.ic_check_white);
             binding.tvNoteTitle.setPaintFlags(binding.tvNoteTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             binding.tvNoteTitle.setTextColor(ContextCompat.getColor(context, R.color.ink_muted));
             binding.tvNoteSubject.setBackgroundResource(R.drawable.bg_pill_success_soft);
             binding.tvNoteSubject.setTextColor(ContextCompat.getColor(context, R.color.accent_mint_text));
         } else {
-            binding.viewNoteCheckBox.setBackgroundResource(R.drawable.bg_check_unchecked);
-            binding.ivNoteCheck.setVisibility(View.GONE);
+            binding.ivNoteCheckBox.setBackgroundResource(R.drawable.bg_check_unchecked);
+            binding.ivNoteCheckBox.setImageDrawable(null);
             binding.tvNoteTitle.setPaintFlags(binding.tvNoteTitle.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
             binding.tvNoteTitle.setTextColor(ContextCompat.getColor(context, R.color.ink_primary));
             binding.tvNoteSubject.setBackgroundResource(R.drawable.bg_pill_neutral_soft);

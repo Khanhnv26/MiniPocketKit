@@ -8,10 +8,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/section_gap"
         android:background="@drawable/bg_glass_hero"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -20,44 +20,68 @@
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:id="@+id/tvProfileAvatar"
+                android:layout_width="@dimen/profile_avatar_size"
+                android:layout_height="@dimen/profile_avatar_size"
                 android:background="@drawable/bg_pill_primary"
                 android:gravity="center"
-                android:text="KN"
+                android:text="@string/profile_default_initials"
                 android:textColor="@color/white"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_avatar"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
+                android:layout_marginStart="@dimen/section_gap"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvProfileName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nguyễn Khánh"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:text="@string/profile_default_name"
                     android:textColor="@color/ink_primary"
-                    android:textSize="19sp"
+                    android:textSize="@dimen/text_size_profile_name"
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvProfileMajor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Kỹ thuật Phần mềm · Khóa 19"
+                    android:layout_marginTop="@dimen/micro_gap"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:text="@string/profile_default_major"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="@dimen/text_size_body" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnEditProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/chip_gap"
+                android:background="@drawable/bg_pill_secondary"
+                android:clickable="true"
+                android:contentDescription="@string/profile_edit_desc"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:paddingHorizontal="@dimen/chip_padding_h"
+                android:text="@string/profile_btn_edit"
+                android:textColor="@color/accent_sapphire"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/header_section_gap"
             android:baselineAligned="false"
             android:orientation="horizontal">
 
@@ -67,50 +91,50 @@
                 android:layout_weight="1"
                 android:background="@drawable/bg_glass_inner"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="@dimen/card_gap">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tín chỉ tích lũy"
+                    android:text="@string/profile_credits_label"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_size_caption" />
 
                 <TextView
+                    android:id="@+id/tvProfileCreditsValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/tight_gap"
                     android:fontFeatureSettings="tnum"
-                    android:text="114 / 145"
                     android:textColor="@color/ink_primary"
-                    android:textSize="18sp"
+                    android:textSize="@dimen/text_size_metric_value"
                     android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="@dimen/dialog_button_gap"
                 android:layout_weight="1"
                 android:background="@drawable/bg_glass_inner"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="@dimen/card_gap">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chuyên cần"
+                    android:text="@string/profile_attendance_label"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_size_caption" />
 
                 <TextView
+                    android:id="@+id/tvProfileAttendanceValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/tight_gap"
                     android:fontFeatureSettings="tnum"
-                    android:text="96%"
                     android:textColor="@color/accent_mint_text"
-                    android:textSize="18sp"
+                    android:textSize="@dimen/text_size_metric_value"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -119,10 +143,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/section_gap"
         android:background="@drawable/bg_glass_card"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -134,9 +158,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Dự báo GPA tích lũy"
+                android:text="@string/profile_gpa_title"
                 android:textColor="@color/ink_primary"
-                android:textSize="17sp"
+                android:textSize="@dimen/text_size_section_title"
                 android:textStyle="bold" />
 
             <TextView
@@ -144,11 +168,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_pill_success_soft"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="5dp"
-                android:text="Giỏi"
+                android:paddingHorizontal="@dimen/badge_padding_h"
+                android:paddingVertical="@dimen/badge_padding_compact_v"
+                android:text="@string/profile_gpa_rank_good"
                 android:textColor="@color/accent_mint_text"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -156,40 +180,47 @@
             android:id="@+id/tvGpaProjected"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="@dimen/dialog_button_gap"
             android:fontFamily="sans-serif-black"
             android:fontFeatureSettings="tnum"
-            android:text="3.52 / 4.0"
             android:textColor="@color/accent_sapphire"
-            android:textSize="28sp" />
+            android:textSize="@dimen/text_size_gpa_hero" />
+
+        <TextView
+            android:id="@+id/tvGpaBaselineSummary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/micro_gap"
+            android:fontFeatureSettings="tnum"
+            android:textColor="@color/ink_secondary"
+            android:textSize="@dimen/text_size_caption" />
 
         <ProgressBar
             android:id="@+id/pbGpaMeter"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="@dimen/progress_bar_height"
+            android:layout_marginTop="@dimen/dialog_button_gap"
             android:max="400"
-            android:progress="352"
+            android:progress="344"
             android:progressDrawable="@drawable/bg_progress_gpa" />
 
         <TextView
             android:id="@+id/tvSimulatedScore"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="Điểm dự kiến học phần hiện tại: 8.5 / 10"
+            android:layout_marginTop="@dimen/section_gap"
             android:textColor="@color/ink_secondary"
-            android:textSize="13sp"
+            android:textSize="@dimen/text_size_body"
             android:textStyle="bold" />
 
         <SeekBar
             android:id="@+id/seekSimulatedScore"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="@dimen/dialog_label_gap"
             android:max="100"
-            android:minHeight="48dp"
+            android:minHeight="@dimen/touch_target_min"
             android:progress="85"
             android:progressTint="@color/accent_sapphire"
             android:thumbTint="@color/accent_sapphire" />
@@ -201,7 +232,7 @@
         android:background="@drawable/bg_glass_card"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -212,34 +243,34 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ghi chú học phần"
+                android:text="@string/profile_notes_title"
                 android:textColor="@color/ink_primary"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_size_card_title"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Xem và quản lý toàn bộ ghi chú ngoại tuyến"
+                android:layout_marginTop="@dimen/micro_gap"
+                android:text="@string/profile_notes_subtitle"
                 android:textColor="@color/ink_secondary"
-                android:textSize="13sp" />
+                android:textSize="@dimen/text_size_body" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/btnProfileNotes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/card_gap"
             android:background="@drawable/bg_pill_primary"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:minHeight="48dp"
-            android:paddingHorizontal="16dp"
-            android:text="Mở sổ"
+            android:minHeight="@dimen/touch_target_min"
+            android:paddingHorizontal="@dimen/btn_padding_h"
+            android:text="@string/profile_notes_btn_open"
             android:textColor="@color/white"
-            android:textSize="13sp"
+            android:textSize="@dimen/text_size_body"
             android:textStyle="bold" />
     </LinearLayout>
 </LinearLayout>

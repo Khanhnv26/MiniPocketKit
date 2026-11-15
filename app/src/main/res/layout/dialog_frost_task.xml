@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/dialog_outer_padding_h"
-    android:paddingVertical="@dimen/dialog_outer_padding_v">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_dialog_frost"
-        android:orientation="vertical"
-        android:padding="@dimen/card_padding">
+    android:layout_marginHorizontal="@dimen/dialog_outer_padding_h"
+    android:layout_marginVertical="@dimen/dialog_outer_padding_v"
+    android:background="@drawable/bg_dialog_frost"
+    android:orientation="vertical"
+    android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -220,7 +216,7 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:id="@+id/btnTaskPickDue"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -228,31 +224,34 @@
                         android:background="@drawable/bg_dialog_input"
                         android:clickable="true"
                         android:focusable="true"
-                        android:gravity="center_vertical"
                         android:minHeight="@dimen/touch_target_min"
-                        android:orientation="horizontal"
                         android:paddingHorizontal="@dimen/card_padding_compact">
 
                         <TextView
-                            android:id="@+id/tvTaskDueDisplay"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:textColor="@color/ink_primary"
-                            android:textSize="@dimen/text_size_input"
-                            android:textStyle="bold" />
-
-                        <TextView
+                            android:id="@+id/tvTaskDuePickLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
                             android:layout_marginStart="@dimen/chip_gap"
                             android:text="@string/task_dialog_due_pick"
                             android:textColor="@color/accent_sapphire"
                             android:textSize="@dimen/text_size_caption"
                             android:textStyle="bold" />
-                    </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvTaskDueDisplay"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:layout_toStartOf="@id/tvTaskDuePickLabel"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="@color/ink_primary"
+                            android:textSize="@dimen/text_size_input"
+                            android:textStyle="bold" />
+                    </RelativeLayout>
 
                     <TextView
                         android:id="@+id/btnTaskClearDue"
@@ -353,5 +352,4 @@
                 android:textSize="@dimen/text_size_input"
                 android:textStyle="bold" />
         </LinearLayout>
-    </LinearLayout>
-</FrameLayout>
+</LinearLayout>

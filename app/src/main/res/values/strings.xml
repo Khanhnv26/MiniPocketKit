@@ -15,8 +15,7 @@
     <string name="notes_back_home">Trang chủ</string>
     <string name="notes_section_kicker">HỌC TẬP VÀ GHI CHÉP</string>
     <string name="notes_screen_title">Sổ ghi chú</string>
-    <string name="notes_count_badge_format">%1$d ghi chú</string>
-    <string name="notes_search_hint">Tìm kiếm theo tiêu đề, môn học...</string>
+    <string name="notes_search_hint">Tìm kiếm theo tiêu đề, môn học…</string>
     <string name="notes_search_desc">Tìm kiếm ghi chú</string>
     <string name="notes_clear_search_desc">Xóa từ khóa tìm kiếm</string>
     <string name="notes_filter_all">Tất cả</string>
@@ -30,7 +29,7 @@
     <string name="note_pin_desc">Ghi chú đã ghim</string>
 
     <string name="notes_dialog_add_category_title">Thêm phân loại mới</string>
-    <string name="notes_dialog_add_category_hint">Nhập tên phân loại...</string>
+    <string name="notes_dialog_add_category_hint">Nhập tên phân loại…</string>
     <string name="notes_dialog_empty_category_error">Vui lòng nhập tên phân loại</string>
     <string name="notes_dialog_add_confirm">Thêm</string>
     <string name="notes_dialog_cancel">Hủy</string>
@@ -48,10 +47,10 @@
     <string name="editor_title_create">Tạo ghi chú mới</string>
     <string name="editor_title_edit">Chỉnh sửa ghi chú</string>
     <string name="editor_label_title">TIÊU ĐỀ GHI CHÚ</string>
-    <string name="editor_hint_title">Nhập tiêu đề ghi chú...</string>
+    <string name="editor_hint_title">Nhập tiêu đề ghi chú…</string>
     <string name="editor_label_category">PHÂN LOẠI MÔN HỌC</string>
     <string name="editor_label_content">NỘI DUNG CHI TIẾT</string>
-    <string name="editor_hint_content">Viết nội dung ghi chú hoặc danh sách cần làm...</string>
+    <string name="editor_hint_content">Viết nội dung ghi chú hoặc danh sách cần làm…</string>
     <string name="editor_pin_label">Ghim lên đầu danh sách</string>
     <string name="editor_btn_save">Lưu ghi chú</string>
     <string name="editor_btn_delete">Xóa ghi chú này</string>
@@ -61,7 +60,6 @@
     <string name="editor_delete_confirm_message">Bạn có chắc muốn xóa ghi chú này không?</string>
 
     <string name="notes_summary_pinned_bar">%1$s · %2$s</string>
-    <string name="tools_notes_count_format">Đang lưu %1$d ghi chú ngoại tuyến</string>
 
     <string name="schedule_kicker">THỜI KHÓA BIỂU TUẦN</string>
     <string name="schedule_count_badge_format">%1$d ca học</string>
@@ -109,7 +107,7 @@
     <string name="schedule_dialog_add_title">Thêm ca học mới</string>
     <string name="schedule_dialog_edit_title">Chỉnh sửa ca học</string>
     <string name="schedule_dialog_subject_label">TÊN MÔN HỌC</string>
-    <string name="schedule_dialog_subject_hint">Nhập tên môn học...</string>
+    <string name="schedule_dialog_subject_hint">Nhập tên môn học…</string>
     <string name="schedule_dialog_day_label">THỨ TRONG TUẦN</string>
     <string name="schedule_dialog_time_label">KHUNG GIỜ HỌC</string>
     <string name="schedule_dialog_start_label">Bắt đầu</string>
@@ -119,7 +117,7 @@
     <string name="schedule_dialog_lecturer_label">GIẢNG VIÊN</string>
     <string name="schedule_dialog_lecturer_hint">Nhập tên giảng viên</string>
     <string name="schedule_dialog_note_label">GHI CHÚ CA HỌC</string>
-    <string name="schedule_dialog_note_hint">Mang laptop, chuẩn bị slide...</string>
+    <string name="schedule_dialog_note_hint">Mang laptop, chuẩn bị slide…</string>
     <string name="schedule_dialog_btn_save">Lưu ca học</string>
     <string name="schedule_dialog_btn_delete">Xóa ca học này</string>
     <string name="schedule_error_empty_subject">Vui lòng nhập tên môn học</string>
@@ -142,7 +140,7 @@
     <string name="schedule_import_issue_time">giờ không đúng HH:mm</string>
     <string name="schedule_import_issue_range">giờ kết thúc phải sau giờ bắt đầu</string>
     <string name="schedule_import_issue_subject">thiếu tên môn học</string>
-    <string name="schedule_import_parsing">Đang đọc dữ liệu lịch học...</string>
+    <string name="schedule_import_parsing">Đang đọc dữ liệu lịch học…</string>
     <string name="schedule_import_empty_error">Không tìm thấy ca học hợp lệ nào trong tệp đã chọn.</string>
     <string name="schedule_import_legacy_xls_error">Vui lòng lưu tệp ở định dạng Excel .xlsx, .csv hoặc .json.</string>
     <string name="schedule_import_read_error">Không thể đọc tệp đã chọn. Hãy kiểm tra định dạng Excel, CSV hoặc JSON.</string>
@@ -168,13 +166,19 @@
     <string name="schedule_export_share_text">Thời khóa biểu học tập xuất từ CampusKit</string>
     <string name="schedule_export_no_share_app">Không tìm thấy ứng dụng hỗ trợ chia sẻ tệp</string>
 
+    <string name="home_date_placeholder">THỨ SÁU, 13 THÁNG 11</string>
+    <string name="home_header_date_pattern">EEEE, d \'tháng\' M</string>
+    <string name="dock_tab_home">Hôm nay</string>
+    <string name="dock_tab_calendar">Lịch học</string>
+    <string name="dock_tab_tools">Tiện ích</string>
+    <string name="dock_tab_profile">Hồ sơ</string>
+    <string name="header_profile_desc">Mở hồ sơ học tập</string>
+
     <string name="home_spotlight_next_badge">TIẾT HỌC TIẾP THEO</string>
     <string name="home_spotlight_active_badge">ĐANG TRONG GIỜ HỌC</string>
     <string name="home_spotlight_title_format">%1$s · %2$s</string>
     <string name="home_spotlight_sub_today">%1$s · %2$s</string>
     <string name="home_spotlight_sub_day">%1$s (%2$s) · %3$s</string>
-    <string name="home_spotlight_empty_title">Chưa có lịch học tiếp theo</string>
-    <string name="home_spotlight_empty_sub">Mở tab Lịch học để thêm hoặc nhập file Excel</string>
     <string name="home_ring_percent_format">%1$d%%</string>
 
     <string name="tab_header_home">Mini Pocket Kit</string>
@@ -210,11 +214,10 @@
     <string name="home_timer_finished_toast">Hoàn thành phiên tập trung 25 phút</string>
 
     <string name="home_checklist_title">Việc cần làm</string>
-    <string name="home_checklist_count_format">%1$d/%2$d việc</string>
     <string name="home_checklist_notes_btn">Ghi chú</string>
     <string name="home_checklist_pinned_open">Mở</string>
     <string name="home_checklist_empty">Chưa có công việc nào. Nhập tiêu đề bên dưới hoặc bấm + để tạo hạn nộp.</string>
-    <string name="home_task_input_hint">Thêm việc nhanh hoặc bấm +...</string>
+    <string name="home_task_input_hint">Thêm việc nhanh hoặc bấm +…</string>
     <string name="home_task_add_desc">Thêm công việc hoặc hạn nộp</string>
 
     <string name="task_default_tag">Cá nhân</string>
@@ -228,11 +231,7 @@
     <string name="task_due_prefix_tomorrow">Hạn %1$s ngày mai</string>
     <string name="task_due_prefix_date">Hạn %1$s %2$s</string>
     <string name="task_remaining_minutes">Còn %1$d phút</string>
-    <string name="task_remaining_hours">Còn %1$d giờ</string>
-    <string name="task_remaining_days">Còn %1$d ngày</string>
     <string name="task_overdue_minutes">Quá hạn %1$d phút</string>
-    <string name="task_overdue_hours">Quá hạn %1$d giờ</string>
-    <string name="task_overdue_days">Quá hạn %1$d ngày</string>
     <string name="task_toast_completed">Đã hoàn thành: %1$s</string>
     <string name="task_toast_reopened">Đã mở lại: %1$s</string>
     <string name="task_toast_created">Đã thêm công việc mới</string>
@@ -242,14 +241,14 @@
     <string name="task_dialog_add_title">Thêm công việc</string>
     <string name="task_dialog_edit_title">Chỉnh sửa công việc</string>
     <string name="task_dialog_title_label">NỘI DUNG CÔNG VIỆC</string>
-    <string name="task_dialog_title_hint">VD: Nộp báo cáo Lab 04...</string>
+    <string name="task_dialog_title_hint">VD: Nộp báo cáo Lab 04…</string>
     <string name="task_dialog_subject_label">MÔN HỌC HOẶC NGỮ CẢNH</string>
     <string name="task_dialog_subject_hint">VD: Lập trình Di động</string>
     <string name="task_dialog_tag_label">NHÃN PHÂN LOẠI</string>
     <string name="task_dialog_due_label">HẠN NỘP (TÙY CHỌN)</string>
     <string name="task_dialog_due_preset_today">Hôm nay 17:00</string>
     <string name="task_dialog_due_preset_tomorrow">Ngày mai 09:00</string>
-    <string name="task_dialog_due_pick">Chọn ngày giờ</string>
+    <string name="task_dialog_due_pick">Chọn</string>
     <string name="task_dialog_due_clear">Bỏ hạn</string>
     <string name="task_dialog_btn_save">Lưu công việc</string>
     <string name="task_dialog_btn_delete">Xóa công việc</string>
@@ -265,4 +264,113 @@
     <string name="task_seed_subject_3">Hệ điều hành</string>
     <string name="task_seed_title_4">Gửi biên bản họp nhóm</string>
     <string name="task_seed_subject_4">Dự án Phần mềm</string>
+
+    <string name="tools_compress_title">Nén ảnh hồ sơ</string>
+    <string name="tools_compress_subtitle">Chuẩn hóa dung lượng nộp biểu mẫu</string>
+    <string name="tools_compress_chip_100">Dưới 100 KB</string>
+    <string name="tools_compress_chip_500">Dưới 500 KB</string>
+    <string name="tools_compress_chip_3x4">Ảnh thẻ 3x4</string>
+    <string name="tools_compress_btn_run">Nén ảnh ngay</string>
+    <string name="tools_compress_spec_100">Định dạng JPEG · Chất lượng 82% · 1280 x 960 px</string>
+    <string name="tools_compress_estimate_100">Ảnh gốc 3.4 MB giảm còn 94 KB</string>
+    <string name="tools_compress_spec_500">Định dạng JPEG · Chất lượng 92% · 2048 x 1536 px</string>
+    <string name="tools_compress_estimate_500">Ảnh gốc 3.4 MB giảm còn 420 KB</string>
+    <string name="tools_compress_spec_3x4">Ảnh chân dung 3x4 · 300 DPI · Nền sáng đồng nhất</string>
+    <string name="tools_compress_estimate_3x4">Kích thước chuẩn 354 x 472 px · 148 KB</string>
+    <string name="tools_compress_preset_name_100">dưới 100 KB</string>
+    <string name="tools_compress_preset_name_500">dưới 500 KB</string>
+    <string name="tools_compress_preset_name_3x4">chuẩn ảnh thẻ 3x4</string>
+    <string name="tools_compress_ready_toast">Đã sẵn sàng cấu hình nén ảnh %1$s</string>
+
+    <string name="tools_ocr_desc">Quét slide OCR</string>
+    <string name="tools_ocr_title">Quét slide (OCR)</string>
+    <string name="tools_ocr_subtitle">Trích xuất nhanh văn bản tiếng Việt</string>
+    <string name="tools_ocr_chip_slide">Slide bài giảng</string>
+    <string name="tools_ocr_chip_meeting">Biên bản nhóm</string>
+    <string name="tools_ocr_sample_slide">Chương 5: Thiết kế giao diện thích ứng\n1. Đảm bảo vùng chạm tối thiểu 48dp cho mọi nút tương tác.\n2. Giữ tỷ lệ tương phản chữ trên nền kính tối thiểu 4.5:1.</string>
+    <string name="tools_ocr_sample_meeting">Biên bản họp nhóm tuần 07\nHoàn thiện module nén ảnh hồ sơ trước thứ Sáu.\nKiểm thử tích hợp SQLite trên thiết bị API 24 trở lên.</string>
+    <string name="tools_ocr_btn_copy">Sao chép văn bản</string>
+    <string name="tools_ocr_clip_label">ocr_text</string>
+    <string name="tools_ocr_copied_toast">Đã sao chép nội dung OCR vào bộ nhớ tạm</string>
+
+    <string name="tools_notes_title">Sổ ghi chú ngoại tuyến</string>
+    <string name="tools_notes_subtitle_placeholder">Lưu trữ SQLite theo từng môn học</string>
+    <string name="tools_notes_btn_open">Mở danh sách</string>
+    <string name="tools_notes_btn_new">Tạo ghi chú</string>
+
+    <string name="profile_default_initials">NK</string>
+    <string name="profile_default_name">Nguyễn Khánh</string>
+    <string name="profile_default_major">Kỹ thuật Phần mềm · Khóa 19</string>
+    <string name="profile_major_fallback">Chưa cập nhật chuyên ngành</string>
+    <string name="profile_btn_edit">Sửa</string>
+    <string name="profile_edit_desc">Chỉnh sửa thông tin hồ sơ sinh viên</string>
+    <string name="profile_credits_label">Tín chỉ tích lũy</string>
+    <string name="profile_credits_value_format">%1$d / %2$d</string>
+    <string name="profile_attendance_label">Chuyên cần</string>
+    <string name="profile_attendance_value_format">%1$d%%</string>
+    <string name="profile_gpa_title">Dự báo GPA tích lũy</string>
+    <string name="profile_gpa_value_format">%1$.2f / 4.0</string>
+    <string name="profile_gpa_baseline_summary_format">GPA nền: %1$.2f · Học kỳ này: %2$d tín chỉ</string>
+    <string name="profile_gpa_sim_score_format">Điểm dự kiến học phần hiện tại: %1$.1f / 10</string>
+    <string name="profile_gpa_rank_excellent">Xuất sắc</string>
+    <string name="profile_gpa_rank_good">Giỏi</string>
+    <string name="profile_gpa_rank_fair">Khá</string>
+    <string name="profile_gpa_rank_average">Trung bình</string>
+    <string name="profile_notes_title">Ghi chú học phần</string>
+    <string name="profile_notes_subtitle">Xem và quản lý toàn bộ ghi chú ngoại tuyến</string>
+    <string name="profile_notes_btn_open">Mở sổ</string>
+
+    <string name="profile_dialog_title">Chỉnh sửa hồ sơ</string>
+    <string name="profile_dialog_name_label">HỌ VÀ TÊN</string>
+    <string name="profile_dialog_name_hint">Nhập họ và tên sinh viên…</string>
+    <string name="profile_dialog_major_label">CHUYÊN NGÀNH VÀ KHÓA</string>
+    <string name="profile_dialog_major_hint">VD: Kỹ thuật Phần mềm · Khóa 19</string>
+    <string name="profile_dialog_earned_label">TÍN CHỈ ĐÃ TÍCH LŨY</string>
+    <string name="profile_dialog_earned_hint">114</string>
+    <string name="profile_dialog_total_label">TỔNG SỐ TÍN CHỈ</string>
+    <string name="profile_dialog_total_hint">145</string>
+    <string name="profile_dialog_attendance_label">CHUYÊN CẦN (%)</string>
+    <string name="profile_dialog_attendance_hint">96</string>
+    <string name="profile_dialog_gpa_label">GPA NỀN (THANG 4.0)</string>
+    <string name="profile_dialog_gpa_hint">3.44</string>
+    <string name="profile_dialog_term_credits_label">TÍN CHỈ HỌC KỲ HIỆN TẠI</string>
+    <string name="profile_dialog_term_credits_hint">20</string>
+    <string name="profile_dialog_btn_save">Lưu hồ sơ</string>
+    <string name="profile_dialog_error_name">Vui lòng nhập họ và tên</string>
+    <string name="profile_dialog_error_earned">Tín chỉ tích lũy phải từ 0 đến 400</string>
+    <string name="profile_dialog_error_total">Tổng tín chỉ phải lớn hơn 0</string>
+    <string name="profile_dialog_error_earned_exceeds">Không vượt quá tổng tín chỉ</string>
+    <string name="profile_dialog_error_attendance">Chuyên cần phải từ 0 đến 100%</string>
+    <string name="profile_dialog_error_gpa">GPA nền phải từ 0.0 đến 4.0</string>
+    <string name="profile_dialog_error_term_credits">Tín chỉ học kỳ phải từ 0 đến 60</string>
+    <string name="profile_toast_updated">Đã cập nhật hồ sơ học tập</string>
+
+    <plurals name="notes_count_badge_format">
+        <item quantity="one">%1$d ghi chú</item>
+        <item quantity="other">%1$d ghi chú</item>
+    </plurals>
+    <plurals name="tools_notes_count_format">
+        <item quantity="one">Đang lưu %1$d ghi chú ngoại tuyến</item>
+        <item quantity="other">Đang lưu %1$d ghi chú ngoại tuyến</item>
+    </plurals>
+    <plurals name="home_checklist_count_format">
+        <item quantity="one">%1$d/%2$d việc</item>
+        <item quantity="other">%1$d/%2$d việc</item>
+    </plurals>
+    <plurals name="task_remaining_hours">
+        <item quantity="one">Còn %1$d giờ</item>
+        <item quantity="other">Còn %1$d giờ</item>
+    </plurals>
+    <plurals name="task_remaining_days">
+        <item quantity="one">Còn %1$d ngày</item>
+        <item quantity="other">Còn %1$d ngày</item>
+    </plurals>
+    <plurals name="task_overdue_hours">
+        <item quantity="one">Quá hạn %1$d giờ</item>
+        <item quantity="other">Quá hạn %1$d giờ</item>
+    </plurals>
+    <plurals name="task_overdue_days">
+        <item quantity="one">Quá hạn %1$d ngày</item>
+        <item quantity="other">Quá hạn %1$d ngày</item>
+    </plurals>
 </resources>

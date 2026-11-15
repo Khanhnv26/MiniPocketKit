@@ -45,7 +45,7 @@ public class NoteEditorActivity extends AppCompatActivity {
                 this,
                 binding.editorRoot,
                 binding.editorScrollView,
-                binding.ambientBackdrop.ambientBackdropView,
+                binding.ambientBackdropView,
                 null
         );
 

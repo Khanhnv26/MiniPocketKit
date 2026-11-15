@@ -5,5 +5,5 @@
         android:type="radial"
         android:gradientRadius="50%p"
         android:startColor="@color/orb_sky"
-        android:endColor="#0038BDF8" />
+        android:endColor="@color/orb_sky_edge" />
 </shape>

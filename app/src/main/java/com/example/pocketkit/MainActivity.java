@@ -37,7 +37,10 @@ import com.example.pocketkit.databinding.ActivityMainBinding;
 import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.model.ScheduleSlot;
+import com.example.pocketkit.model.StudentProfile;
 import com.example.pocketkit.model.StudyTask;
+import com.example.pocketkit.profile.ProfileGpaHelper;
+import com.example.pocketkit.profile.StudentProfileStore;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 import com.example.pocketkit.ui.FrostUiHelper;
 
@@ -68,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private DatabaseHelper dbHelper;
+    private StudentProfileStore profileStore;
+    private StudentProfile currentProfile;
     private Note currentPinnedNote;
     private HomeSummaryHelper.SpotlightCandidate currentSpotlight;
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
@@ -134,13 +139,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         dbHelper = new DatabaseHelper(this);
+        profileStore = new StudentProfileStore(this);
+        currentProfile = profileStore.loadProfile();
 
         FrostUiHelper.setupEdgeToEdgeAndBackdrop(
                 this,
                 binding.rootContainer,
                 binding.mainScrollView,
-                binding.ambientBackdrop.ambientBackdropView,
-                binding.bottomDockContainer
+                binding.ambientBackdropView,
+                binding.dockBar
         );
         restoreState(savedInstanceState);
         bindHeaderDate();
@@ -217,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void bindHeaderDate() {
         Locale vi = Locale.forLanguageTag("vi-VN");
-        String formatted = new SimpleDateFormat("EEEE, d 'tháng' M", vi).format(new Date());
+        String formatted = new SimpleDateFormat(getString(R.string.home_header_date_pattern), vi).format(new Date());
         binding.tvHeaderDate.setText(formatted.toUpperCase(vi));
         binding.btnHeaderProfile.setOnClickListener(v -> switchTab(3));
     }
@@ -521,7 +528,9 @@ public class MainActivity extends AppCompatActivity {
         if (taskItems.isEmpty()) {
             binding.tabHome.tvChecklistEmpty.setVisibility(View.VISIBLE);
             binding.tabHome.checklistContainer.setVisibility(View.GONE);
-            binding.tabHome.tvChecklistCount.setText(getString(R.string.home_checklist_count_format, 0, 0));
+            binding.tabHome.tvChecklistCount.setText(
+                    getResources().getQuantityString(R.plurals.home_checklist_count_format, 0, 0, 0)
+            );
             return;
         }
 
@@ -565,7 +574,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         binding.tabHome.tvChecklistCount.setText(
-                getString(R.string.home_checklist_count_format, remainingCount, taskItems.size())
+                getResources().getQuantityString(
+                        R.plurals.home_checklist_count_format,
+                        taskItems.size(),
+                        remainingCount,
+                        taskItems.size()
+                )
         );
     }
 
@@ -629,7 +643,9 @@ public class MainActivity extends AppCompatActivity {
             binding.tabHome.layoutPinnedNoteBar.setVisibility(View.GONE);
         }
 
-        binding.tabTools.tvToolNotesCount.setText(getString(R.string.tools_notes_count_format, all.size()));
+        binding.tabTools.tvToolNotesCount.setText(
+                getResources().getQuantityString(R.plurals.tools_notes_count_format, all.size(), all.size())
+        );
     }
 
     private void bindCalendarTab() {
@@ -1002,9 +1018,16 @@ public class MainActivity extends AppCompatActivity {
         binding.tabTools.chipCompress500.setOnClickListener(v -> selectCompressPreset(1));
         binding.tabTools.chipCompress3x4.setOnClickListener(v -> selectCompressPreset(2));
         binding.tabTools.btnRunCompress.setOnClickListener(v -> {
-            String presetName = selectedCompressPreset == 0 ? "dưới 100 KB"
-                    : (selectedCompressPreset == 1 ? "dưới 500 KB" : "chuẩn ảnh thẻ 3x4");
-            Toast.makeText(this, "Đã sẵn sàng cấu hình nén ảnh " + presetName, Toast.LENGTH_SHORT).show();
+            int presetRes = selectedCompressPreset == 0
+                    ? R.string.tools_compress_preset_name_100
+                    : (selectedCompressPreset == 1
+                    ? R.string.tools_compress_preset_name_500
+                    : R.string.tools_compress_preset_name_3x4);
+            Toast.makeText(
+                    this,
+                    getString(R.string.tools_compress_ready_toast, getString(presetRes)),
+                    Toast.LENGTH_SHORT
+            ).show();
         });
 
         binding.tabTools.chipOcrSample1.setOnClickListener(v -> selectOcrSample(0));
@@ -1012,9 +1035,12 @@ public class MainActivity extends AppCompatActivity {
         binding.tabTools.btnCopyOcr.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             if (clipboard != null) {
-                ClipData clip = ClipData.newPlainText("ocr_text", binding.tabTools.tvOcrOutput.getText());
+                ClipData clip = ClipData.newPlainText(
+                        getString(R.string.tools_ocr_clip_label),
+                        binding.tabTools.tvOcrOutput.getText()
+                );
                 clipboard.setPrimaryClip(clip);
-                Toast.makeText(this, "Đã sao chép nội dung OCR vào bộ nhớ tạm", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.tools_ocr_copied_toast, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -1038,14 +1064,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (preset == 0) {
-            binding.tabTools.tvCompressSpec.setText("Định dạng JPEG · Chất lượng 82% · 1280 x 960 px");
-            binding.tabTools.tvCompressEstimate.setText("Ảnh gốc 3.4 MB giảm còn 94 KB");
+            binding.tabTools.tvCompressSpec.setText(R.string.tools_compress_spec_100);
+            binding.tabTools.tvCompressEstimate.setText(R.string.tools_compress_estimate_100);
         } else if (preset == 1) {
-            binding.tabTools.tvCompressSpec.setText("Định dạng JPEG · Chất lượng 92% · 2048 x 1536 px");
-            binding.tabTools.tvCompressEstimate.setText("Ảnh gốc 3.4 MB giảm còn 420 KB");
+            binding.tabTools.tvCompressSpec.setText(R.string.tools_compress_spec_500);
+            binding.tabTools.tvCompressEstimate.setText(R.string.tools_compress_estimate_500);
         } else {
-            binding.tabTools.tvCompressSpec.setText("Ảnh chân dung 3x4 · 300 DPI · Nền sáng đồng nhất");
-            binding.tabTools.tvCompressEstimate.setText("Kích thước chuẩn 354 x 472 px · 148 KB");
+            binding.tabTools.tvCompressSpec.setText(R.string.tools_compress_spec_3x4);
+            binding.tabTools.tvCompressEstimate.setText(R.string.tools_compress_estimate_3x4);
         }
     }
 
@@ -1057,27 +1083,24 @@ public class MainActivity extends AppCompatActivity {
         binding.tabTools.chipOcrSample2.setBackgroundResource(!s1 ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
         binding.tabTools.chipOcrSample2.setTextColor(ContextCompat.getColor(this, !s1 ? R.color.white : R.color.ink_primary));
 
-        if (s1) {
-            binding.tabTools.tvOcrOutput.setText(
-                    "Chương 5: Thiết kế giao diện thích ứng\n"
-                            + "1. Đảm bảo vùng chạm tối thiểu 48dp cho mọi nút tương tác.\n"
-                            + "2. Giữ tỷ lệ tương phản chữ trên nền kính tối thiểu 4.5:1."
-            );
-        } else {
-            binding.tabTools.tvOcrOutput.setText(
-                    "Biên bản họp nhóm tuần 07\n"
-                            + "Hoàn thiện module nén ảnh hồ sơ trước thứ Sáu.\n"
-                            + "Kiểm thử tích hợp SQLite trên thiết bị API 24 trở lên."
-            );
-        }
+        binding.tabTools.tvOcrOutput.setText(
+                s1 ? R.string.tools_ocr_sample_slide : R.string.tools_ocr_sample_meeting
+        );
     }
 
     private void bindProfileTab() {
-        updateGpaSimulation(binding.tabProfile.seekSimulatedScore.getProgress());
+        renderStudentProfile();
+        int savedProgress = profileStore.loadSimulatedProgress();
+        binding.tabProfile.seekSimulatedScore.setProgress(savedProgress);
+        updateGpaSimulation(savedProgress);
+
         binding.tabProfile.seekSimulatedScore.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 updateGpaSimulation(progress);
+                if (fromUser) {
+                    profileStore.saveSimulatedProgress(progress);
+                }
             }
 
             @Override
@@ -1086,32 +1109,97 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                profileStore.saveSimulatedProgress(seekBar.getProgress());
             }
         });
+
+        binding.tabProfile.btnEditProfile.setOnClickListener(v ->
+                FrostUiHelper.showProfileEditorDialog(this, currentProfile, updatedProfile -> {
+                    profileStore.saveProfile(updatedProfile);
+                    currentProfile = updatedProfile;
+                    renderStudentProfile();
+                    updateGpaSimulation(binding.tabProfile.seekSimulatedScore.getProgress());
+                    Toast.makeText(this, R.string.profile_toast_updated, Toast.LENGTH_SHORT).show();
+                })
+        );
         binding.tabProfile.btnProfileNotes.setOnClickListener(v -> openNotesActivity());
     }
 
-    private void updateGpaSimulation(int progressValue) {
-        float scoreTen = progressValue / 10f;
-        float scoreFour = scoreTen * 0.4f;
-        float projectedGpa = Math.min(4.0f, (3.44f * 0.85f) + (scoreFour * 0.15f));
+    private void renderStudentProfile() {
+        String initials = ProfileGpaHelper.buildInitials(
+                currentProfile.getFullName(),
+                getString(R.string.profile_default_initials)
+        );
+        binding.btnHeaderProfile.setText(initials);
+        binding.tabProfile.tvProfileAvatar.setText(initials);
+        binding.tabProfile.tvProfileName.setText(currentProfile.getFullName());
 
-        binding.tabProfile.tvSimulatedScore.setText(String.format(Locale.US, "Điểm dự kiến học phần hiện tại: %.1f / 10", scoreTen));
-        binding.tabProfile.tvGpaProjected.setText(String.format(Locale.US, "%.2f / 4.0", projectedGpa));
+        String major = currentProfile.getMajorAndCohort();
+        binding.tabProfile.tvProfileMajor.setText(
+                major == null || major.trim().isEmpty()
+                        ? getString(R.string.profile_major_fallback)
+                        : major.trim()
+        );
+        binding.tabProfile.tvProfileCreditsValue.setText(
+                getString(
+                        R.string.profile_credits_value_format,
+                        currentProfile.getEarnedCredits(),
+                        currentProfile.getTotalCredits()
+                )
+        );
+        binding.tabProfile.tvProfileAttendanceValue.setText(
+                getString(R.string.profile_attendance_value_format, currentProfile.getAttendancePercent())
+        );
+        binding.tabProfile.tvGpaBaselineSummary.setText(
+                getString(
+                        R.string.profile_gpa_baseline_summary_format,
+                        currentProfile.getBaselineGpa(),
+                        currentProfile.getCurrentTermCredits()
+                )
+        );
+    }
+
+    private void updateGpaSimulation(int progressValue) {
+        int clampedProgress = ProfileGpaHelper.clampSimulatedProgress(progressValue);
+        float scoreTen = ProfileGpaHelper.progressToScoreTen(clampedProgress);
+        float projectedGpa = ProfileGpaHelper.calculateProjectedGpa(
+                currentProfile.getBaselineGpa(),
+                currentProfile.getEarnedCredits(),
+                currentProfile.getCurrentTermCredits(),
+                scoreTen
+        );
+
+        binding.tabProfile.tvSimulatedScore.setText(
+                getString(R.string.profile_gpa_sim_score_format, scoreTen)
+        );
+        binding.tabProfile.tvGpaProjected.setText(
+                getString(R.string.profile_gpa_value_format, projectedGpa)
+        );
         binding.tabProfile.pbGpaMeter.setProgress(Math.round(projectedGpa * 100f));
 
-        if (projectedGpa >= 3.60f) {
-            binding.tabProfile.tvGpaRankBadge.setText("Xuất sắc");
-            binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_success_soft);
-            binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
-        } else if (projectedGpa >= 3.20f) {
-            binding.tabProfile.tvGpaRankBadge.setText("Giỏi");
-            binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_accent_soft);
-            binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_sapphire));
-        } else {
-            binding.tabProfile.tvGpaRankBadge.setText("Khá");
-            binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_neutral_soft);
-            binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.ink_secondary));
+        ProfileGpaHelper.GpaRank rank = ProfileGpaHelper.classifyGpaRank(projectedGpa);
+        switch (rank) {
+            case EXCELLENT:
+                binding.tabProfile.tvGpaRankBadge.setText(R.string.profile_gpa_rank_excellent);
+                binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_success_soft);
+                binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
+                break;
+            case GOOD:
+                binding.tabProfile.tvGpaRankBadge.setText(R.string.profile_gpa_rank_good);
+                binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_accent_soft);
+                binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_sapphire));
+                break;
+            case FAIR:
+                binding.tabProfile.tvGpaRankBadge.setText(R.string.profile_gpa_rank_fair);
+                binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_neutral_soft);
+                binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.ink_secondary));
+                break;
+            case AVERAGE:
+            default:
+                binding.tabProfile.tvGpaRankBadge.setText(R.string.profile_gpa_rank_average);
+                binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_danger_soft);
+                binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_danger));
+                break;
         }
     }
 
