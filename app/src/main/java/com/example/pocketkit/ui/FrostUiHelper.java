@@ -1,6 +1,7 @@
 package com.example.pocketkit.ui;
 
 import android.animation.ValueAnimator;
+import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -38,9 +39,12 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.pocketkit.R;
+import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.ScheduleSlot;
+import com.example.pocketkit.model.StudyTask;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -56,6 +60,14 @@ public final class FrostUiHelper {
 
     public interface OnScheduleDeletedListener {
         void onScheduleDeleted(@NonNull ScheduleSlot slot);
+    }
+
+    public interface OnTaskSavedListener {
+        void onTaskSaved(@NonNull StudyTask task);
+    }
+
+    public interface OnTaskDeletedListener {
+        void onTaskDeleted(@NonNull StudyTask task);
     }
 
     public interface OnImportActionListener {
@@ -364,6 +376,174 @@ public final class FrostUiHelper {
             btnDelete.setOnClickListener(v -> {
                 dialog.dismiss();
                 deleteListener.onScheduleDeleted(existingSlot);
+            });
+        }
+
+        configureFrostDialogWindow(dialog, !editing);
+        dialog.show();
+    }
+
+    public static void showTaskEditorDialog(
+            @NonNull Context context,
+            @Nullable StudyTask existingTask,
+            @NonNull OnTaskSavedListener saveListener,
+            @Nullable OnTaskDeletedListener deleteListener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_task);
+        dialog.setContentView(content);
+
+        TextView tvTitle = content.findViewById(R.id.tvTaskDialogTitle);
+        EditText edtTitle = content.findViewById(R.id.edtTaskDialogTitle);
+        EditText edtSubject = content.findViewById(R.id.edtTaskDialogSubject);
+        View btnPickDue = content.findViewById(R.id.btnTaskPickDue);
+        TextView tvDueDisplay = content.findViewById(R.id.tvTaskDueDisplay);
+        TextView btnClearDue = content.findViewById(R.id.btnTaskClearDue);
+        TextView btnPresetToday = content.findViewById(R.id.btnTaskPresetToday);
+        TextView btnPresetTomorrow = content.findViewById(R.id.btnTaskPresetTomorrow);
+        TextView btnCancel = content.findViewById(R.id.btnTaskDialogCancel);
+        TextView btnSave = content.findViewById(R.id.btnTaskDialogSave);
+        View btnDelete = content.findViewById(R.id.btnTaskDialogDelete);
+
+        TextView[] tagChips = new TextView[]{
+                content.findViewById(R.id.chipTaskTagDeadline),
+                content.findViewById(R.id.chipTaskTagAssignment),
+                content.findViewById(R.id.chipTaskTagExam),
+                content.findViewById(R.id.chipTaskTagGroup),
+                content.findViewById(R.id.chipTaskTagPersonal)
+        };
+        String[] tagValues = new String[]{
+                context.getString(R.string.task_tag_deadline),
+                context.getString(R.string.task_tag_assignment),
+                context.getString(R.string.task_tag_exam),
+                context.getString(R.string.task_tag_group),
+                context.getString(R.string.task_default_tag)
+        };
+
+        boolean editing = existingTask != null;
+        tvTitle.setText(editing ? R.string.task_dialog_edit_title : R.string.task_dialog_add_title);
+
+        final int[] selectedTagIdx = new int[]{0};
+        final long[] selectedDueAt = new long[]{editing ? existingTask.getDueAtMillis() : 0L};
+
+        if (editing) {
+            edtTitle.setText(existingTask.getTitle());
+            edtSubject.setText(existingTask.getSubject());
+            String currentTag = existingTask.getTag() != null ? existingTask.getTag().trim() : "";
+            for (int i = 0; i < tagValues.length; i++) {
+                if (tagValues[i].equalsIgnoreCase(currentTag)) {
+                    selectedTagIdx[0] = i;
+                    break;
+                }
+            }
+        }
+
+        Runnable refreshTags = () -> {
+            for (int i = 0; i < tagChips.length; i++) {
+                boolean active = i == selectedTagIdx[0];
+                tagChips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+                tagChips[i].setTextColor(ContextCompat.getColor(context, active ? R.color.white : R.color.ink_primary));
+            }
+        };
+        refreshTags.run();
+
+        for (int i = 0; i < tagChips.length; i++) {
+            final int index = i;
+            tagChips[i].setOnClickListener(v -> {
+                selectedTagIdx[0] = index;
+                refreshTags.run();
+            });
+        }
+
+        Runnable refreshDueDisplay = () -> {
+            if (selectedDueAt[0] > 0L) {
+                tvDueDisplay.setText(HomeSummaryHelper.formatDueDateTime(context, selectedDueAt[0], System.currentTimeMillis()));
+                tvDueDisplay.setTextColor(ContextCompat.getColor(context, R.color.ink_primary));
+                btnClearDue.setVisibility(View.VISIBLE);
+            } else {
+                tvDueDisplay.setText(R.string.task_no_due_label);
+                tvDueDisplay.setTextColor(ContextCompat.getColor(context, R.color.ink_secondary));
+                btnClearDue.setVisibility(View.GONE);
+            }
+        };
+        refreshDueDisplay.run();
+
+        btnPickDue.setOnClickListener(v -> {
+            Calendar initial = Calendar.getInstance();
+            if (selectedDueAt[0] > 0L) {
+                initial.setTimeInMillis(selectedDueAt[0]);
+            } else {
+                initial.set(Calendar.HOUR_OF_DAY, 17);
+                initial.set(Calendar.MINUTE, 0);
+            }
+            new DatePickerDialog(
+                    context,
+                    (view, year, month, dayOfMonth) -> new TimePickerDialog(
+                            context,
+                            (timeView, hourOfDay, minute) -> {
+                                Calendar chosen = Calendar.getInstance();
+                                chosen.set(Calendar.YEAR, year);
+                                chosen.set(Calendar.MONTH, month);
+                                chosen.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                                chosen.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                chosen.set(Calendar.MINUTE, minute);
+                                chosen.set(Calendar.SECOND, 0);
+                                chosen.set(Calendar.MILLISECOND, 0);
+                                selectedDueAt[0] = chosen.getTimeInMillis();
+                                refreshDueDisplay.run();
+                            },
+                            initial.get(Calendar.HOUR_OF_DAY),
+                            initial.get(Calendar.MINUTE),
+                            true
+                    ).show(),
+                    initial.get(Calendar.YEAR),
+                    initial.get(Calendar.MONTH),
+                    initial.get(Calendar.DAY_OF_MONTH)
+            ).show();
+        });
+
+        btnPresetToday.setOnClickListener(v -> {
+            selectedDueAt[0] = HomeSummaryHelper.buildUpcomingDueAtMillis(0, 17, 0, System.currentTimeMillis(), false);
+            refreshDueDisplay.run();
+        });
+
+        btnPresetTomorrow.setOnClickListener(v -> {
+            selectedDueAt[0] = HomeSummaryHelper.buildUpcomingDueAtMillis(1, 9, 0, System.currentTimeMillis(), false);
+            refreshDueDisplay.run();
+        });
+
+        btnClearDue.setOnClickListener(v -> {
+            selectedDueAt[0] = 0L;
+            refreshDueDisplay.run();
+        });
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnSave.setOnClickListener(v -> {
+            String title = edtTitle.getText().toString().trim();
+            if (title.isEmpty()) {
+                edtTitle.setError(context.getString(R.string.task_dialog_empty_title_error));
+                edtTitle.requestFocus();
+                return;
+            }
+            StudyTask saved = StudyTask.builder()
+                    .id(editing ? existingTask.getId() : 0)
+                    .title(title)
+                    .subject(edtSubject.getText().toString().trim())
+                    .tag(tagValues[selectedTagIdx[0]])
+                    .dueAtMillis(selectedDueAt[0])
+                    .done(editing && existingTask.isDone())
+                    .createdAtMillis(editing ? existingTask.getCreatedAtMillis() : System.currentTimeMillis())
+                    .build();
+            dialog.dismiss();
+            saveListener.onTaskSaved(saved);
+        });
+
+        if (editing && deleteListener != null) {
+            btnDelete.setVisibility(View.VISIBLE);
+            btnDelete.setOnClickListener(v -> {
+                dialog.dismiss();
+                deleteListener.onTaskDeleted(existingTask);
             });
         }
 

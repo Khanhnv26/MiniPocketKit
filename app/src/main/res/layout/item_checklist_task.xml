@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/taskRowRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical"
-    android:minHeight="48dp"
+    android:minHeight="@dimen/touch_target_min"
     android:orientation="horizontal"
-    android:paddingVertical="8dp">
+    android:paddingVertical="@dimen/dialog_label_gap">
 
     <FrameLayout
-        android:id="@+id/taskCheckBox"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:background="@drawable/bg_check_unchecked">
+        android:id="@+id/btnTaskCheckArea"
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/notes_done_desc"
+        android:focusable="true">
 
-        <ImageView
-            android:id="@+id/ivTaskCheck"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
+        <FrameLayout
+            android:id="@+id/taskCheckBox"
+            android:layout_width="@dimen/checkbox_box_size"
+            android:layout_height="@dimen/checkbox_box_size"
             android:layout_gravity="center"
-            android:contentDescription="Hoàn thành"
-            android:src="@drawable/ic_check_white"
-            android:visibility="gone" />
+            android:background="@drawable/bg_check_unchecked">
+
+            <ImageView
+                android:id="@+id/ivTaskCheck"
+                android:layout_width="@dimen/checkbox_check_size"
+                android:layout_height="@dimen/checkbox_check_size"
+                android:layout_gravity="center"
+                android:contentDescription="@string/notes_done_desc"
+                android:src="@drawable/ic_check_white"
+                android:visibility="gone" />
+        </FrameLayout>
     </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="@dimen/day_chip_gap"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -38,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/ink_primary"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_size_input"
             android:textStyle="bold" />
 
         <TextView
@@ -47,18 +59,18 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:textColor="@color/ink_secondary"
-            android:textSize="12sp" />
+            android:textSize="@dimen/text_size_caption" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/tvTaskTag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="@dimen/chip_gap"
         android:background="@drawable/bg_pill_neutral_soft"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="4dp"
+        android:paddingHorizontal="@dimen/dialog_button_gap"
+        android:paddingVertical="@dimen/badge_padding_v"
         android:textColor="@color/ink_secondary"
-        android:textSize="12sp"
+        android:textSize="@dimen/text_size_caption"
         android:textStyle="bold" />
 </LinearLayout>

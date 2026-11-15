@@ -10,10 +10,10 @@
         android:id="@+id/heroCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/section_gap"
         android:background="@drawable/bg_glass_hero"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,13 +23,13 @@
 
             <com.example.pocketkit.DashboardRingsView
                 android:id="@+id/ringsView"
-                android:layout_width="104dp"
-                android:layout_height="104dp" />
+                android:layout_width="@dimen/home_rings_size"
+                android:layout_height="@dimen/home_rings_size" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="@dimen/dock_horizontal_padding"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -43,25 +43,24 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Hạn nộp"
+                        android:text="@string/home_ring_deadline_label"
                         android:textColor="@color/ink_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="@dimen/text_size_body" />
 
                     <TextView
                         android:id="@+id/tvRingDeadlineValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFeatureSettings="tnum"
-                        android:text="68%"
                         android:textColor="@color/accent_sapphire"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/text_size_input"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/chip_gap"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -69,25 +68,24 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Lịch học"
+                        android:text="@string/home_ring_class_label"
                         android:textColor="@color/ink_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="@dimen/text_size_body" />
 
                     <TextView
                         android:id="@+id/tvRingClassValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFeatureSettings="tnum"
-                        android:text="85%"
-                        android:textColor="#FF0284C7"
-                        android:textSize="14sp"
+                        android:textColor="@color/accent_sky_text"
+                        android:textSize="@dimen/text_size_input"
                         android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/chip_gap"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -95,18 +93,17 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Tập trung"
+                        android:text="@string/home_ring_focus_label"
                         android:textColor="@color/ink_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="@dimen/text_size_body" />
 
                     <TextView
                         android:id="@+id/tvRingFocusValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFeatureSettings="tnum"
-                        android:text="40%"
                         android:textColor="@color/accent_mint_text"
-                        android:textSize="14sp"
+                        android:textSize="@dimen/text_size_input"
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
@@ -116,11 +113,11 @@
             android:id="@+id/spotlightCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/dock_horizontal_padding"
             android:background="@drawable/bg_glass_inner"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="14dp">
+            android:padding="@dimen/card_padding_compact">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -132,9 +129,8 @@
                     android:id="@+id/tvSpotlightBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="NGAY LÚC NÀY"
                     android:textColor="@color/accent_sapphire"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/text_size_caption"
                     android:textStyle="bold" />
 
                 <TextView
@@ -142,9 +138,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="Nộp Lab 04 · Lập trình Di động"
                     android:textColor="@color/ink_primary"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/text_size_spotlight_title"
                     android:textStyle="bold" />
 
                 <TextView
@@ -152,25 +147,23 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Hạn 17:00 hôm nay · Còn 2 giờ"
                     android:textColor="@color/ink_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="@dimen/text_size_body" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/btnSpotlightAction"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="@dimen/card_gap"
                 android:background="@drawable/bg_pill_primary"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:paddingHorizontal="16dp"
-                android:text="Nộp ngay"
+                android:minHeight="@dimen/touch_target_min"
+                android:paddingHorizontal="@dimen/dock_horizontal_padding"
                 android:textColor="@color/white"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
@@ -179,34 +172,34 @@
         android:id="@+id/focusTimerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
+        android:layout_marginBottom="@dimen/section_gap"
         android:background="@drawable/bg_glass_card"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:padding="@dimen/dock_horizontal_padding">
 
         <ImageView
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="@dimen/icon_badge_size"
+            android:layout_height="@dimen/icon_badge_size"
             android:background="@drawable/bg_icon_badge"
-            android:contentDescription="Đồng hồ tập trung"
-            android:padding="10dp"
+            android:contentDescription="@string/home_timer_focus_desc"
+            android:padding="@dimen/dialog_button_gap"
             android:src="@drawable/ic_focus"
             app:tint="@color/accent_sapphire" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/card_gap"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tập trung Pomodoro"
+                android:text="@string/home_timer_title"
                 android:textColor="@color/ink_secondary"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
 
             <TextView
@@ -215,9 +208,9 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-black"
                 android:fontFeatureSettings="tnum"
-                android:text="25:00"
+                android:text="@string/home_timer_default_clock"
                 android:textColor="@color/ink_primary"
-                android:textSize="24sp" />
+                android:textSize="@dimen/text_size_timer_display" />
         </LinearLayout>
 
         <TextView
@@ -228,21 +221,21 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:minHeight="48dp"
-            android:paddingHorizontal="16dp"
-            android:text="Bắt đầu"
+            android:minHeight="@dimen/touch_target_min"
+            android:paddingHorizontal="@dimen/dock_horizontal_padding"
+            android:text="@string/home_timer_btn_start"
             android:textColor="@color/white"
-            android:textSize="13sp"
+            android:textSize="@dimen/text_size_body"
             android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/btnTimerReset"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginStart="@dimen/chip_gap"
             android:background="@drawable/bg_pill_secondary"
-            android:contentDescription="Đặt lại đồng hồ"
-            android:padding="13dp"
+            android:contentDescription="@string/home_timer_reset_desc"
+            android:padding="@dimen/dialog_field_gap"
             android:scaleType="centerInside"
             android:src="@drawable/ic_refresh"
             app:tint="@color/ink_primary" />
@@ -254,12 +247,12 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_glass_card"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="@dimen/card_padding">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="@dimen/dialog_button_gap"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -267,9 +260,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Việc cần làm"
+                android:text="@string/home_checklist_title"
                 android:textColor="@color/ink_primary"
-                android:textSize="17sp"
+                android:textSize="@dimen/text_size_section_title"
                 android:textStyle="bold" />
 
             <TextView
@@ -277,27 +270,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_pill_accent_soft"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="5dp"
-                android:text="2/3 việc"
+                android:paddingHorizontal="@dimen/dialog_button_gap"
+                android:paddingVertical="@dimen/badge_padding_v"
                 android:textColor="@color/accent_sapphire"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/btnHomeOpenNotes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/chip_gap"
                 android:background="@drawable/bg_pill_secondary"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
-                android:minHeight="48dp"
-                android:paddingHorizontal="14dp"
-                android:text="Ghi chú"
+                android:minHeight="@dimen/touch_target_min"
+                android:paddingHorizontal="@dimen/chip_padding_h"
+                android:text="@string/home_checklist_notes_btn"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -305,21 +297,21 @@
             android:id="@+id/layoutPinnedNoteBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="@dimen/dialog_button_gap"
             android:background="@drawable/bg_glass_inner"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"
-            android:minHeight="48dp"
+            android:minHeight="@dimen/touch_target_min"
             android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp"
+            android:paddingHorizontal="@dimen/card_gap"
+            android:paddingVertical="@dimen/chip_gap"
             android:visibility="gone">
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:contentDescription="Ghi chú đã ghim"
+                android:layout_width="@dimen/icon_size_sm"
+                android:layout_height="@dimen/icon_size_sm"
+                android:contentDescription="@string/note_pin_desc"
                 android:src="@drawable/ic_pin"
                 app:tint="@color/accent_sapphire" />
 
@@ -327,23 +319,35 @@
                 android:id="@+id/tvPinnedNoteSummary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/chip_gap"
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@color/ink_primary"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_size_body"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Mở"
+                android:layout_marginStart="@dimen/chip_gap"
+                android:text="@string/home_checklist_pinned_open"
                 android:textColor="@color/accent_sapphire"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvChecklistEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_glass_inner"
+            android:lineSpacingExtra="4dp"
+            android:padding="@dimen/card_padding_compact"
+            android:text="@string/home_checklist_empty"
+            android:textColor="@color/ink_secondary"
+            android:textSize="@dimen/text_size_body"
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/checklistContainer"
@@ -356,7 +360,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/card_gap"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -366,25 +370,24 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/bg_glass_inner"
-                android:hint="Thêm việc cần làm nhanh..."
+                android:hint="@string/home_task_input_hint"
                 android:imeOptions="actionDone"
                 android:importantForAutofill="no"
                 android:inputType="textCapSentences"
-                android:minHeight="48dp"
-                android:paddingHorizontal="14dp"
+                android:minHeight="@dimen/input_min_height"
+                android:paddingHorizontal="@dimen/chip_padding_h"
                 android:textColor="@color/ink_primary"
                 android:textColorHint="@color/ink_secondary"
-                android:textSize="14sp" />
+                android:textSize="@dimen/text_size_input" />
 
             <ImageButton
                 android:id="@+id/btnAddTask"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="10dp"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:layout_marginStart="@dimen/dialog_button_gap"
                 android:background="@drawable/bg_pill_primary"
-                android:contentDescription="Thêm công việc"
-                android:padding="13dp"
-                android:scaleType="centerInside"
+                android:contentDescription="@string/home_task_add_desc"
+                android:scaleType="center"
                 android:src="@drawable/ic_plus"
                 app:tint="@color/white" />
         </LinearLayout>

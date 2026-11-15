@@ -176,4 +176,93 @@
     <string name="home_spotlight_empty_title">Chưa có lịch học tiếp theo</string>
     <string name="home_spotlight_empty_sub">Mở tab Lịch học để thêm hoặc nhập file Excel</string>
     <string name="home_ring_percent_format">%1$d%%</string>
+
+    <string name="tab_header_home">Mini Pocket Kit</string>
+    <string name="tab_header_calendar">Lịch học tuần</string>
+    <string name="tab_header_tools">Tiện ích nhanh</string>
+    <string name="tab_header_profile">Hồ sơ học tập</string>
+
+    <string name="home_ring_deadline_label">Hạn nộp</string>
+    <string name="home_ring_class_label">Lịch học</string>
+    <string name="home_ring_focus_label">Tập trung</string>
+
+    <string name="home_spotlight_overdue_badge">ĐÃ QUÁ HẠN</string>
+    <string name="home_spotlight_soon_badge">SẮP ĐẾN HẠN</string>
+    <string name="home_spotlight_upcoming_badge">HẠN NỘP SẮP TỚI</string>
+    <string name="home_spotlight_task_badge">VIỆC CẦN LÀM</string>
+    <string name="home_spotlight_all_done_badge">HOÀN TẤT HÔM NAY</string>
+    <string name="home_spotlight_all_done_title">Đã xong mọi việc cần làm</string>
+    <string name="home_spotlight_all_done_sub">Thêm hạn nộp mới hoặc xem lịch học tuần</string>
+    <string name="home_spotlight_btn_complete">Hoàn thành</string>
+    <string name="home_spotlight_btn_view_schedule">Xem lịch</string>
+    <string name="home_spotlight_btn_add_task">Thêm việc</string>
+    <string name="home_spotlight_due_remaining_format">%1$s · %2$s</string>
+    <string name="home_spotlight_task_meta_default">Nhấn Hoàn thành khi bạn đã xử lý xong</string>
+
+    <string name="home_timer_title">Tập trung Pomodoro</string>
+    <string name="home_timer_default_clock">25:00</string>
+    <string name="home_timer_clock_format">%1$02d:%2$02d</string>
+    <string name="home_timer_btn_start">Bắt đầu</string>
+    <string name="home_timer_btn_pause">Tạm dừng</string>
+    <string name="home_timer_btn_resume">Tiếp tục</string>
+    <string name="home_timer_reset_desc">Đặt lại đồng hồ</string>
+    <string name="home_timer_focus_desc">Đồng hồ tập trung</string>
+    <string name="home_timer_finished_toast">Hoàn thành phiên tập trung 25 phút</string>
+
+    <string name="home_checklist_title">Việc cần làm</string>
+    <string name="home_checklist_count_format">%1$d/%2$d việc</string>
+    <string name="home_checklist_notes_btn">Ghi chú</string>
+    <string name="home_checklist_pinned_open">Mở</string>
+    <string name="home_checklist_empty">Chưa có công việc nào. Nhập tiêu đề bên dưới hoặc bấm + để tạo hạn nộp.</string>
+    <string name="home_task_input_hint">Thêm việc nhanh hoặc bấm +...</string>
+    <string name="home_task_add_desc">Thêm công việc hoặc hạn nộp</string>
+
+    <string name="task_default_tag">Cá nhân</string>
+    <string name="task_tag_deadline">Deadline</string>
+    <string name="task_tag_assignment">Bài tập</string>
+    <string name="task_tag_exam">Ôn thi</string>
+    <string name="task_tag_group">Nhóm</string>
+    <string name="task_quick_meta">Thêm nhanh · Không đặt hạn</string>
+    <string name="task_no_due_label">Không đặt hạn nộp</string>
+    <string name="task_due_prefix_today">Hạn %1$s hôm nay</string>
+    <string name="task_due_prefix_tomorrow">Hạn %1$s ngày mai</string>
+    <string name="task_due_prefix_date">Hạn %1$s %2$s</string>
+    <string name="task_remaining_minutes">Còn %1$d phút</string>
+    <string name="task_remaining_hours">Còn %1$d giờ</string>
+    <string name="task_remaining_days">Còn %1$d ngày</string>
+    <string name="task_overdue_minutes">Quá hạn %1$d phút</string>
+    <string name="task_overdue_hours">Quá hạn %1$d giờ</string>
+    <string name="task_overdue_days">Quá hạn %1$d ngày</string>
+    <string name="task_toast_completed">Đã hoàn thành: %1$s</string>
+    <string name="task_toast_reopened">Đã mở lại: %1$s</string>
+    <string name="task_toast_created">Đã thêm công việc mới</string>
+    <string name="task_toast_updated">Đã cập nhật công việc</string>
+    <string name="task_toast_deleted">Đã xóa công việc</string>
+
+    <string name="task_dialog_add_title">Thêm công việc</string>
+    <string name="task_dialog_edit_title">Chỉnh sửa công việc</string>
+    <string name="task_dialog_title_label">NỘI DUNG CÔNG VIỆC</string>
+    <string name="task_dialog_title_hint">VD: Nộp báo cáo Lab 04...</string>
+    <string name="task_dialog_subject_label">MÔN HỌC HOẶC NGỮ CẢNH</string>
+    <string name="task_dialog_subject_hint">VD: Lập trình Di động</string>
+    <string name="task_dialog_tag_label">NHÃN PHÂN LOẠI</string>
+    <string name="task_dialog_due_label">HẠN NỘP (TÙY CHỌN)</string>
+    <string name="task_dialog_due_preset_today">Hôm nay 17:00</string>
+    <string name="task_dialog_due_preset_tomorrow">Ngày mai 09:00</string>
+    <string name="task_dialog_due_pick">Chọn ngày giờ</string>
+    <string name="task_dialog_due_clear">Bỏ hạn</string>
+    <string name="task_dialog_btn_save">Lưu công việc</string>
+    <string name="task_dialog_btn_delete">Xóa công việc</string>
+    <string name="task_dialog_empty_title_error">Vui lòng nhập nội dung công việc</string>
+    <string name="task_delete_confirm_title">Xóa công việc</string>
+    <string name="task_delete_confirm_message">Bạn muốn xóa công việc \"%1$s\"?</string>
+
+    <string name="task_seed_title_1">Nộp Lab 04</string>
+    <string name="task_seed_subject_1">Lập trình Di động</string>
+    <string name="task_seed_title_2">Hoàn thiện giao diện báo cáo tuần</string>
+    <string name="task_seed_subject_2">Cơ sở dữ liệu</string>
+    <string name="task_seed_title_3">Ôn tập chương 4 Quản lý bộ nhớ</string>
+    <string name="task_seed_subject_3">Hệ điều hành</string>
+    <string name="task_seed_title_4">Gửi biên bản họp nhóm</string>
+    <string name="task_seed_subject_4">Dự án Phần mềm</string>
 </resources>

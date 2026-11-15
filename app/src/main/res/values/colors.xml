@@ -22,6 +22,7 @@
     <color name="accent_sapphire">#FF007AFF</color>
     <color name="accent_sapphire_soft">#1A007AFF</color>
     <color name="accent_sky">#FF38BDF8</color>
+    <color name="accent_sky_text">#FF0284C7</color>
     <color name="accent_mint">#FF14B8A6</color>
     <color name="accent_mint_soft">#1A14B8A6</color>
     <color name="accent_mint_text">#FF0F766E</color>

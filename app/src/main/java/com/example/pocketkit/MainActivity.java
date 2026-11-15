@@ -34,8 +34,10 @@ import androidx.core.content.FileProvider;
 
 import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityMainBinding;
+import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.model.ScheduleSlot;
+import com.example.pocketkit.model.StudyTask;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 import com.example.pocketkit.ui.FrostUiHelper;
 
@@ -57,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String STATE_SELECTED_TAB = "state_selected_tab";
     private static final String STATE_SELECTED_DAY = "state_selected_day";
-    private static final String STATE_URGENT_SUBMITTED = "state_urgent_submitted";
     private static final String STATE_COMPRESS_PRESET = "state_compress_preset";
     private static final String STATE_OCR_SAMPLE = "state_ocr_sample";
     private static final String STATE_TIMER_MS = "state_timer_ms";
@@ -68,11 +69,11 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private DatabaseHelper dbHelper;
     private Note currentPinnedNote;
+    private HomeSummaryHelper.SpotlightCandidate currentSpotlight;
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 
     private int selectedTab = 0;
     private int selectedDayIndex = getInitialDayIndex();
-    private boolean urgentSubmitted = false;
     private int selectedCompressPreset = 0;
     private int selectedOcrSample = 0;
     private long remainingTimerMs = FOCUS_DURATION_MS;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private ScheduleTransferHelper.TransferFormat pendingExportFormat = ScheduleTransferHelper.TransferFormat.XLSX;
     private boolean pendingExportTemplate = false;
 
-    private final List<TaskItem> taskItems = new ArrayList<>();
+    private List<StudyTask> taskItems = new ArrayList<>();
 
     private static final class ExportDocumentSpec {
         final String fileName;
@@ -126,32 +127,6 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
-    private static class TaskItem {
-        final String title;
-        final String meta;
-        final String tag;
-        boolean done;
-
-        TaskItem(String title, String meta, String tag, boolean done) {
-            this.title = title;
-            this.meta = meta;
-            this.tag = tag;
-            this.done = done;
-        }
-    }
-
-    private static final class SpotlightScheduleMatch {
-        final ScheduleSlot slot;
-        final boolean isHappeningNow;
-        final boolean isToday;
-
-        SpotlightScheduleMatch(ScheduleSlot slot, boolean isHappeningNow, boolean isToday) {
-            this.slot = slot;
-            this.isHappeningNow = isHappeningNow;
-            this.isToday = isToday;
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -168,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
                 binding.bottomDockContainer
         );
         restoreState(savedInstanceState);
-        seedTasks();
         bindHeaderDate();
         bindHeroCard();
         bindFocusTimer();
@@ -178,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         bindProfileTab();
         bindDockNavigation();
         applySavedSelections();
+        refreshHomeDashboard(false);
     }
 
     @Override
@@ -185,14 +160,13 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         refreshNotesIntegration();
         selectScheduleDay(selectedDayIndex);
-        updateSpotlightUi(false);
+        refreshHomeDashboard(false);
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putInt(STATE_SELECTED_TAB, selectedTab);
         outState.putInt(STATE_SELECTED_DAY, selectedDayIndex);
-        outState.putBoolean(STATE_URGENT_SUBMITTED, urgentSubmitted);
         outState.putInt(STATE_COMPRESS_PRESET, selectedCompressPreset);
         outState.putInt(STATE_OCR_SAMPLE, selectedOcrSample);
         outState.putLong(STATE_TIMER_MS, remainingTimerMs);
@@ -228,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
         if (selectedDayIndex < 0 || selectedDayIndex > 5) {
             selectedDayIndex = 0;
         }
-        urgentSubmitted = savedInstanceState.getBoolean(STATE_URGENT_SUBMITTED, false);
         selectedCompressPreset = savedInstanceState.getInt(STATE_COMPRESS_PRESET, 0);
         selectedOcrSample = savedInstanceState.getInt(STATE_OCR_SAMPLE, 0);
         remainingTimerMs = savedInstanceState.getLong(STATE_TIMER_MS, FOCUS_DURATION_MS);
@@ -242,13 +215,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void seedTasks() {
-        taskItems.clear();
-        taskItems.add(new TaskItem("Hoàn thiện giao diện báo cáo tuần", "Cơ sở dữ liệu · Hôm nay", "Bài tập", false));
-        taskItems.add(new TaskItem("Ôn tập chương 4 Quản lý bộ nhớ", "Hệ điều hành · 30 phút", "Ôn thi", false));
-        taskItems.add(new TaskItem("Gửi biên bản họp nhóm", "Dự án phần mềm · Xong sáng nay", "Nhóm", true));
-    }
-
     private void bindHeaderDate() {
         Locale vi = Locale.forLanguageTag("vi-VN");
         String formatted = new SimpleDateFormat("EEEE, d 'tháng' M", vi).format(new Date());
@@ -257,136 +223,148 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindHeroCard() {
-        updateSpotlightUi(false);
         binding.tabHome.btnSpotlightAction.setOnClickListener(v -> {
-            urgentSubmitted = !urgentSubmitted;
-            updateSpotlightUi(true);
-            String msg = urgentSubmitted ? "Đã đánh dấu hoàn thành Lab 04" : "Đã khôi phục trạng thái chưa nộp";
-            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+            if (currentSpotlight == null) {
+                return;
+            }
+            if ((currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.DEADLINE_TASK
+                    || currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.PENDING_TASK)
+                    && currentSpotlight.task != null) {
+                StudyTask task = currentSpotlight.task;
+                dbHelper.setTaskDone(task.getId(), true);
+                Toast.makeText(this, getString(R.string.task_toast_completed, task.getTitle()), Toast.LENGTH_SHORT).show();
+                refreshHomeDashboard(true);
+            } else if (currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.SCHEDULE_SLOT
+                    && currentSpotlight.slot != null) {
+                int dayIdx = currentSpotlight.slot.getDayOfWeek() - ScheduleSlot.DAY_MIN;
+                if (dayIdx >= 0 && dayIdx <= 5) {
+                    selectScheduleDay(dayIdx);
+                }
+                switchTab(1);
+            } else {
+                openTaskEditor(null);
+            }
         });
     }
 
-    private void updateSpotlightUi(boolean animate) {
-        if (urgentSubmitted) {
-            SpotlightScheduleMatch match = findNextSpotlightSchedule();
-            if (match != null) {
-                ScheduleSlot slot = match.slot;
-                String room = slot.getRoom() != null && !slot.getRoom().trim().isEmpty()
-                        ? slot.getRoom().trim()
-                        : getString(R.string.schedule_room_fallback);
-                String lecturer = slot.getLecturer() != null && !slot.getLecturer().trim().isEmpty()
-                        ? slot.getLecturer().trim()
-                        : getString(R.string.schedule_lecturer_fallback);
-                String timeRange = getString(R.string.schedule_time_range_format, slot.getStartTime(), slot.getEndTime());
-
-                binding.tabHome.tvSpotlightBadge.setText(
-                        match.isHappeningNow ? R.string.home_spotlight_active_badge : R.string.home_spotlight_next_badge
-                );
-                binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(
-                        this,
-                        match.isHappeningNow ? R.color.accent_sapphire : R.color.accent_mint_text
-                ));
-                binding.tabHome.tvSpotlightTitle.setText(
-                        getString(R.string.home_spotlight_title_format, slot.getSubject(), room)
-                );
-                if (match.isToday) {
-                    binding.tabHome.tvSpotlightSub.setText(
-                            getString(R.string.home_spotlight_sub_today, timeRange, lecturer)
-                    );
-                } else {
-                    binding.tabHome.tvSpotlightSub.setText(
-                            getString(R.string.home_spotlight_sub_day, getDayShortName(slot.getDayOfWeek()), timeRange, lecturer)
-                    );
-                }
-            } else {
-                binding.tabHome.tvSpotlightBadge.setText(R.string.home_spotlight_next_badge);
-                binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
-                binding.tabHome.tvSpotlightTitle.setText(R.string.home_spotlight_empty_title);
-                binding.tabHome.tvSpotlightSub.setText(R.string.home_spotlight_empty_sub);
-            }
-            binding.tabHome.btnSpotlightAction.setText("Hoàn tác");
-            binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_secondary);
-            binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.ink_primary));
-            binding.tabHome.ringsView.setDeadlineProgress(1.0f, animate);
-            binding.tabHome.tvRingDeadlineValue.setText("100%");
-        } else {
-            binding.tabHome.tvSpotlightBadge.setText("NGAY LÚC NÀY");
-            binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_sapphire));
-            binding.tabHome.tvSpotlightTitle.setText("Nộp Lab 04 · Lập trình Di động");
-            binding.tabHome.tvSpotlightSub.setText("Hạn 17:00 hôm nay · Còn 2 giờ");
-            binding.tabHome.btnSpotlightAction.setText("Nộp ngay");
-            binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_primary);
-            binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.white));
-            binding.tabHome.ringsView.setDeadlineProgress(0.68f, animate);
-            binding.tabHome.tvRingDeadlineValue.setText("68%");
+    private void refreshHomeDashboard(boolean animate) {
+        if (dbHelper == null) {
+            return;
         }
+        long nowMillis = System.currentTimeMillis();
+        taskItems = dbHelper.getAllTasks();
+        List<ScheduleSlot> allSchedules = dbHelper.getAllSchedules();
 
-        float classProgress = computeClassRingProgress();
+        renderChecklist(nowMillis);
+
+        HomeSummaryHelper.DeadlineProgress deadlineProgress = HomeSummaryHelper.computeDeadlineProgress(taskItems);
+        binding.tabHome.ringsView.setDeadlineProgress(deadlineProgress.fraction, animate);
+        binding.tabHome.tvRingDeadlineValue.setText(
+                getString(R.string.home_ring_percent_format, Math.round(deadlineProgress.fraction * 100f))
+        );
+
+        float classProgress = HomeSummaryHelper.computeClassProgress(allSchedules, nowMillis);
         binding.tabHome.ringsView.setClassProgress(classProgress, animate);
         binding.tabHome.tvRingClassValue.setText(
                 getString(R.string.home_ring_percent_format, Math.round(classProgress * 100f))
         );
+
+        currentSpotlight = HomeSummaryHelper.findBestSpotlight(taskItems, allSchedules, nowMillis);
+        bindSpotlightCandidate(currentSpotlight, nowMillis);
     }
 
-    private float computeClassRingProgress() {
-        if (dbHelper == null) {
-            return 0f;
-        }
-        Calendar cal = Calendar.getInstance();
-        int androidDay = cal.get(Calendar.DAY_OF_WEEK);
-        int nowMinutes = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
-
-        if (androidDay >= Calendar.MONDAY && androidDay <= Calendar.SATURDAY) {
-            List<ScheduleSlot> todaySlots = dbHelper.getSchedulesByDay(androidDay);
-            if (!todaySlots.isEmpty()) {
-                int completed = 0;
-                for (ScheduleSlot slot : todaySlots) {
-                    int endMin = ScheduleSlot.toMinutes(slot.getEndTime());
-                    if (endMin >= 0 && endMin <= nowMinutes) {
-                        completed++;
-                    }
-                }
-                return (float) completed / (float) todaySlots.size();
+    private void bindSpotlightCandidate(@NonNull HomeSummaryHelper.SpotlightCandidate candidate, long nowMillis) {
+        if (candidate.kind == HomeSummaryHelper.SpotlightKind.DEADLINE_TASK && candidate.task != null) {
+            StudyTask task = candidate.task;
+            int badgeRes;
+            int badgeColorRes;
+            if (candidate.urgency == HomeSummaryHelper.DeadlineUrgency.OVERDUE) {
+                badgeRes = R.string.home_spotlight_overdue_badge;
+                badgeColorRes = R.color.accent_danger;
+            } else if (candidate.urgency == HomeSummaryHelper.DeadlineUrgency.SOON_HOURS) {
+                badgeRes = R.string.home_spotlight_soon_badge;
+                badgeColorRes = R.color.accent_sapphire;
+            } else {
+                badgeRes = R.string.home_spotlight_upcoming_badge;
+                badgeColorRes = R.color.accent_sapphire;
             }
-        }
-        return dbHelper.getTotalScheduleCount() > 0 ? 1.0f : 0.0f;
-    }
 
-    @Nullable
-    private SpotlightScheduleMatch findNextSpotlightSchedule() {
-        if (dbHelper == null) {
-            return null;
-        }
-        Calendar cal = Calendar.getInstance();
-        int androidDay = cal.get(Calendar.DAY_OF_WEEK);
-        int nowMinutes = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
+            binding.tabHome.tvSpotlightBadge.setText(badgeRes);
+            binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(this, badgeColorRes));
 
-        if (androidDay >= Calendar.MONDAY && androidDay <= Calendar.SATURDAY) {
-            List<ScheduleSlot> todaySlots = dbHelper.getSchedulesByDay(androidDay);
-            for (ScheduleSlot slot : todaySlots) {
-                int startMin = ScheduleSlot.toMinutes(slot.getStartTime());
-                int endMin = ScheduleSlot.toMinutes(slot.getEndTime());
-                if (startMin >= 0 && endMin > nowMinutes) {
-                    boolean active = startMin <= nowMinutes;
-                    return new SpotlightScheduleMatch(slot, active, true);
-                }
-            }
+            String title = hasText(task.getSubject())
+                    ? getString(R.string.home_spotlight_title_format, task.getTitle(), task.getSubject().trim())
+                    : task.getTitle();
+            binding.tabHome.tvSpotlightTitle.setText(title);
+
+            String duePrefix = HomeSummaryHelper.formatDueDateTime(this, task.getDueAtMillis(), nowMillis);
+            String remaining = HomeSummaryHelper.formatRelativeDelta(this, task.getDueAtMillis(), nowMillis);
+            binding.tabHome.tvSpotlightSub.setText(
+                    getString(R.string.home_spotlight_due_remaining_format, duePrefix, remaining)
+            );
+            binding.tabHome.btnSpotlightAction.setText(R.string.home_spotlight_btn_complete);
+            binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_primary);
+            binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.white));
+            return;
         }
 
-        int startSearchDay = (androidDay >= Calendar.MONDAY && androidDay <= Calendar.SATURDAY)
-                ? androidDay
-                : ScheduleSlot.DAY_MIN;
-        for (int offset = 0; offset < 6; offset++) {
-            int candidateDay = ScheduleSlot.DAY_MIN + ((startSearchDay - ScheduleSlot.DAY_MIN + offset) % 6);
-            if (androidDay >= Calendar.MONDAY && androidDay <= Calendar.SATURDAY && offset == 0) {
-                continue;
+        if (candidate.kind == HomeSummaryHelper.SpotlightKind.SCHEDULE_SLOT && candidate.slot != null) {
+            ScheduleSlot slot = candidate.slot;
+            String room = hasText(slot.getRoom())
+                    ? slot.getRoom().trim()
+                    : getString(R.string.schedule_room_fallback);
+            String lecturer = hasText(slot.getLecturer())
+                    ? slot.getLecturer().trim()
+                    : getString(R.string.schedule_lecturer_fallback);
+            String timeRange = getString(R.string.schedule_time_range_format, slot.getStartTime(), slot.getEndTime());
+
+            binding.tabHome.tvSpotlightBadge.setText(
+                    candidate.happeningNow ? R.string.home_spotlight_active_badge : R.string.home_spotlight_next_badge
+            );
+            binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(
+                    this,
+                    candidate.happeningNow ? R.color.accent_sapphire : R.color.accent_mint_text
+            ));
+            binding.tabHome.tvSpotlightTitle.setText(
+                    getString(R.string.home_spotlight_title_format, slot.getSubject(), room)
+            );
+            if (candidate.today) {
+                binding.tabHome.tvSpotlightSub.setText(
+                        getString(R.string.home_spotlight_sub_today, timeRange, lecturer)
+                );
+            } else {
+                binding.tabHome.tvSpotlightSub.setText(
+                        getString(R.string.home_spotlight_sub_day, getDayShortName(slot.getDayOfWeek()), timeRange, lecturer)
+                );
             }
-            List<ScheduleSlot> daySlots = dbHelper.getSchedulesByDay(candidateDay);
-            if (!daySlots.isEmpty()) {
-                return new SpotlightScheduleMatch(daySlots.get(0), false, false);
-            }
+            binding.tabHome.btnSpotlightAction.setText(R.string.home_spotlight_btn_view_schedule);
+            binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_secondary);
+            binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.ink_primary));
+            return;
         }
-        return null;
+
+        if (candidate.kind == HomeSummaryHelper.SpotlightKind.PENDING_TASK && candidate.task != null) {
+            StudyTask task = candidate.task;
+            binding.tabHome.tvSpotlightBadge.setText(R.string.home_spotlight_task_badge);
+            binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_sapphire));
+            String title = hasText(task.getSubject())
+                    ? getString(R.string.home_spotlight_title_format, task.getTitle(), task.getSubject().trim())
+                    : task.getTitle();
+            binding.tabHome.tvSpotlightTitle.setText(title);
+            binding.tabHome.tvSpotlightSub.setText(R.string.home_spotlight_task_meta_default);
+            binding.tabHome.btnSpotlightAction.setText(R.string.home_spotlight_btn_complete);
+            binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_primary);
+            binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.white));
+            return;
+        }
+
+        binding.tabHome.tvSpotlightBadge.setText(R.string.home_spotlight_all_done_badge);
+        binding.tabHome.tvSpotlightBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
+        binding.tabHome.tvSpotlightTitle.setText(R.string.home_spotlight_all_done_title);
+        binding.tabHome.tvSpotlightSub.setText(R.string.home_spotlight_all_done_sub);
+        binding.tabHome.btnSpotlightAction.setText(R.string.home_spotlight_btn_add_task);
+        binding.tabHome.btnSpotlightAction.setBackgroundResource(R.drawable.bg_pill_secondary);
+        binding.tabHome.btnSpotlightAction.setTextColor(ContextCompat.getColor(this, R.color.ink_primary));
     }
 
     private void bindFocusTimer() {
@@ -406,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
             focusTimer.cancel();
         }
         timerRunning = true;
-        binding.tabHome.btnTimerToggle.setText("Tạm dừng");
+        binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_pause);
         binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_dark);
         focusTimer = new CountDownTimer(remainingTimerMs, 1000L) {
             @Override
@@ -419,10 +397,10 @@ public class MainActivity extends AppCompatActivity {
             public void onFinish() {
                 remainingTimerMs = 0L;
                 timerRunning = false;
-                binding.tabHome.btnTimerToggle.setText("Bắt đầu");
+                binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_start);
                 binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
                 updateTimerUi(true);
-                Toast.makeText(MainActivity.this, "Hoàn thành phiên tập trung 25 phút", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.home_timer_finished_toast, Toast.LENGTH_SHORT).show();
             }
         }.start();
     }
@@ -433,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
             focusTimer = null;
         }
         timerRunning = false;
-        binding.tabHome.btnTimerToggle.setText("Tiếp tục");
+        binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_resume);
         binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
     }
 
@@ -444,26 +422,34 @@ public class MainActivity extends AppCompatActivity {
         }
         timerRunning = false;
         remainingTimerMs = FOCUS_DURATION_MS;
-        binding.tabHome.btnTimerToggle.setText("Bắt đầu");
+        binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_start);
         binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
         updateTimerUi(true);
     }
 
     private void updateTimerUi(boolean animate) {
         long totalSeconds = remainingTimerMs / 1000L;
-        long minutes = totalSeconds / 60L;
-        long seconds = totalSeconds % 60L;
-        binding.tabHome.tvTimerDisplay.setText(String.format(Locale.US, "%02d:%02d", minutes, seconds));
+        int minutes = (int) (totalSeconds / 60L);
+        int seconds = (int) (totalSeconds % 60L);
+        binding.tabHome.tvTimerDisplay.setText(getString(R.string.home_timer_clock_format, minutes, seconds));
         float elapsedFraction = 1f - ((float) remainingTimerMs / (float) FOCUS_DURATION_MS);
         float focusRingProgress = Math.max(0.40f, Math.min(1.0f, 0.40f + 0.60f * elapsedFraction));
         binding.tabHome.ringsView.setFocusProgress(focusRingProgress, animate);
-        binding.tabHome.tvRingFocusValue.setText(Math.round(focusRingProgress * 100f) + "%");
+        binding.tabHome.tvRingFocusValue.setText(
+                getString(R.string.home_ring_percent_format, Math.round(focusRingProgress * 100f))
+        );
     }
 
     private void bindChecklist() {
-        renderChecklist();
         binding.tabHome.btnHomeOpenNotes.setOnClickListener(v -> openNotesActivity());
-        binding.tabHome.btnAddTask.setOnClickListener(v -> addNewTaskFromInput());
+        binding.tabHome.btnAddTask.setOnClickListener(v -> {
+            String quickTitle = binding.tabHome.edtNewTask.getText().toString().trim();
+            if (quickTitle.isEmpty()) {
+                openTaskEditor(null);
+            } else {
+                addNewTaskFromInput();
+            }
+        });
         binding.tabHome.edtNewTask.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 addNewTaskFromInput();
@@ -485,50 +471,119 @@ public class MainActivity extends AppCompatActivity {
         if (text.isEmpty()) {
             return;
         }
-        taskItems.add(0, new TaskItem(text, "Thêm nhanh · Hôm nay", "Cá nhân", false));
+        StudyTask task = StudyTask.builder()
+                .title(text)
+                .subject("")
+                .tag(getString(R.string.task_default_tag))
+                .dueAtMillis(0L)
+                .done(false)
+                .createdAtMillis(System.currentTimeMillis())
+                .build();
+        dbHelper.insertTask(task);
         binding.tabHome.edtNewTask.setText("");
-        renderChecklist();
+        Toast.makeText(this, R.string.task_toast_created, Toast.LENGTH_SHORT).show();
+        refreshHomeDashboard(true);
     }
 
-    private void renderChecklist() {
+    private void openTaskEditor(@Nullable StudyTask existingTask) {
+        FrostUiHelper.showTaskEditorDialog(
+                this,
+                existingTask,
+                savedTask -> {
+                    if (savedTask.getId() > 0) {
+                        dbHelper.updateTask(savedTask);
+                        Toast.makeText(this, R.string.task_toast_updated, Toast.LENGTH_SHORT).show();
+                    } else {
+                        dbHelper.insertTask(savedTask);
+                        Toast.makeText(this, R.string.task_toast_created, Toast.LENGTH_SHORT).show();
+                    }
+                    refreshHomeDashboard(true);
+                },
+                targetTask -> FrostUiHelper.showConfirmDialog(
+                        this,
+                        R.string.task_delete_confirm_title,
+                        getString(R.string.task_delete_confirm_message, targetTask.getTitle()),
+                        R.string.notes_dialog_delete_confirm,
+                        true,
+                        () -> {
+                            dbHelper.deleteTask(targetTask.getId());
+                            Toast.makeText(this, R.string.task_toast_deleted, Toast.LENGTH_SHORT).show();
+                            refreshHomeDashboard(true);
+                        }
+                )
+        );
+    }
+
+    private void renderChecklist(long nowMillis) {
         LinearLayout container = binding.tabHome.checklistContainer;
         container.removeAllViews();
+
+        if (taskItems.isEmpty()) {
+            binding.tabHome.tvChecklistEmpty.setVisibility(View.VISIBLE);
+            binding.tabHome.checklistContainer.setVisibility(View.GONE);
+            binding.tabHome.tvChecklistCount.setText(getString(R.string.home_checklist_count_format, 0, 0));
+            return;
+        }
+
+        binding.tabHome.tvChecklistEmpty.setVisibility(View.GONE);
+        binding.tabHome.checklistContainer.setVisibility(View.VISIBLE);
+
         LayoutInflater inflater = LayoutInflater.from(this);
         int remainingCount = 0;
 
-        for (TaskItem item : taskItems) {
-            if (!item.done) {
+        for (StudyTask item : taskItems) {
+            if (!item.isDone()) {
                 remainingCount++;
             }
             View row = inflater.inflate(R.layout.item_checklist_task, container, false);
+            View checkArea = row.findViewById(R.id.btnTaskCheckArea);
             View checkBox = row.findViewById(R.id.taskCheckBox);
             ImageView ivCheck = row.findViewById(R.id.ivTaskCheck);
             TextView tvTitle = row.findViewById(R.id.tvTaskTitle);
             TextView tvMeta = row.findViewById(R.id.tvTaskMeta);
             TextView tvTag = row.findViewById(R.id.tvTaskTag);
 
-            tvTitle.setText(item.title);
-            tvMeta.setText(item.meta);
-            tvTag.setText(item.tag);
+            tvTitle.setText(item.getTitle());
+            tvMeta.setText(HomeSummaryHelper.buildTaskMeta(this, item, nowMillis));
+            tvTag.setText(hasText(item.getTag()) ? item.getTag() : getString(R.string.task_default_tag));
 
-            applyTaskRowStyle(checkBox, ivCheck, tvTitle, tvTag, item.done);
+            boolean overdue = !item.isDone() && item.hasDueAt() && item.getDueAtMillis() < nowMillis;
+            applyTaskRowStyle(checkBox, ivCheck, tvTitle, tvMeta, tvTag, item.isDone(), overdue);
 
-            row.setOnClickListener(v -> {
-                item.done = !item.done;
-                renderChecklist();
+            checkArea.setOnClickListener(v -> {
+                boolean nextDone = !item.isDone();
+                dbHelper.setTaskDone(item.getId(), nextDone);
+                Toast.makeText(
+                        this,
+                        getString(nextDone ? R.string.task_toast_completed : R.string.task_toast_reopened, item.getTitle()),
+                        Toast.LENGTH_SHORT
+                ).show();
+                refreshHomeDashboard(true);
             });
+            row.setOnClickListener(v -> openTaskEditor(item));
             container.addView(row);
         }
 
-        binding.tabHome.tvChecklistCount.setText(remainingCount + "/" + taskItems.size() + " việc");
+        binding.tabHome.tvChecklistCount.setText(
+                getString(R.string.home_checklist_count_format, remainingCount, taskItems.size())
+        );
     }
 
-    private void applyTaskRowStyle(View checkBox, ImageView ivCheck, TextView tvTitle, TextView tvTag, boolean done) {
+    private void applyTaskRowStyle(
+            View checkBox,
+            ImageView ivCheck,
+            TextView tvTitle,
+            TextView tvMeta,
+            TextView tvTag,
+            boolean done,
+            boolean overdue
+    ) {
         if (done) {
             checkBox.setBackgroundResource(R.drawable.bg_check_checked);
             ivCheck.setVisibility(View.VISIBLE);
             tvTitle.setPaintFlags(tvTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             tvTitle.setTextColor(ContextCompat.getColor(this, R.color.ink_muted));
+            tvMeta.setTextColor(ContextCompat.getColor(this, R.color.ink_muted));
             tvTag.setBackgroundResource(R.drawable.bg_pill_success_soft);
             tvTag.setTextColor(ContextCompat.getColor(this, R.color.accent_mint_text));
         } else {
@@ -536,8 +591,14 @@ public class MainActivity extends AppCompatActivity {
             ivCheck.setVisibility(View.GONE);
             tvTitle.setPaintFlags(tvTitle.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
             tvTitle.setTextColor(ContextCompat.getColor(this, R.color.ink_primary));
-            tvTag.setBackgroundResource(R.drawable.bg_pill_neutral_soft);
-            tvTag.setTextColor(ContextCompat.getColor(this, R.color.ink_secondary));
+            tvMeta.setTextColor(ContextCompat.getColor(this, overdue ? R.color.accent_danger : R.color.ink_secondary));
+            if (overdue) {
+                tvTag.setBackgroundResource(R.drawable.bg_pill_danger_soft);
+                tvTag.setTextColor(ContextCompat.getColor(this, R.color.accent_danger));
+            } else {
+                tvTag.setBackgroundResource(R.drawable.bg_pill_neutral_soft);
+                tvTag.setTextColor(ContextCompat.getColor(this, R.color.ink_secondary));
+            }
         }
     }
 
@@ -678,7 +739,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     selectedDayIndex = Math.max(0, Math.min(5, savedSlot.getDayOfWeek() - ScheduleSlot.DAY_MIN));
                     selectScheduleDay(selectedDayIndex);
-                    updateSpotlightUi(true);
+                    refreshHomeDashboard(true);
                 },
                 this::confirmDeleteSchedule
         );
@@ -696,7 +757,7 @@ public class MainActivity extends AppCompatActivity {
                     dbHelper.deleteSchedule(slot.getId());
                     Toast.makeText(this, R.string.schedule_toast_deleted, Toast.LENGTH_SHORT).show();
                     selectScheduleDay(selectedDayIndex);
-                    updateSpotlightUi(true);
+                    refreshHomeDashboard(true);
                 }
         );
     }
@@ -752,7 +813,7 @@ public class MainActivity extends AppCompatActivity {
                             selectedDayIndex = Math.max(0, Math.min(5, targetDay - ScheduleSlot.DAY_MIN));
                         }
                         selectScheduleDay(selectedDayIndex);
-                        updateSpotlightUi(true);
+                        refreshHomeDashboard(true);
                     });
                 });
             } catch (ScheduleTransferHelper.LegacyXlsException e) {
@@ -1096,10 +1157,10 @@ public class MainActivity extends AppCompatActivity {
                 binding.tvDockProfile
         };
         String[] headers = new String[]{
-                "Mini Pocket Kit",
-                "Lịch học tuần",
-                "Tiện ích nhanh",
-                "Hồ sơ học tập"
+                getString(R.string.tab_header_home),
+                getString(R.string.tab_header_calendar),
+                getString(R.string.tab_header_tools),
+                getString(R.string.tab_header_profile)
         };
 
         int activeColor = ContextCompat.getColor(this, R.color.accent_sapphire);

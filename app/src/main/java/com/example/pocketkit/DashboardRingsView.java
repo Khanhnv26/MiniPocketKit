@@ -21,7 +21,7 @@ public class DashboardRingsView extends View {
     private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF arcBounds = new RectF();
     private final int[] ringColors = new int[3];
-    private final float[] progressValues = new float[]{0.68f, 0.85f, 0.40f};
+    private final float[] progressValues = new float[]{0f, 0f, 0.40f};
     private final ValueAnimator[] animators = new ValueAnimator[3];
 
     public DashboardRingsView(Context context) {

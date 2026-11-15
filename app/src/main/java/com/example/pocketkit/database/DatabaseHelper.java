@@ -9,8 +9,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.NonNull;
 
 import com.example.pocketkit.R;
+import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.model.ScheduleSlot;
+import com.example.pocketkit.model.StudyTask;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,7 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String FILTER_PINNED = "PINNED";
 
     private static final String DATABASE_NAME = "CampusKit.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
 
     private static final String TABLE_NOTES = "notes";
     private static final String COL_ID = "id";
@@ -49,6 +51,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_SCH_LECTURER = "lecturer";
     private static final String COL_SCH_NOTE = "note";
 
+    private static final String TABLE_TASKS = "tasks";
+    private static final String COL_TASK_ID = "id";
+    private static final String COL_TASK_TITLE = "title";
+    private static final String COL_TASK_SUBJECT = "subject";
+    private static final String COL_TASK_TAG = "tag";
+    private static final String COL_TASK_DUE_AT = "due_at";
+    private static final String COL_TASK_DONE = "is_done";
+    private static final String COL_TASK_CREATED_AT = "created_at";
+
     private final Context appContext;
 
     public static final class ImportSummary {
@@ -71,6 +82,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         createTablesIfNeeded(db);
         seedInitialNotes(db);
         seedInitialSchedules(db);
+        seedInitialTasks(db);
     }
 
     @Override
@@ -86,6 +98,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_SCHEDULES, null)) {
             if (cursor.moveToFirst() && cursor.getInt(0) == 0) {
                 seedInitialSchedules(db);
+            }
+        }
+
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_TASKS, null)) {
+            if (cursor.moveToFirst() && cursor.getInt(0) == 0) {
+                seedInitialTasks(db);
             }
         }
     }
@@ -113,6 +131,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_SCH_ROOM + " TEXT, " +
                 COL_SCH_LECTURER + " TEXT, " +
                 COL_SCH_NOTE + " TEXT)");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_TASKS + " (" +
+                COL_TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_TASK_TITLE + " TEXT NOT NULL, " +
+                COL_TASK_SUBJECT + " TEXT, " +
+                COL_TASK_TAG + " TEXT, " +
+                COL_TASK_DUE_AT + " INTEGER DEFAULT 0, " +
+                COL_TASK_DONE + " INTEGER DEFAULT 0, " +
+                COL_TASK_CREATED_AT + " INTEGER DEFAULT 0)");
     }
 
     private void seedInitialNotes(SQLiteDatabase db) {
@@ -163,6 +190,80 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } catch (NumberFormatException ignored) {
             }
         }
+    }
+
+    private void seedInitialTasks(SQLiteDatabase db) {
+        long now = System.currentTimeMillis();
+        long dueFirst = HomeSummaryHelper.buildUpcomingDueAtMillis(0, 17, 0, now, true);
+        long dueSecond = HomeSummaryHelper.buildUpcomingDueAtMillis(2, 23, 59, now, false);
+
+        insertTaskInternal(db, StudyTask.builder()
+                .title(appContext.getString(R.string.task_seed_title_1))
+                .subject(appContext.getString(R.string.task_seed_subject_1))
+                .tag(appContext.getString(R.string.task_tag_deadline))
+                .dueAtMillis(dueFirst)
+                .done(false)
+                .createdAtMillis(now)
+                .build());
+
+        insertTaskInternal(db, StudyTask.builder()
+                .title(appContext.getString(R.string.task_seed_title_2))
+                .subject(appContext.getString(R.string.task_seed_subject_2))
+                .tag(appContext.getString(R.string.task_tag_assignment))
+                .dueAtMillis(dueSecond)
+                .done(false)
+                .createdAtMillis(now)
+                .build());
+
+        insertTaskInternal(db, StudyTask.builder()
+                .title(appContext.getString(R.string.task_seed_title_3))
+                .subject(appContext.getString(R.string.task_seed_subject_3))
+                .tag(appContext.getString(R.string.task_tag_exam))
+                .dueAtMillis(0L)
+                .done(false)
+                .createdAtMillis(now)
+                .build());
+
+        insertTaskInternal(db, StudyTask.builder()
+                .title(appContext.getString(R.string.task_seed_title_4))
+                .subject(appContext.getString(R.string.task_seed_subject_4))
+                .tag(appContext.getString(R.string.task_tag_group))
+                .dueAtMillis(0L)
+                .done(true)
+                .createdAtMillis(now)
+                .build());
+    }
+
+    private long insertTaskInternal(SQLiteDatabase db, StudyTask task) {
+        return db.insert(TABLE_TASKS, null, toTaskValues(task));
+    }
+
+    private ContentValues toTaskValues(StudyTask task) {
+        ContentValues values = new ContentValues();
+        values.put(COL_TASK_TITLE, safeTrim(task.getTitle()));
+        values.put(COL_TASK_SUBJECT, safeTrim(task.getSubject()));
+        values.put(COL_TASK_TAG, hasText(task.getTag()) ? safeTrim(task.getTag()) : appContext.getString(R.string.task_default_tag));
+        values.put(COL_TASK_DUE_AT, Math.max(0L, task.getDueAtMillis()));
+        values.put(COL_TASK_DONE, task.isDone() ? 1 : 0);
+        long createdAt = task.getCreatedAtMillis() > 0L ? task.getCreatedAtMillis() : System.currentTimeMillis();
+        values.put(COL_TASK_CREATED_AT, createdAt);
+        return values;
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
+    private StudyTask readTaskCursor(Cursor cursor) {
+        return StudyTask.builder()
+                .id(cursor.getInt(cursor.getColumnIndexOrThrow(COL_TASK_ID)))
+                .title(cursor.getString(cursor.getColumnIndexOrThrow(COL_TASK_TITLE)))
+                .subject(cursor.getString(cursor.getColumnIndexOrThrow(COL_TASK_SUBJECT)))
+                .tag(cursor.getString(cursor.getColumnIndexOrThrow(COL_TASK_TAG)))
+                .dueAtMillis(cursor.getLong(cursor.getColumnIndexOrThrow(COL_TASK_DUE_AT)))
+                .done(cursor.getInt(cursor.getColumnIndexOrThrow(COL_TASK_DONE)) == 1)
+                .createdAtMillis(cursor.getLong(cursor.getColumnIndexOrThrow(COL_TASK_CREATED_AT)))
+                .build();
     }
 
     private void insertCategoryInternal(SQLiteDatabase db, String name) {
@@ -448,5 +549,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
         return new ImportSummary(inserted, skipped);
+    }
+
+    public List<StudyTask> getAllTasks() {
+        List<StudyTask> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        String orderBy = COL_TASK_DONE + " ASC, "
+                + "CASE WHEN " + COL_TASK_DUE_AT + " > 0 THEN 0 ELSE 1 END ASC, "
+                + COL_TASK_DUE_AT + " ASC, "
+                + COL_TASK_ID + " DESC";
+        try (Cursor cursor = db.query(TABLE_TASKS, null, null, null, null, null, orderBy)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(readTaskCursor(cursor));
+                } while (cursor.moveToNext());
+            }
+        }
+        return list;
+    }
+
+    public long insertTask(@NonNull StudyTask task) {
+        SQLiteDatabase db = getWritableDatabase();
+        return insertTaskInternal(db, task);
+    }
+
+    public int updateTask(@NonNull StudyTask task) {
+        SQLiteDatabase db = getWritableDatabase();
+        return db.update(TABLE_TASKS, toTaskValues(task), COL_TASK_ID + " = ?", new String[]{String.valueOf(task.getId())});
+    }
+
+    public int setTaskDone(int id, boolean done) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_TASK_DONE, done ? 1 : 0);
+        return db.update(TABLE_TASKS, values, COL_TASK_ID + " = ?", new String[]{String.valueOf(id)});
+    }
+
+    public int deleteTask(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+        return db.delete(TABLE_TASKS, COL_TASK_ID + " = ?", new String[]{String.valueOf(id)});
     }
 }
