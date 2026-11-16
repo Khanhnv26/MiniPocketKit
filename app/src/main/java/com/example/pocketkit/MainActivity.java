@@ -15,7 +15,6 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,13 +30,13 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityMainBinding;
 import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.Note;
@@ -45,64 +44,40 @@ import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.model.StudentProfile;
 import com.example.pocketkit.model.StudyTask;
 import com.example.pocketkit.profile.ProfileGpaHelper;
-import com.example.pocketkit.profile.StudentProfileStore;
 import com.example.pocketkit.reminder.TaskReminderHelper;
-import com.example.pocketkit.reminder.TaskReminderScheduler;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 import com.example.pocketkit.ui.FrostUiHelper;
+import com.example.pocketkit.ui.UiEvent;
+import com.example.pocketkit.ui.UiMessage;
+import com.example.pocketkit.viewmodel.CalendarViewModel;
+import com.example.pocketkit.viewmodel.HomeViewModel;
+import com.example.pocketkit.viewmodel.PocketKitViewModelFactory;
+import com.example.pocketkit.viewmodel.ProfileViewModel;
+import com.example.pocketkit.viewmodel.ToolsViewModel;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String STATE_SELECTED_TAB = "state_selected_tab";
-    private static final String STATE_SELECTED_DAY = "state_selected_day";
-    private static final String STATE_COMPRESS_PRESET = "state_compress_preset";
-    private static final String STATE_OCR_SAMPLE = "state_ocr_sample";
-    private static final String STATE_TIMER_MS = "state_timer_ms";
-    private static final String STATE_EXPORT_FORMAT = "state_export_format";
-    private static final String STATE_EXPORT_TEMPLATE = "state_export_template";
-    private static final long FOCUS_DURATION_MS = 25L * 60L * 1000L;
 
     private ActivityMainBinding binding;
-    private DatabaseHelper dbHelper;
-    private StudentProfileStore profileStore;
-    private StudentProfile currentProfile;
-    private Note currentPinnedNote;
-    private HomeSummaryHelper.SpotlightCandidate currentSpotlight;
-    private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
+    private HomeViewModel homeViewModel;
+    private CalendarViewModel calendarViewModel;
+    private ToolsViewModel toolsViewModel;
+    private ProfileViewModel profileViewModel;
 
     private int selectedTab = 0;
-    private int selectedDayIndex = getInitialDayIndex();
-    private int selectedCompressPreset = 0;
-    private int selectedOcrSample = 0;
-    private long remainingTimerMs = FOCUS_DURATION_MS;
-    private boolean timerRunning = false;
-    private CountDownTimer focusTimer;
-
-    private ScheduleTransferHelper.TransferFormat pendingExportFormat = ScheduleTransferHelper.TransferFormat.XLSX;
-    private boolean pendingExportTemplate = false;
-
-    private List<StudyTask> taskItems = new ArrayList<>();
     private StudyTask pendingReminderTask;
     private boolean taskReceiverRegistered = false;
 
     private final BroadcastReceiver taskUpdatedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            refreshHomeDashboard(false);
+            homeViewModel.loadDashboard(false);
         }
     };
 
@@ -111,55 +86,45 @@ public class MainActivity extends AppCompatActivity {
             granted -> {
                 StudyTask pending = pendingReminderTask;
                 pendingReminderTask = null;
-                if (granted && pending != null) {
-                    TaskReminderScheduler.scheduleOrCancel(this, pending);
-                } else if (!granted && pending != null) {
-                    Toast.makeText(this, R.string.task_reminder_permission_denied, Toast.LENGTH_SHORT).show();
-                }
+                homeViewModel.onNotificationPermissionResult(granted, pending);
             }
     );
-
-    private static final class ExportDocumentSpec {
-        final String fileName;
-        final ScheduleTransferHelper.TransferFormat format;
-
-        ExportDocumentSpec(String fileName, ScheduleTransferHelper.TransferFormat format) {
-            this.fileName = fileName;
-            this.format = format;
-        }
-    }
 
     private final ActivityResultLauncher<String[]> importScheduleLauncher = registerForActivityResult(
             new ActivityResultContracts.OpenDocument(),
             uri -> {
                 if (uri != null) {
-                    handleImportUri(uri);
+                    calendarViewModel.parseImportFile(uri.toString(), queryFileDisplayName(uri));
                 }
             }
     );
 
-    private final ActivityResultLauncher<ExportDocumentSpec> exportScheduleLauncher = registerForActivityResult(
-            new ActivityResultContract<ExportDocumentSpec, Uri>() {
-                @NonNull
-                @Override
-                public Intent createIntent(@NonNull Context context, ExportDocumentSpec input) {
-                    return new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                            .addCategory(Intent.CATEGORY_OPENABLE)
-                            .setType(input.format.mimeType)
-                            .putExtra(Intent.EXTRA_TITLE, input.fileName);
-                }
+    private final ActivityResultLauncher<CalendarViewModel.ExportDocumentRequest> exportScheduleLauncher =
+            registerForActivityResult(
+                    new ActivityResultContract<CalendarViewModel.ExportDocumentRequest, Uri>() {
+                        @NonNull
+                        @Override
+                        public Intent createIntent(
+                                @NonNull Context context,
+                                CalendarViewModel.ExportDocumentRequest input
+                        ) {
+                            return new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                                    .addCategory(Intent.CATEGORY_OPENABLE)
+                                    .setType(input.format.mimeType)
+                                    .putExtra(Intent.EXTRA_TITLE, input.fileName);
+                        }
 
-                @Override
-                public Uri parseResult(int resultCode, @Nullable Intent intent) {
-                    return resultCode == RESULT_OK && intent != null ? intent.getData() : null;
-                }
-            },
-            uri -> {
-                if (uri != null) {
-                    handleExportUri(uri);
-                }
-            }
-    );
+                        @Override
+                        public Uri parseResult(int resultCode, @Nullable Intent intent) {
+                            return resultCode == RESULT_OK && intent != null ? intent.getData() : null;
+                        }
+                    },
+                    uri -> {
+                        if (uri != null) {
+                            calendarViewModel.handleExportUri(uri.toString());
+                        }
+                    }
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,9 +132,16 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        dbHelper = new DatabaseHelper(this);
-        profileStore = new StudentProfileStore(this);
-        currentProfile = profileStore.loadProfile();
+        if (savedInstanceState != null) {
+            selectedTab = Math.max(0, Math.min(3, savedInstanceState.getInt(STATE_SELECTED_TAB, 0)));
+        }
+
+        PocketKitViewModelFactory factory = ((PocketKitApplication) getApplication()).getViewModelFactory();
+        ViewModelProvider provider = new ViewModelProvider(this, factory);
+        homeViewModel = provider.get(HomeViewModel.class);
+        calendarViewModel = provider.get(CalendarViewModel.class);
+        toolsViewModel = provider.get(ToolsViewModel.class);
+        profileViewModel = provider.get(ProfileViewModel.class);
 
         FrostUiHelper.setupEdgeToEdgeAndBackdrop(
                 this,
@@ -178,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 binding.ambientBackdropView,
                 binding.dockBar
         );
-        restoreState(savedInstanceState);
+
         bindHeaderDate();
         bindHeroCard();
         bindFocusTimer();
@@ -187,9 +159,16 @@ public class MainActivity extends AppCompatActivity {
         bindToolsTab();
         bindProfileTab();
         bindDockNavigation();
-        applySavedSelections();
-        refreshHomeDashboard(false);
-        ioExecutor.execute(() -> TaskReminderScheduler.rescheduleAllPendingReminders(getApplicationContext()));
+        observeViewModels();
+        switchTab(selectedTab);
+
+        if (savedInstanceState == null) {
+            homeViewModel.reschedulePendingRemindersOnStart();
+        }
+        homeViewModel.loadDashboard(false);
+        calendarViewModel.refreshCurrentDay();
+        toolsViewModel.refreshNotesCount();
+        profileViewModel.loadProfile();
     }
 
     @Override
@@ -218,61 +197,82 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        refreshNotesIntegration();
-        selectScheduleDay(selectedDayIndex);
-        refreshHomeDashboard(false);
+        homeViewModel.loadDashboard(false);
+        calendarViewModel.refreshCurrentDay();
+        toolsViewModel.refreshNotesCount();
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putInt(STATE_SELECTED_TAB, selectedTab);
-        outState.putInt(STATE_SELECTED_DAY, selectedDayIndex);
-        outState.putInt(STATE_COMPRESS_PRESET, selectedCompressPreset);
-        outState.putInt(STATE_OCR_SAMPLE, selectedOcrSample);
-        outState.putLong(STATE_TIMER_MS, remainingTimerMs);
-        outState.putString(STATE_EXPORT_FORMAT, pendingExportFormat.name());
-        outState.putBoolean(STATE_EXPORT_TEMPLATE, pendingExportTemplate);
         super.onSaveInstanceState(outState);
     }
 
-    @Override
-    protected void onDestroy() {
-        if (focusTimer != null) {
-            focusTimer.cancel();
-            focusTimer = null;
-        }
-        ioExecutor.shutdown();
-        super.onDestroy();
-    }
+    private void observeViewModels() {
+        observeToast(homeViewModel.getToastEvent());
+        observeToast(calendarViewModel.getToastEvent());
+        observeToast(toolsViewModel.getToastEvent());
+        observeToast(profileViewModel.getToastEvent());
 
-    private static int getInitialDayIndex() {
-        int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        if (day >= Calendar.MONDAY && day <= Calendar.SATURDAY) {
-            return day - Calendar.MONDAY;
-        }
-        return 0;
-    }
-
-    private void restoreState(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            return;
-        }
-        selectedTab = savedInstanceState.getInt(STATE_SELECTED_TAB, 0);
-        selectedDayIndex = savedInstanceState.getInt(STATE_SELECTED_DAY, getInitialDayIndex());
-        if (selectedDayIndex < 0 || selectedDayIndex > 5) {
-            selectedDayIndex = 0;
-        }
-        selectedCompressPreset = savedInstanceState.getInt(STATE_COMPRESS_PRESET, 0);
-        selectedOcrSample = savedInstanceState.getInt(STATE_OCR_SAMPLE, 0);
-        remainingTimerMs = savedInstanceState.getLong(STATE_TIMER_MS, FOCUS_DURATION_MS);
-        pendingExportTemplate = savedInstanceState.getBoolean(STATE_EXPORT_TEMPLATE, false);
-        String formatName = savedInstanceState.getString(STATE_EXPORT_FORMAT);
-        if (formatName != null) {
-            try {
-                pendingExportFormat = ScheduleTransferHelper.TransferFormat.valueOf(formatName);
-            } catch (IllegalArgumentException ignored) {
+        homeViewModel.getDashboardState().observe(this, this::renderHomeDashboard);
+        homeViewModel.getTimerState().observe(this, this::renderTimerState);
+        homeViewModel.getNotificationPermissionEvent().observe(this, event -> {
+            StudyTask task = event.getContentIfNotHandled();
+            if (task != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                pendingReminderTask = task;
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
-        }
+        });
+
+        calendarViewModel.getCalendarState().observe(this, this::renderCalendarState);
+        calendarViewModel.getImportPreviewEvent().observe(this, event -> {
+            CalendarViewModel.ImportPreviewEventData data = event.getContentIfNotHandled();
+            if (data != null) {
+                FrostUiHelper.showImportPreviewDialog(
+                        this,
+                        data.fileName,
+                        data.result,
+                        replaceExisting -> calendarViewModel.confirmImport(data.result, replaceExisting)
+                );
+            }
+        });
+        calendarViewModel.getOpenExportDialogEvent().observe(this, event -> {
+            Integer totalSlots = event.getContentIfNotHandled();
+            if (totalSlots != null) {
+                showExportDialog(totalSlots);
+            }
+        });
+        calendarViewModel.getLaunchExportDocumentEvent().observe(this, event -> {
+            CalendarViewModel.ExportDocumentRequest request = event.getContentIfNotHandled();
+            if (request != null) {
+                exportScheduleLauncher.launch(request);
+            }
+        });
+        calendarViewModel.getShareFileEvent().observe(this, event -> {
+            CalendarViewModel.ShareFileEventData data = event.getContentIfNotHandled();
+            if (data != null) {
+                launchShareChooser(data);
+            }
+        });
+        calendarViewModel.getScheduleMutatedEvent().observe(this, event -> {
+            if (event.getContentIfNotHandled() != null) {
+                homeViewModel.loadDashboard(true);
+            }
+        });
+
+        toolsViewModel.getCompressPreset().observe(this, this::renderCompressPreset);
+        toolsViewModel.getOcrSample().observe(this, this::renderOcrSample);
+        toolsViewModel.getTotalNotesCount().observe(this, count ->
+                binding.tabTools.tvToolNotesCount.setText(
+                        getResources().getQuantityString(R.plurals.tools_notes_count_format, count, count)
+                )
+        );
+
+        profileViewModel.getProfileState().observe(this, this::renderProfileState);
+    }
+
+    private void observeToast(@NonNull LiveData<UiEvent<UiMessage>> liveData) {
+        liveData.observe(this, event -> FrostUiHelper.showToast(this, event));
     }
 
     private void bindHeaderDate() {
@@ -284,18 +284,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void bindHeroCard() {
         binding.tabHome.btnSpotlightAction.setOnClickListener(v -> {
-            if (currentSpotlight == null) {
+            HomeViewModel.HomeDashboardUiState state = homeViewModel.getDashboardState().getValue();
+            if (state == null) {
                 return;
             }
-            if ((currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.DEADLINE_TASK
-                    || currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.PENDING_TASK)
-                    && currentSpotlight.task != null) {
-                toggleTaskCompletion(currentSpotlight.task, true);
-            } else if (currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.SCHEDULE_SLOT
-                    && currentSpotlight.slot != null) {
-                int dayIdx = currentSpotlight.slot.getDayOfWeek() - ScheduleSlot.DAY_MIN;
+            HomeSummaryHelper.SpotlightCandidate spotlight = state.spotlightCandidate;
+            if ((spotlight.kind == HomeSummaryHelper.SpotlightKind.DEADLINE_TASK
+                    || spotlight.kind == HomeSummaryHelper.SpotlightKind.PENDING_TASK)
+                    && spotlight.task != null) {
+                homeViewModel.toggleTaskCompletion(spotlight.task, true, hasNotificationPermission());
+            } else if (spotlight.kind == HomeSummaryHelper.SpotlightKind.SCHEDULE_SLOT
+                    && spotlight.slot != null) {
+                int dayIdx = spotlight.slot.getDayOfWeek() - ScheduleSlot.DAY_MIN;
                 if (dayIdx >= 0 && dayIdx <= 5) {
-                    selectScheduleDay(dayIdx);
+                    calendarViewModel.selectDay(dayIdx);
                 }
                 switchTab(1);
             } else {
@@ -304,30 +306,35 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void refreshHomeDashboard(boolean animate) {
-        if (dbHelper == null) {
-            return;
-        }
-        long nowMillis = System.currentTimeMillis();
-        taskItems = dbHelper.getAllTasks();
-        List<ScheduleSlot> allSchedules = dbHelper.getAllSchedules();
+    private void renderHomeDashboard(@NonNull HomeViewModel.HomeDashboardUiState state) {
+        renderChecklist(state.tasks, state.snapshotNowMillis);
 
-        renderChecklist(nowMillis);
-
-        HomeSummaryHelper.DeadlineProgress deadlineProgress = HomeSummaryHelper.computeDeadlineProgress(taskItems);
-        binding.tabHome.ringsView.setDeadlineProgress(deadlineProgress.fraction, animate);
+        binding.tabHome.ringsView.setDeadlineProgress(state.deadlineProgress.fraction, state.animateProgress);
         binding.tabHome.tvRingDeadlineValue.setText(
-                getString(R.string.home_ring_percent_format, Math.round(deadlineProgress.fraction * 100f))
+                getString(R.string.home_ring_percent_format, Math.round(state.deadlineProgress.fraction * 100f))
         );
 
-        float classProgress = HomeSummaryHelper.computeClassProgress(allSchedules, nowMillis);
-        binding.tabHome.ringsView.setClassProgress(classProgress, animate);
+        binding.tabHome.ringsView.setClassProgress(state.classProgress, state.animateProgress);
         binding.tabHome.tvRingClassValue.setText(
-                getString(R.string.home_ring_percent_format, Math.round(classProgress * 100f))
+                getString(R.string.home_ring_percent_format, Math.round(state.classProgress * 100f))
         );
 
-        currentSpotlight = HomeSummaryHelper.findBestSpotlight(taskItems, allSchedules, nowMillis);
-        bindSpotlightCandidate(currentSpotlight, nowMillis);
+        bindSpotlightCandidate(state.spotlightCandidate, state.snapshotNowMillis);
+        renderPinnedHomeNote(state.pinnedNote);
+    }
+
+    private void renderPinnedHomeNote(@Nullable Note pinnedNote) {
+        if (pinnedNote != null) {
+            binding.tabHome.layoutPinnedNoteBar.setVisibility(View.VISIBLE);
+            String subject = hasText(pinnedNote.getSubject())
+                    ? pinnedNote.getSubject().trim()
+                    : getString(R.string.note_default_category);
+            binding.tabHome.tvPinnedNoteSummary.setText(
+                    getString(R.string.notes_summary_pinned_bar, subject, pinnedNote.getTitle())
+            );
+        } else {
+            binding.tabHome.layoutPinnedNoteBar.setVisibility(View.GONE);
+        }
     }
 
     private void bindSpotlightCandidate(@NonNull HomeSummaryHelper.SpotlightCandidate candidate, long nowMillis) {
@@ -390,8 +397,9 @@ public class MainActivity extends AppCompatActivity {
                         getString(R.string.home_spotlight_sub_today, timeRange, lecturer)
                 );
             } else {
+                String shortDay = getString(CalendarViewModel.getDayShortNameRes(slot.getDayOfWeek()));
                 binding.tabHome.tvSpotlightSub.setText(
-                        getString(R.string.home_spotlight_sub_day, getDayShortName(slot.getDayOfWeek()), timeRange, lecturer)
+                        getString(R.string.home_spotlight_sub_day, shortDay, timeRange, lecturer)
                 );
             }
             binding.tabHome.btnSpotlightAction.setText(R.string.home_spotlight_btn_view_schedule);
@@ -425,75 +433,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindFocusTimer() {
-        updateTimerUi(false);
-        binding.tabHome.btnTimerToggle.setOnClickListener(v -> {
-            if (timerRunning) {
-                pauseTimer();
-            } else {
-                startTimer();
-            }
-        });
-        binding.tabHome.btnTimerReset.setOnClickListener(v -> resetTimer());
+        binding.tabHome.btnTimerToggle.setOnClickListener(v -> homeViewModel.toggleFocusTimer());
+        binding.tabHome.btnTimerReset.setOnClickListener(v -> homeViewModel.resetFocusTimer());
     }
 
-    private void startTimer() {
-        if (focusTimer != null) {
-            focusTimer.cancel();
-        }
-        timerRunning = true;
-        binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_pause);
-        binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_dark);
-        focusTimer = new CountDownTimer(remainingTimerMs, 1000L) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                remainingTimerMs = millisUntilFinished;
-                updateTimerUi(false);
-            }
-
-            @Override
-            public void onFinish() {
-                remainingTimerMs = 0L;
-                timerRunning = false;
-                binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_start);
-                binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
-                updateTimerUi(true);
-                Toast.makeText(MainActivity.this, R.string.home_timer_finished_toast, Toast.LENGTH_SHORT).show();
-            }
-        }.start();
-    }
-
-    private void pauseTimer() {
-        if (focusTimer != null) {
-            focusTimer.cancel();
-            focusTimer = null;
-        }
-        timerRunning = false;
-        binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_resume);
-        binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
-    }
-
-    private void resetTimer() {
-        if (focusTimer != null) {
-            focusTimer.cancel();
-            focusTimer = null;
-        }
-        timerRunning = false;
-        remainingTimerMs = FOCUS_DURATION_MS;
-        binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_start);
-        binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
-        updateTimerUi(true);
-    }
-
-    private void updateTimerUi(boolean animate) {
-        long totalSeconds = remainingTimerMs / 1000L;
+    private void renderTimerState(@NonNull HomeViewModel.TimerUiState timer) {
+        long totalSeconds = timer.remainingMs / 1000L;
         int minutes = (int) (totalSeconds / 60L);
         int seconds = (int) (totalSeconds % 60L);
         binding.tabHome.tvTimerDisplay.setText(getString(R.string.home_timer_clock_format, minutes, seconds));
-        float elapsedFraction = 1f - ((float) remainingTimerMs / (float) FOCUS_DURATION_MS);
-        float focusRingProgress = Math.max(0.40f, Math.min(1.0f, 0.40f + 0.60f * elapsedFraction));
-        binding.tabHome.ringsView.setFocusProgress(focusRingProgress, animate);
+
+        if (timer.running) {
+            binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_pause);
+            binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_dark);
+        } else if (timer.started && timer.remainingMs > 0L) {
+            binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_resume);
+            binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
+        } else {
+            binding.tabHome.btnTimerToggle.setText(R.string.home_timer_btn_start);
+            binding.tabHome.btnTimerToggle.setBackgroundResource(R.drawable.bg_pill_primary);
+        }
+
+        binding.tabHome.ringsView.setFocusProgress(timer.focusProgress, timer.animateRing);
         binding.tabHome.tvRingFocusValue.setText(
-                getString(R.string.home_ring_percent_format, Math.round(focusRingProgress * 100f))
+                getString(R.string.home_ring_percent_format, Math.round(timer.focusProgress * 100f))
         );
     }
 
@@ -504,113 +467,60 @@ public class MainActivity extends AppCompatActivity {
             if (quickTitle.isEmpty()) {
                 openTaskEditor(null);
             } else {
-                addNewTaskFromInput();
+                submitQuickTask();
             }
         });
         binding.tabHome.edtNewTask.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                addNewTaskFromInput();
+                submitQuickTask();
                 return true;
             }
             return false;
         });
         binding.tabHome.layoutPinnedNoteBar.setOnClickListener(v -> {
-            if (currentPinnedNote != null) {
+            HomeViewModel.HomeDashboardUiState state = homeViewModel.getDashboardState().getValue();
+            if (state != null && state.pinnedNote != null) {
                 Intent intent = new Intent(this, NoteEditorActivity.class);
-                intent.putExtra(Note.EXTRA_NOTE_ITEM, currentPinnedNote);
+                intent.putExtra(Note.EXTRA_NOTE_ITEM, state.pinnedNote);
                 startActivity(intent);
             }
         });
     }
 
-    private void addNewTaskFromInput() {
+    private void submitQuickTask() {
         String text = binding.tabHome.edtNewTask.getText().toString().trim();
         if (text.isEmpty()) {
             return;
         }
-        StudyTask task = StudyTask.builder()
-                .title(text)
-                .subject("")
-                .tag(getString(R.string.task_default_tag))
-                .dueAtMillis(0L)
-                .done(false)
-                .createdAtMillis(System.currentTimeMillis())
-                .build();
-        dbHelper.insertTask(task);
+        homeViewModel.addQuickTask(text, getString(R.string.task_default_tag));
         binding.tabHome.edtNewTask.setText("");
-        Toast.makeText(this, R.string.task_toast_created, Toast.LENGTH_SHORT).show();
-        refreshHomeDashboard(true);
     }
 
     private void openTaskEditor(@Nullable StudyTask existingTask) {
         FrostUiHelper.showTaskEditorDialog(
                 this,
                 existingTask,
-                savedTask -> {
-                    if (savedTask.getId() > 0) {
-                        dbHelper.updateTask(savedTask);
-                        Toast.makeText(this, R.string.task_toast_updated, Toast.LENGTH_SHORT).show();
-                    } else {
-                        long insertedId = dbHelper.insertTask(savedTask);
-                        if (insertedId > 0L) {
-                            savedTask.setId((int) insertedId);
-                        }
-                        Toast.makeText(this, R.string.task_toast_created, Toast.LENGTH_SHORT).show();
-                    }
-                    TaskReminderScheduler.clearFiredMarker(this, savedTask.getId());
-                    scheduleTaskReminderWithPermission(savedTask);
-                    refreshHomeDashboard(true);
-                },
+                savedTask -> homeViewModel.saveTask(savedTask, hasNotificationPermission()),
                 targetTask -> FrostUiHelper.showConfirmDialog(
                         this,
                         R.string.task_delete_confirm_title,
                         getString(R.string.task_delete_confirm_message, targetTask.getTitle()),
                         R.string.notes_dialog_delete_confirm,
                         true,
-                        () -> {
-                            dbHelper.deleteTask(targetTask.getId());
-                            TaskReminderScheduler.cancelReminder(this, targetTask.getId());
-                            TaskReminderScheduler.clearFiredMarker(this, targetTask.getId());
-                            Toast.makeText(this, R.string.task_toast_deleted, Toast.LENGTH_SHORT).show();
-                            refreshHomeDashboard(true);
-                        }
+                        () -> homeViewModel.deleteTask(targetTask)
                 )
         );
     }
 
-    private void toggleTaskCompletion(@NonNull StudyTask task, boolean nextDone) {
-        dbHelper.setTaskDone(task.getId(), nextDone);
-        task.setDone(nextDone);
-        TaskReminderScheduler.clearFiredMarker(this, task.getId());
-        if (nextDone) {
-            TaskReminderScheduler.cancelReminder(this, task.getId());
-        } else {
-            scheduleTaskReminderWithPermission(task);
+    private boolean hasNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return true;
         }
-        Toast.makeText(
-                this,
-                getString(nextDone ? R.string.task_toast_completed : R.string.task_toast_reopened, task.getTitle()),
-                Toast.LENGTH_SHORT
-        ).show();
-        refreshHomeDashboard(true);
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
-    private void scheduleTaskReminderWithPermission(@NonNull StudyTask task) {
-        if (!TaskReminderHelper.isReminderConfigured(task)) {
-            TaskReminderScheduler.cancelReminder(this, task.getId());
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-            pendingReminderTask = task;
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-            return;
-        }
-        TaskReminderScheduler.scheduleOrCancel(this, task);
-    }
-
-    private void renderChecklist(long nowMillis) {
+    private void renderChecklist(@NonNull List<StudyTask> taskItems, long nowMillis) {
         LinearLayout container = binding.tabHome.checklistContainer;
         container.removeAllViews();
 
@@ -648,7 +558,9 @@ public class MainActivity extends AppCompatActivity {
             boolean overdue = !item.isDone() && item.hasDueAt() && item.getDueAtMillis() < nowMillis;
             applyTaskRowStyle(checkBox, ivCheck, tvTitle, tvMeta, tvTag, item.isDone(), overdue);
 
-            checkArea.setOnClickListener(v -> toggleTaskCompletion(item, !item.isDone()));
+            checkArea.setOnClickListener(v ->
+                    homeViewModel.toggleTaskCompletion(item, !item.isDone(), hasNotificationPermission())
+            );
             row.setOnClickListener(v -> openTaskEditor(item));
             container.addView(row);
         }
@@ -696,66 +608,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshNotesIntegration() {
-        if (dbHelper == null) {
-            return;
-        }
-        List<Note> pinned = dbHelper.getNotesFiltered("", DatabaseHelper.FILTER_PINNED);
-        List<Note> all = dbHelper.getNotesFiltered("", DatabaseHelper.FILTER_ALL);
-
-        if (!pinned.isEmpty()) {
-            currentPinnedNote = pinned.get(0);
-        } else if (!all.isEmpty()) {
-            currentPinnedNote = all.get(0);
-        } else {
-            currentPinnedNote = null;
-        }
-
-        if (currentPinnedNote != null) {
-            binding.tabHome.layoutPinnedNoteBar.setVisibility(View.VISIBLE);
-            String subject = currentPinnedNote.getSubject() != null && !currentPinnedNote.getSubject().trim().isEmpty()
-                    ? currentPinnedNote.getSubject()
-                    : getString(R.string.note_default_category);
-            binding.tabHome.tvPinnedNoteSummary.setText(
-                    getString(R.string.notes_summary_pinned_bar, subject, currentPinnedNote.getTitle())
-            );
-        } else {
-            binding.tabHome.layoutPinnedNoteBar.setVisibility(View.GONE);
-        }
-
-        binding.tabTools.tvToolNotesCount.setText(
-                getResources().getQuantityString(R.plurals.tools_notes_count_format, all.size(), all.size())
-        );
-    }
-
     private void bindCalendarTab() {
-        TextView[] chips = new TextView[]{
-                binding.tabCalendar.chipDayT2,
-                binding.tabCalendar.chipDayT3,
-                binding.tabCalendar.chipDayT4,
-                binding.tabCalendar.chipDayT5,
-                binding.tabCalendar.chipDayT6,
-                binding.tabCalendar.chipDayT7
-        };
+        TextView[] chips = getCalendarDayChips();
         for (int i = 0; i < chips.length; i++) {
             final int index = i;
-            chips[i].setOnClickListener(v -> selectScheduleDay(index));
+            chips[i].setOnClickListener(v -> calendarViewModel.selectDay(index));
         }
 
         binding.tabCalendar.btnScheduleAdd.setOnClickListener(v -> openScheduleEditor(null));
         binding.tabCalendar.btnScheduleEmptyAdd.setOnClickListener(v -> openScheduleEditor(null));
-        binding.tabCalendar.btnScheduleImport.setOnClickListener(v -> launchImportPicker());
-        binding.tabCalendar.btnScheduleExport.setOnClickListener(v -> openExportDialog());
+        binding.tabCalendar.btnScheduleImport.setOnClickListener(v ->
+                importScheduleLauncher.launch(new String[]{"*/*"})
+        );
+        binding.tabCalendar.btnScheduleExport.setOnClickListener(v ->
+                calendarViewModel.requestOpenExportDialog()
+        );
     }
 
-    private void selectScheduleDay(int dayIndex) {
-        if (dayIndex < 0 || dayIndex > 5) {
-            dayIndex = 0;
-        }
-        selectedDayIndex = dayIndex;
-        int dayOfWeek = dayIndex + ScheduleSlot.DAY_MIN;
-
-        TextView[] chips = new TextView[]{
+    @NonNull
+    private TextView[] getCalendarDayChips() {
+        return new TextView[]{
                 binding.tabCalendar.chipDayT2,
                 binding.tabCalendar.chipDayT3,
                 binding.tabCalendar.chipDayT4,
@@ -763,30 +635,26 @@ public class MainActivity extends AppCompatActivity {
                 binding.tabCalendar.chipDayT6,
                 binding.tabCalendar.chipDayT7
         };
+    }
 
-        for (int i = 0; i < chips.length; i++) {
-            boolean active = i == dayIndex;
-            chips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
-            chips[i].setTextColor(ContextCompat.getColor(this, active ? R.color.white : R.color.ink_primary));
-        }
-
-        binding.tabCalendar.tvCalendarDayTitle.setText(getDayFullTitleRes(dayOfWeek));
-        List<ScheduleSlot> slots = dbHelper.getSchedulesByDay(dayOfWeek);
+    private void renderCalendarState(@NonNull CalendarViewModel.CalendarUiState state) {
+        FrostUiHelper.applyChipSelection(this, getCalendarDayChips(), state.selectedDayIndex);
+        binding.tabCalendar.tvCalendarDayTitle.setText(CalendarViewModel.getDayFullTitleRes(state.dayOfWeek));
         binding.tabCalendar.tvCalendarCountBadge.setText(
-                getString(R.string.schedule_count_badge_format, slots.size())
+                getString(R.string.schedule_count_badge_format, state.daySlots.size())
         );
 
         LinearLayout container = binding.tabCalendar.scheduleContainer;
         container.removeAllViews();
 
-        if (slots.isEmpty()) {
+        if (state.daySlots.isEmpty()) {
             binding.tabCalendar.cardCalendarEmpty.setVisibility(View.VISIBLE);
             return;
         }
         binding.tabCalendar.cardCalendarEmpty.setVisibility(View.GONE);
 
         LayoutInflater inflater = LayoutInflater.from(this);
-        for (ScheduleSlot slot : slots) {
+        for (ScheduleSlot slot : state.daySlots) {
             View card = inflater.inflate(R.layout.item_schedule_slot, container, false);
             TextView tvTime = card.findViewById(R.id.tvSlotTime);
             TextView tvRoom = card.findViewById(R.id.tvSlotRoom);
@@ -816,27 +684,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openScheduleEditor(@Nullable ScheduleSlot existingSlot) {
-        int currentDay = selectedDayIndex + ScheduleSlot.DAY_MIN;
+        int currentDay = calendarViewModel.getSelectedDayOfWeek();
         FrostUiHelper.showScheduleEditorDialog(
                 this,
                 existingSlot,
                 currentDay,
-                savedSlot -> {
-                    if (existingSlot == null) {
-                        dbHelper.insertSchedule(savedSlot);
-                        Toast.makeText(
-                                this,
-                                getString(R.string.schedule_toast_created, getDayShortName(savedSlot.getDayOfWeek())),
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    } else {
-                        dbHelper.updateSchedule(savedSlot);
-                        Toast.makeText(this, R.string.schedule_toast_updated, Toast.LENGTH_SHORT).show();
-                    }
-                    selectedDayIndex = Math.max(0, Math.min(5, savedSlot.getDayOfWeek() - ScheduleSlot.DAY_MIN));
-                    selectScheduleDay(selectedDayIndex);
-                    refreshHomeDashboard(true);
-                },
+                savedSlot -> calendarViewModel.saveSchedule(savedSlot, existingSlot == null),
                 this::confirmDeleteSchedule
         );
     }
@@ -849,191 +702,45 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.schedule_delete_message, slot.getSubject(), timeRange),
                 R.string.notes_dialog_delete_confirm,
                 true,
-                () -> {
-                    dbHelper.deleteSchedule(slot.getId());
-                    Toast.makeText(this, R.string.schedule_toast_deleted, Toast.LENGTH_SHORT).show();
-                    selectScheduleDay(selectedDayIndex);
-                    refreshHomeDashboard(true);
-                }
+                () -> calendarViewModel.deleteSchedule(slot.getId())
         );
     }
 
-    private void launchImportPicker() {
-        importScheduleLauncher.launch(new String[]{"*/*"});
-    }
-
-    private void handleImportUri(@NonNull Uri uri) {
-        String fileName = queryFileDisplayName(uri);
-        Toast.makeText(this, R.string.schedule_import_parsing, Toast.LENGTH_SHORT).show();
-        ioExecutor.execute(() -> {
-            try (InputStream is = getContentResolver().openInputStream(uri)) {
-                if (is == null) {
-                    throw new IOException("Cannot open input stream");
-                }
-                ScheduleTransferHelper.ImportResult result = ScheduleTransferHelper.parseSchedules(is, fileName);
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-                    if (result.validSlots.isEmpty()) {
-                        Toast.makeText(this, R.string.schedule_import_empty_error, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    FrostUiHelper.showImportPreviewDialog(this, fileName, result, replaceExisting -> {
-                        DatabaseHelper.ImportSummary summary = dbHelper.importSchedules(result.validSlots, replaceExisting);
-                        if (replaceExisting) {
-                            Toast.makeText(
-                                    this,
-                                    getString(R.string.schedule_import_replaced_toast, summary.insertedCount),
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        } else if (summary.skippedDuplicates > 0) {
-                            Toast.makeText(
-                                    this,
-                                    getString(
-                                            R.string.schedule_import_merged_skip_toast,
-                                            summary.insertedCount,
-                                            summary.skippedDuplicates
-                                    ),
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        } else {
-                            Toast.makeText(
-                                    this,
-                                    getString(R.string.schedule_import_merged_toast, summary.insertedCount),
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
-                        if (!result.validSlots.isEmpty()) {
-                            int targetDay = result.validSlots.get(0).getDayOfWeek();
-                            selectedDayIndex = Math.max(0, Math.min(5, targetDay - ScheduleSlot.DAY_MIN));
-                        }
-                        selectScheduleDay(selectedDayIndex);
-                        refreshHomeDashboard(true);
-                    });
-                });
-            } catch (ScheduleTransferHelper.LegacyXlsException e) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(this, R.string.schedule_import_legacy_xls_error, Toast.LENGTH_LONG).show();
-                    }
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(this, R.string.schedule_import_read_error, Toast.LENGTH_LONG).show();
-                    }
-                });
-            }
-        });
-    }
-
-    private void openExportDialog() {
-        int totalSlots = dbHelper.getTotalScheduleCount();
+    private void showExportDialog(int totalSlots) {
         FrostUiHelper.showExportOptionsDialog(this, totalSlots, new FrostUiHelper.OnExportActionListener() {
             @Override
             public void onSaveSchedules(@NonNull ScheduleTransferHelper.TransferFormat format) {
-                pendingExportFormat = format;
-                pendingExportTemplate = false;
-                exportScheduleLauncher.launch(new ExportDocumentSpec(buildExportFileName(format, false), format));
+                calendarViewModel.prepareExportDocument(format, false);
             }
 
             @Override
             public void onShareSchedules(@NonNull ScheduleTransferHelper.TransferFormat format) {
-                shareScheduleFile(format);
+                calendarViewModel.shareSchedules(format);
             }
 
             @Override
             public void onExportTemplate(@NonNull ScheduleTransferHelper.TransferFormat format) {
-                pendingExportFormat = format;
-                pendingExportTemplate = true;
-                exportScheduleLauncher.launch(new ExportDocumentSpec(buildExportFileName(format, true), format));
+                calendarViewModel.prepareExportDocument(format, true);
             }
         });
     }
 
-    private void handleExportUri(@NonNull Uri uri) {
-        final ScheduleTransferHelper.TransferFormat format = pendingExportFormat;
-        final boolean isTemplate = pendingExportTemplate;
-        final List<ScheduleSlot> exportSlots = isTemplate
-                ? ScheduleTransferHelper.buildSampleSlotsFromSeedRows(getResources().getStringArray(R.array.schedule_seed_rows), 3)
-                : dbHelper.getAllSchedules();
-
-        ioExecutor.execute(() -> {
-            try (OutputStream os = getContentResolver().openOutputStream(uri)) {
-                if (os == null) {
-                    throw new IOException("Cannot open output stream");
-                }
-                ScheduleTransferHelper.exportSchedules(exportSlots, format, os);
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(
-                                this,
-                                isTemplate ? R.string.schedule_export_template_saved_toast : R.string.schedule_export_saved_toast,
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(this, R.string.schedule_export_failed_toast, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
-    }
-
-    private void shareScheduleFile(@NonNull ScheduleTransferHelper.TransferFormat format) {
-        final List<ScheduleSlot> slots = dbHelper.getAllSchedules();
-        final String fileName = buildExportFileName(format, false);
-
-        ioExecutor.execute(() -> {
-            try {
-                File exportDir = new File(getCacheDir(), "exports");
-                if (!exportDir.exists() && !exportDir.mkdirs()) {
-                    throw new IOException("Cannot create cache export directory");
-                }
-                File outFile = new File(exportDir, fileName);
-                try (FileOutputStream fos = new FileOutputStream(outFile)) {
-                    ScheduleTransferHelper.exportSchedules(slots, format, fos);
-                }
-                Uri contentUri = FileProvider.getUriForFile(
-                        this,
-                        getPackageName() + ".fileprovider",
-                        outFile
-                );
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                    shareIntent.setType(format.mimeType);
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.schedule_export_share_text));
-                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    try {
-                        startActivity(Intent.createChooser(shareIntent, getString(R.string.schedule_export_share_chooser)));
-                    } catch (ActivityNotFoundException e) {
-                        Toast.makeText(this, R.string.schedule_export_no_share_app, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(this, R.string.schedule_export_failed_toast, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
-    }
-
-    private String buildExportFileName(@NonNull ScheduleTransferHelper.TransferFormat format, boolean template) {
-        if (template) {
-            return "mau-thoi-khoa-bieu." + format.extension;
+    private void launchShareChooser(@NonNull CalendarViewModel.ShareFileEventData data) {
+        Uri contentUri = FileProvider.getUriForFile(
+                this,
+                getPackageName() + ".fileprovider",
+                data.file
+        );
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType(data.mimeType);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.schedule_export_share_text));
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.schedule_export_share_chooser)));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.schedule_export_no_share_app, Toast.LENGTH_SHORT).show();
         }
-        String stamp = new SimpleDateFormat("yyyyMMdd", Locale.US).format(new Date());
-        return "thoi-khoa-bieu-" + stamp + "." + format.extension;
     }
 
     private String queryFileDisplayName(@NonNull Uri uri) {
@@ -1052,66 +759,14 @@ public class MainActivity extends AppCompatActivity {
         return getString(R.string.schedule_import_file_unknown);
     }
 
-    @StringRes
-    private int getDayFullTitleRes(int dayOfWeek) {
-        switch (dayOfWeek) {
-            case 2:
-                return R.string.schedule_day_full_2;
-            case 3:
-                return R.string.schedule_day_full_3;
-            case 4:
-                return R.string.schedule_day_full_4;
-            case 5:
-                return R.string.schedule_day_full_5;
-            case 6:
-                return R.string.schedule_day_full_6;
-            case 7:
-            default:
-                return R.string.schedule_day_full_7;
-        }
-    }
-
-    private String getDayShortName(int dayOfWeek) {
-        switch (dayOfWeek) {
-            case 2:
-                return getString(R.string.schedule_day_name_2);
-            case 3:
-                return getString(R.string.schedule_day_name_3);
-            case 4:
-                return getString(R.string.schedule_day_name_4);
-            case 5:
-                return getString(R.string.schedule_day_name_5);
-            case 6:
-                return getString(R.string.schedule_day_name_6);
-            case 7:
-            default:
-                return getString(R.string.schedule_day_name_7);
-        }
-    }
-
-    private boolean hasText(@Nullable String value) {
-        return value != null && !value.trim().isEmpty();
-    }
-
     private void bindToolsTab() {
-        binding.tabTools.chipCompress100.setOnClickListener(v -> selectCompressPreset(0));
-        binding.tabTools.chipCompress500.setOnClickListener(v -> selectCompressPreset(1));
-        binding.tabTools.chipCompress3x4.setOnClickListener(v -> selectCompressPreset(2));
-        binding.tabTools.btnRunCompress.setOnClickListener(v -> {
-            int presetRes = selectedCompressPreset == 0
-                    ? R.string.tools_compress_preset_name_100
-                    : (selectedCompressPreset == 1
-                    ? R.string.tools_compress_preset_name_500
-                    : R.string.tools_compress_preset_name_3x4);
-            Toast.makeText(
-                    this,
-                    getString(R.string.tools_compress_ready_toast, getString(presetRes)),
-                    Toast.LENGTH_SHORT
-            ).show();
-        });
+        binding.tabTools.chipCompress100.setOnClickListener(v -> toolsViewModel.selectCompressPreset(0));
+        binding.tabTools.chipCompress500.setOnClickListener(v -> toolsViewModel.selectCompressPreset(1));
+        binding.tabTools.chipCompress3x4.setOnClickListener(v -> toolsViewModel.selectCompressPreset(2));
+        binding.tabTools.btnRunCompress.setOnClickListener(v -> toolsViewModel.triggerCompressReadyMessage());
 
-        binding.tabTools.chipOcrSample1.setOnClickListener(v -> selectOcrSample(0));
-        binding.tabTools.chipOcrSample2.setOnClickListener(v -> selectOcrSample(1));
+        binding.tabTools.chipOcrSample1.setOnClickListener(v -> toolsViewModel.selectOcrSample(0));
+        binding.tabTools.chipOcrSample2.setOnClickListener(v -> toolsViewModel.selectOcrSample(1));
         binding.tabTools.btnCopyOcr.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             if (clipboard != null) {
@@ -1120,7 +775,7 @@ public class MainActivity extends AppCompatActivity {
                         binding.tabTools.tvOcrOutput.getText()
                 );
                 clipboard.setPrimaryClip(clip);
-                Toast.makeText(this, R.string.tools_ocr_copied_toast, Toast.LENGTH_SHORT).show();
+                toolsViewModel.notifyOcrCopied();
             }
         });
 
@@ -1130,18 +785,13 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    private void selectCompressPreset(int preset) {
-        selectedCompressPreset = preset;
+    private void renderCompressPreset(int preset) {
         TextView[] chips = new TextView[]{
                 binding.tabTools.chipCompress100,
                 binding.tabTools.chipCompress500,
                 binding.tabTools.chipCompress3x4
         };
-        for (int i = 0; i < chips.length; i++) {
-            boolean active = i == preset;
-            chips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
-            chips[i].setTextColor(ContextCompat.getColor(this, active ? R.color.white : R.color.ink_primary));
-        }
+        FrostUiHelper.applyChipSelection(this, chips, preset);
 
         if (preset == 0) {
             binding.tabTools.tvCompressSpec.setText(R.string.tools_compress_spec_100);
@@ -1155,31 +805,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void selectOcrSample(int sample) {
-        selectedOcrSample = sample;
-        boolean s1 = sample == 0;
-        binding.tabTools.chipOcrSample1.setBackgroundResource(s1 ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
-        binding.tabTools.chipOcrSample1.setTextColor(ContextCompat.getColor(this, s1 ? R.color.white : R.color.ink_primary));
-        binding.tabTools.chipOcrSample2.setBackgroundResource(!s1 ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
-        binding.tabTools.chipOcrSample2.setTextColor(ContextCompat.getColor(this, !s1 ? R.color.white : R.color.ink_primary));
-
+    private void renderOcrSample(int sample) {
+        TextView[] chips = new TextView[]{
+                binding.tabTools.chipOcrSample1,
+                binding.tabTools.chipOcrSample2
+        };
+        FrostUiHelper.applyChipSelection(this, chips, sample);
         binding.tabTools.tvOcrOutput.setText(
-                s1 ? R.string.tools_ocr_sample_slide : R.string.tools_ocr_sample_meeting
+                sample == 0 ? R.string.tools_ocr_sample_slide : R.string.tools_ocr_sample_meeting
         );
     }
 
     private void bindProfileTab() {
-        renderStudentProfile();
-        int savedProgress = profileStore.loadSimulatedProgress();
-        binding.tabProfile.seekSimulatedScore.setProgress(savedProgress);
-        updateGpaSimulation(savedProgress);
-
         binding.tabProfile.seekSimulatedScore.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                updateGpaSimulation(progress);
                 if (fromUser) {
-                    profileStore.saveSimulatedProgress(progress);
+                    profileViewModel.updateSimulatedProgress(progress, true);
                 }
             }
 
@@ -1189,76 +831,61 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                profileStore.saveSimulatedProgress(seekBar.getProgress());
+                profileViewModel.persistCurrentSimulatedProgress(seekBar.getProgress());
             }
         });
 
         binding.tabProfile.btnEditProfile.setOnClickListener(v ->
-                FrostUiHelper.showProfileEditorDialog(this, currentProfile, updatedProfile -> {
-                    profileStore.saveProfile(updatedProfile);
-                    currentProfile = updatedProfile;
-                    renderStudentProfile();
-                    updateGpaSimulation(binding.tabProfile.seekSimulatedScore.getProgress());
-                    Toast.makeText(this, R.string.profile_toast_updated, Toast.LENGTH_SHORT).show();
-                })
+                FrostUiHelper.showProfileEditorDialog(
+                        this,
+                        profileViewModel.getCurrentProfileSnapshot(),
+                        updatedProfile -> profileViewModel.saveProfile(updatedProfile)
+                )
         );
         binding.tabProfile.btnProfileNotes.setOnClickListener(v -> openNotesActivity());
     }
 
-    private void renderStudentProfile() {
+    private void renderProfileState(@NonNull ProfileViewModel.ProfileUiState state) {
+        StudentProfile profile = state.profile;
         String initials = ProfileGpaHelper.buildInitials(
-                currentProfile.getFullName(),
+                profile.getFullName(),
                 getString(R.string.profile_default_initials)
         );
         binding.btnHeaderProfile.setText(initials);
         binding.tabProfile.tvProfileAvatar.setText(initials);
-        binding.tabProfile.tvProfileName.setText(currentProfile.getFullName());
+        binding.tabProfile.tvProfileName.setText(profile.getFullName());
 
-        String major = currentProfile.getMajorAndCohort();
+        String major = profile.getMajorAndCohort();
         binding.tabProfile.tvProfileMajor.setText(
-                major == null || major.trim().isEmpty()
-                        ? getString(R.string.profile_major_fallback)
-                        : major.trim()
+                hasText(major) ? major.trim() : getString(R.string.profile_major_fallback)
         );
         binding.tabProfile.tvProfileCreditsValue.setText(
-                getString(
-                        R.string.profile_credits_value_format,
-                        currentProfile.getEarnedCredits(),
-                        currentProfile.getTotalCredits()
-                )
+                getString(R.string.profile_credits_value_format, profile.getEarnedCredits(), profile.getTotalCredits())
         );
         binding.tabProfile.tvProfileAttendanceValue.setText(
-                getString(R.string.profile_attendance_value_format, currentProfile.getAttendancePercent())
+                getString(R.string.profile_attendance_value_format, profile.getAttendancePercent())
         );
         binding.tabProfile.tvGpaBaselineSummary.setText(
                 getString(
                         R.string.profile_gpa_baseline_summary_format,
-                        currentProfile.getBaselineGpa(),
-                        currentProfile.getCurrentTermCredits()
+                        profile.getBaselineGpa(),
+                        profile.getCurrentTermCredits()
                 )
         );
-    }
 
-    private void updateGpaSimulation(int progressValue) {
-        int clampedProgress = ProfileGpaHelper.clampSimulatedProgress(progressValue);
-        float scoreTen = ProfileGpaHelper.progressToScoreTen(clampedProgress);
-        float projectedGpa = ProfileGpaHelper.calculateProjectedGpa(
-                currentProfile.getBaselineGpa(),
-                currentProfile.getEarnedCredits(),
-                currentProfile.getCurrentTermCredits(),
-                scoreTen
-        );
+        if (binding.tabProfile.seekSimulatedScore.getProgress() != state.simulatedProgress) {
+            binding.tabProfile.seekSimulatedScore.setProgress(state.simulatedProgress);
+        }
 
         binding.tabProfile.tvSimulatedScore.setText(
-                getString(R.string.profile_gpa_sim_score_format, scoreTen)
+                getString(R.string.profile_gpa_sim_score_format, state.scoreTen)
         );
         binding.tabProfile.tvGpaProjected.setText(
-                getString(R.string.profile_gpa_value_format, projectedGpa)
+                getString(R.string.profile_gpa_value_format, state.projectedGpa)
         );
-        binding.tabProfile.pbGpaMeter.setProgress(Math.round(projectedGpa * 100f));
+        binding.tabProfile.pbGpaMeter.setProgress(Math.round(state.projectedGpa * 100f));
 
-        ProfileGpaHelper.GpaRank rank = ProfileGpaHelper.classifyGpaRank(projectedGpa);
-        switch (rank) {
+        switch (state.rank) {
             case EXCELLENT:
                 binding.tabProfile.tvGpaRankBadge.setText(R.string.profile_gpa_rank_excellent);
                 binding.tabProfile.tvGpaRankBadge.setBackgroundResource(R.drawable.bg_pill_success_soft);
@@ -1288,13 +915,6 @@ public class MainActivity extends AppCompatActivity {
         binding.dockTabCalendar.setOnClickListener(v -> switchTab(1));
         binding.dockTabTools.setOnClickListener(v -> switchTab(2));
         binding.dockTabProfile.setOnClickListener(v -> switchTab(3));
-    }
-
-    private void applySavedSelections() {
-        selectScheduleDay(selectedDayIndex);
-        selectCompressPreset(selectedCompressPreset);
-        selectOcrSample(selectedOcrSample);
-        switchTab(selectedTab);
     }
 
     private void switchTab(int index) {
@@ -1363,5 +983,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             startActivity(intent);
         }
+    }
+
+    private boolean hasText(@Nullable String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

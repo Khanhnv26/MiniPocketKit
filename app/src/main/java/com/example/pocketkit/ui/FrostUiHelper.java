@@ -595,7 +595,7 @@ public final class FrostUiHelper {
         dialog.show();
     }
 
-    private static void applyChipSelection(
+    public static void applyChipSelection(
             @NonNull Context context,
             @NonNull TextView[] chips,
             int selectedIndex
@@ -1005,5 +1005,20 @@ public final class FrostUiHelper {
 
     public static int dpToPx(@NonNull Context context, int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
+    }
+
+    public static void showToast(@NonNull Context context, @Nullable UiEvent<UiMessage> event) {
+        if (event == null) {
+            return;
+        }
+        UiMessage message = event.getContentIfNotHandled();
+        if (message == null) {
+            return;
+        }
+        Toast.makeText(
+                context,
+                message.resolve(context),
+                message.longDuration ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT
+        ).show();
     }
 }

@@ -40,6 +40,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.lifecycle.livedata)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
@@ -47,6 +49,7 @@ dependencies {
     implementation(libs.gson)
 
     testImplementation(libs.junit)
+    testImplementation(libs.core.testing)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
 }

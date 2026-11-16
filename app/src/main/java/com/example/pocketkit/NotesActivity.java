@@ -6,10 +6,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pocketkit.adapter.NoteAdapter;
@@ -17,18 +17,16 @@ import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityNotesBinding;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.ui.FrostUiHelper;
+import com.example.pocketkit.viewmodel.NotesViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNoteInteractionListener {
 
-    private static final String STATE_SELECTED_CATEGORY = "state_selected_category";
-
     private ActivityNotesBinding binding;
-    private DatabaseHelper dbHelper;
+    private NotesViewModel viewModel;
     private NoteAdapter adapter;
-    private String currentCategory = DatabaseHelper.FILTER_ALL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +34,8 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
         binding = ActivityNotesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        if (savedInstanceState != null) {
-            currentCategory = savedInstanceState.getString(STATE_SELECTED_CATEGORY, DatabaseHelper.FILTER_ALL);
-        }
-
-        dbHelper = new DatabaseHelper(this);
+        PocketKitApplication app = (PocketKitApplication) getApplication();
+        viewModel = new ViewModelProvider(this, app.getViewModelFactory()).get(NotesViewModel.class);
 
         FrostUiHelper.setupEdgeToEdgeAndBackdrop(
                 this,
@@ -67,65 +62,56 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 boolean hasQuery = s != null && s.length() > 0;
                 binding.btnClearSearch.setVisibility(hasQuery ? View.VISIBLE : View.GONE);
-                loadNotes();
+                viewModel.updateSearchQuery(s != null ? s.toString() : "");
             }
 
             @Override
             public void afterTextChanged(Editable s) {
             }
         });
+
+        viewModel.getNotesState().observe(this, this::renderState);
+        viewModel.getToastEvent().observe(this, event -> FrostUiHelper.showToast(this, event));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        renderCategoryChips();
-        loadNotes();
+        viewModel.loadNotesAndCategories();
     }
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putString(STATE_SELECTED_CATEGORY, currentCategory);
-        super.onSaveInstanceState(outState);
-    }
-
-    private void loadNotes() {
-        String query = binding.edtSearchNote.getText().toString();
-        List<Note> notes = dbHelper.getNotesFiltered(query, currentCategory);
-        adapter.setNotes(notes);
+    private void renderState(@NonNull NotesViewModel.NotesUiState state) {
+        renderCategoryChips(state.categories, state.selectedCategory);
+        adapter.setNotes(state.notes);
         binding.tvNotesSummaryCount.setText(
-                getResources().getQuantityString(R.plurals.notes_count_badge_format, notes.size(), notes.size())
+                getResources().getQuantityString(R.plurals.notes_count_badge_format, state.notes.size(), state.notes.size())
         );
 
-        if (notes.isEmpty()) {
-            boolean filtered = !query.trim().isEmpty() || !DatabaseHelper.FILTER_ALL.equals(currentCategory);
-            binding.tvEmptyNotes.setText(filtered ? R.string.notes_empty_search : R.string.notes_empty_default);
+        if (state.notes.isEmpty()) {
+            binding.tvEmptyNotes.setText(state.filtered ? R.string.notes_empty_search : R.string.notes_empty_default);
             binding.emptyStateContainer.setVisibility(View.VISIBLE);
         } else {
             binding.emptyStateContainer.setVisibility(View.GONE);
         }
     }
 
-    private void renderCategoryChips() {
+    private void renderCategoryChips(@NonNull List<String> categories, @NonNull String selectedCategory) {
         binding.layoutCategories.removeAllViews();
-
-        List<String> categories = dbHelper.getAllCategories();
-        if (!DatabaseHelper.FILTER_ALL.equals(currentCategory)
-                && !DatabaseHelper.FILTER_PINNED.equals(currentCategory)
-                && !categories.contains(currentCategory)) {
-            currentCategory = DatabaseHelper.FILTER_ALL;
-        }
-
-        addFilterChip(getString(R.string.notes_filter_all), DatabaseHelper.FILTER_ALL, false);
-        addFilterChip(getString(R.string.notes_filter_pinned), DatabaseHelper.FILTER_PINNED, false);
+        addFilterChip(getString(R.string.notes_filter_all), DatabaseHelper.FILTER_ALL, selectedCategory, false);
+        addFilterChip(getString(R.string.notes_filter_pinned), DatabaseHelper.FILTER_PINNED, selectedCategory, false);
         for (String cat : categories) {
-            addFilterChip(cat, cat, true);
+            addFilterChip(cat, cat, selectedCategory, true);
         }
         addActionChip(getString(R.string.notes_category_add_chip));
     }
 
-    private void addFilterChip(String label, String value, boolean allowDelete) {
-        boolean selected = currentCategory.equals(value);
+    private void addFilterChip(
+            @NonNull String label,
+            @NonNull String value,
+            @NonNull String selectedCategory,
+            boolean allowDelete
+    ) {
+        boolean selected = selectedCategory.equals(value);
         TextView chip = FrostUiHelper.createCategoryChip(
                 this,
                 binding.layoutCategories,
@@ -133,11 +119,7 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
                 selected,
                 false
         );
-        chip.setOnClickListener(v -> {
-            currentCategory = value;
-            renderCategoryChips();
-            loadNotes();
-        });
+        chip.setOnClickListener(v -> viewModel.selectCategory(value));
         if (allowDelete) {
             chip.setOnLongClickListener(v -> {
                 confirmDeleteCategory(value);
@@ -147,7 +129,7 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
         binding.layoutCategories.addView(chip);
     }
 
-    private void addActionChip(String label) {
+    private void addActionChip(@NonNull String label) {
         TextView chip = FrostUiHelper.createCategoryChip(
                 this,
                 binding.layoutCategories,
@@ -155,32 +137,18 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
                 false,
                 true
         );
-        chip.setOnClickListener(v -> FrostUiHelper.showAddCategoryDialog(this, name -> {
-            dbHelper.insertCategory(name);
-            currentCategory = name;
-            renderCategoryChips();
-            loadNotes();
-            Toast.makeText(this, getString(R.string.notes_category_added_toast, name), Toast.LENGTH_SHORT).show();
-        }));
+        chip.setOnClickListener(v -> FrostUiHelper.showAddCategoryDialog(this, name -> viewModel.addCategory(name)));
         binding.layoutCategories.addView(chip);
     }
 
-    private void confirmDeleteCategory(String categoryName) {
+    private void confirmDeleteCategory(@NonNull String categoryName) {
         FrostUiHelper.showConfirmDialog(
                 this,
                 R.string.notes_category_delete_title,
                 getString(R.string.notes_category_delete_message, categoryName),
                 R.string.notes_dialog_delete_confirm,
                 true,
-                () -> {
-                    dbHelper.deleteCategory(categoryName);
-                    if (categoryName.equals(currentCategory)) {
-                        currentCategory = DatabaseHelper.FILTER_ALL;
-                    }
-                    renderCategoryChips();
-                    loadNotes();
-                    Toast.makeText(this, getString(R.string.notes_category_deleted_toast, categoryName), Toast.LENGTH_SHORT).show();
-                }
+                () -> viewModel.deleteCategory(categoryName)
         );
     }
 
@@ -199,18 +167,12 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
                 getString(R.string.notes_delete_note_message, note.getTitle()),
                 R.string.notes_dialog_delete_confirm,
                 true,
-                () -> {
-                    dbHelper.deleteNote(note.getId());
-                    loadNotes();
-                    Toast.makeText(this, R.string.notes_note_deleted_toast, Toast.LENGTH_SHORT).show();
-                }
+                () -> viewModel.deleteNote(note)
         );
     }
 
     @Override
     public void onNoteCheckChanged(Note note, boolean isChecked) {
-        note.setIsDone(isChecked ? 1 : 0);
-        dbHelper.updateNote(note);
-        binding.rvNotes.post(this::loadNotes);
+        viewModel.toggleNoteDone(note, isChecked);
     }
 }

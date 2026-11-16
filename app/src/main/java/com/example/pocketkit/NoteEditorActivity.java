@@ -3,34 +3,27 @@ package com.example.pocketkit;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.IntentCompat;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityNoteEditorBinding;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.ui.FrostUiHelper;
+import com.example.pocketkit.viewmodel.NoteEditorViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class NoteEditorActivity extends AppCompatActivity {
 
-    private static final String STATE_SELECTED_CATEGORY = "state_editor_category";
-    private static final String STATE_PINNED = "state_editor_pinned";
-
     private ActivityNoteEditorBinding binding;
-    private DatabaseHelper dbHelper;
-    private Note existingNote;
-    private String selectedCategory;
-    private boolean isPinned;
+    private NoteEditorViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +31,8 @@ public class NoteEditorActivity extends AppCompatActivity {
         binding = ActivityNoteEditorBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        dbHelper = new DatabaseHelper(this);
-        selectedCategory = getString(R.string.note_default_category);
+        PocketKitApplication app = (PocketKitApplication) getApplication();
+        viewModel = new ViewModelProvider(this, app.getViewModelFactory()).get(NoteEditorViewModel.class);
 
         FrostUiHelper.setupEdgeToEdgeAndBackdrop(
                 this,
@@ -49,56 +42,68 @@ public class NoteEditorActivity extends AppCompatActivity {
                 null
         );
 
-        if (getIntent().hasExtra(Note.EXTRA_NOTE_ITEM)) {
-            existingNote = IntentCompat.getSerializableExtra(getIntent(), Note.EXTRA_NOTE_ITEM, Note.class);
-            if (existingNote != null) {
-                binding.tvEditorHeader.setText(R.string.editor_title_edit);
-                binding.edtNoteTitle.setText(existingNote.getTitle());
-                binding.edtNoteContent.setText(existingNote.getContent());
-                if (existingNote.getSubject() != null && !existingNote.getSubject().trim().isEmpty()) {
-                    selectedCategory = existingNote.getSubject().trim();
-                }
-                isPinned = existingNote.getIsPinned() == 1;
-                binding.btnDeleteNote.setVisibility(View.VISIBLE);
-            }
-        }
+        Note noteFromIntent = getIntent().hasExtra(Note.EXTRA_NOTE_ITEM)
+                ? IntentCompat.getSerializableExtra(getIntent(), Note.EXTRA_NOTE_ITEM, Note.class)
+                : null;
+        viewModel.initialize(noteFromIntent, getString(R.string.note_default_category));
 
-        if (savedInstanceState != null) {
-            selectedCategory = savedInstanceState.getString(STATE_SELECTED_CATEGORY, selectedCategory);
-            isPinned = savedInstanceState.getBoolean(STATE_PINNED, isPinned);
-        }
-
-        renderCategoryChips();
-        updatePinUi(false);
-
-        binding.layoutPinToggle.setOnClickListener(v -> {
-            isPinned = !isPinned;
-            updatePinUi(true);
-        });
+        binding.layoutPinToggle.setOnClickListener(v -> viewModel.togglePinned());
         binding.btnBackEditor.setOnClickListener(v -> finish());
-        binding.btnSaveNote.setOnClickListener(v -> saveNote());
+        binding.btnSaveNote.setOnClickListener(v -> {
+            String pattern = getString(R.string.note_timestamp_format);
+            String now = new SimpleDateFormat(pattern, Locale.forLanguageTag("vi-VN")).format(new Date());
+            viewModel.saveNote(
+                    binding.edtNoteTitle.getText().toString(),
+                    binding.edtNoteContent.getText().toString(),
+                    now
+            );
+        });
         binding.btnDeleteNote.setOnClickListener(v -> confirmDelete());
+
+        observeViewModel();
     }
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putString(STATE_SELECTED_CATEGORY, selectedCategory);
-        outState.putBoolean(STATE_PINNED, isPinned);
-        super.onSaveInstanceState(outState);
+    private void observeViewModel() {
+        viewModel.getInitialPopulateEvent().observe(this, event -> {
+            Note note = event.getContentIfNotHandled();
+            if (note != null) {
+                binding.edtNoteTitle.setText(note.getTitle());
+                binding.edtNoteContent.setText(note.getContent());
+            }
+        });
+
+        viewModel.getEditorState().observe(this, state -> {
+            if (state.editing) {
+                binding.tvEditorHeader.setText(R.string.editor_title_edit);
+                binding.btnDeleteNote.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvEditorHeader.setText(R.string.editor_title_create);
+                binding.btnDeleteNote.setVisibility(View.GONE);
+            }
+            renderCategoryChips(state.categories, state.selectedCategory);
+            updatePinUi(state.pinned, state.animatePin);
+        });
+
+        viewModel.getEmptyTitleErrorEvent().observe(this, event -> {
+            if (event.getContentIfNotHandled() != null) {
+                binding.edtNoteTitle.setError(getString(R.string.editor_error_empty_title));
+                binding.edtNoteTitle.requestFocus();
+            }
+        });
+
+        viewModel.getToastEvent().observe(this, event -> FrostUiHelper.showToast(this, event));
+
+        viewModel.getCloseScreenEvent().observe(this, event -> {
+            if (event.getContentIfNotHandled() != null) {
+                finish();
+            }
+        });
     }
 
-    private void renderCategoryChips() {
+    private void renderCategoryChips(@NonNull List<String> categories, @NonNull String selectedCategory) {
         binding.layoutEditorCategories.removeAllViews();
 
-        String defaultCategory = getString(R.string.note_default_category);
-        Set<String> uniqueCategories = new LinkedHashSet<>();
-        uniqueCategories.add(defaultCategory);
-        uniqueCategories.addAll(dbHelper.getAllCategories());
-        if (selectedCategory != null && !selectedCategory.trim().isEmpty()) {
-            uniqueCategories.add(selectedCategory.trim());
-        }
-
-        for (String category : uniqueCategories) {
+        for (String category : categories) {
             boolean selected = category.equals(selectedCategory);
             TextView chip = FrostUiHelper.createCategoryChip(
                     this,
@@ -107,10 +112,7 @@ public class NoteEditorActivity extends AppCompatActivity {
                     selected,
                     false
             );
-            chip.setOnClickListener(v -> {
-                selectedCategory = category;
-                renderCategoryChips();
-            });
+            chip.setOnClickListener(v -> viewModel.selectCategory(category));
             binding.layoutEditorCategories.addView(chip);
         }
 
@@ -121,16 +123,11 @@ public class NoteEditorActivity extends AppCompatActivity {
                 false,
                 true
         );
-        addChip.setOnClickListener(v -> FrostUiHelper.showAddCategoryDialog(this, name -> {
-            dbHelper.insertCategory(name);
-            selectedCategory = name;
-            renderCategoryChips();
-            Toast.makeText(this, getString(R.string.notes_category_added_toast, name), Toast.LENGTH_SHORT).show();
-        }));
+        addChip.setOnClickListener(v -> FrostUiHelper.showAddCategoryDialog(this, name -> viewModel.addCategory(name)));
         binding.layoutEditorCategories.addView(addChip);
     }
 
-    private void updatePinUi(boolean animate) {
+    private void updatePinUi(boolean isPinned, boolean animate) {
         float targetX = isPinned ? FrostUiHelper.dpToPx(this, 22) : 0f;
         binding.pinSwitchTrack.setBackgroundResource(
                 isPinned ? R.drawable.bg_switch_track_on : R.drawable.bg_switch_track_off
@@ -145,48 +142,8 @@ public class NoteEditorActivity extends AppCompatActivity {
         }
     }
 
-    private void saveNote() {
-        String title = binding.edtNoteTitle.getText().toString().trim();
-        String content = binding.edtNoteContent.getText().toString().trim();
-        String subject = selectedCategory != null && !selectedCategory.trim().isEmpty()
-                ? selectedCategory.trim()
-                : getString(R.string.note_default_category);
-        int pinnedFlag = isPinned ? 1 : 0;
-
-        if (title.isEmpty()) {
-            binding.edtNoteTitle.setError(getString(R.string.editor_error_empty_title));
-            binding.edtNoteTitle.requestFocus();
-            return;
-        }
-
-        String pattern = getString(R.string.note_timestamp_format);
-        String now = new SimpleDateFormat(pattern, Locale.forLanguageTag("vi-VN")).format(new Date());
-
-        if (existingNote == null) {
-            Note note = Note.builder()
-                    .title(title)
-                    .content(content)
-                    .subject(subject)
-                    .isPinned(pinnedFlag)
-                    .isDone(0)
-                    .updatedAt(now)
-                    .build();
-            dbHelper.insertNote(note);
-            Toast.makeText(this, R.string.editor_toast_created, Toast.LENGTH_SHORT).show();
-        } else {
-            existingNote.setTitle(title);
-            existingNote.setSubject(subject);
-            existingNote.setContent(content);
-            existingNote.setIsPinned(pinnedFlag);
-            existingNote.setUpdatedAt(now);
-            dbHelper.updateNote(existingNote);
-            Toast.makeText(this, R.string.editor_toast_updated, Toast.LENGTH_SHORT).show();
-        }
-        finish();
-    }
-
     private void confirmDelete() {
-        if (existingNote == null) {
+        if (!viewModel.isEditing()) {
             return;
         }
         FrostUiHelper.showConfirmDialog(
@@ -195,11 +152,7 @@ public class NoteEditorActivity extends AppCompatActivity {
                 getString(R.string.editor_delete_confirm_message),
                 R.string.notes_dialog_delete_confirm,
                 true,
-                () -> {
-                    dbHelper.deleteNote(existingNote.getId());
-                    Toast.makeText(this, R.string.notes_note_deleted_toast, Toast.LENGTH_SHORT).show();
-                    finish();
-                }
+                () -> viewModel.deleteNote()
         );
     }
 }
