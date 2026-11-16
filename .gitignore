@@ -21,6 +21,7 @@ android/.idea/assetWizardSettings.xml
 
 backend/target/
 backend/build/
+backend/data/
 backend/.gradle/
 backend/.idea/
 backend/.mvn/wrapper/maven-wrapper.jar
