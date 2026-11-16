@@ -7,12 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.pocketkit.R;
 import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.model.StudyTask;
+import com.example.pocketkit.reminder.TaskReminderHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String FILTER_PINNED = "PINNED";
 
     private static final String DATABASE_NAME = "CampusKit.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     private static final String TABLE_NOTES = "notes";
     private static final String COL_ID = "id";
@@ -59,6 +61,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_TASK_DUE_AT = "due_at";
     private static final String COL_TASK_DONE = "is_done";
     private static final String COL_TASK_CREATED_AT = "created_at";
+    private static final String COL_TASK_REMIND_BEFORE = "remind_before_minutes";
 
     private final Context appContext;
 
@@ -88,6 +91,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         createTablesIfNeeded(db);
+        if (oldVersion < 7) {
+            ensureTaskReminderColumn(db);
+        }
 
         try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NOTES, null)) {
             if (cursor.moveToFirst() && cursor.getInt(0) == 0) {
@@ -139,7 +145,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_TASK_TAG + " TEXT, " +
                 COL_TASK_DUE_AT + " INTEGER DEFAULT 0, " +
                 COL_TASK_DONE + " INTEGER DEFAULT 0, " +
-                COL_TASK_CREATED_AT + " INTEGER DEFAULT 0)");
+                COL_TASK_CREATED_AT + " INTEGER DEFAULT 0, " +
+                COL_TASK_REMIND_BEFORE + " INTEGER DEFAULT -1)");
+    }
+
+    private void ensureTaskReminderColumn(SQLiteDatabase db) {
+        boolean exists = false;
+        try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + TABLE_TASKS + ")", null)) {
+            int nameIdx = cursor.getColumnIndex("name");
+            while (cursor.moveToNext()) {
+                if (nameIdx >= 0 && COL_TASK_REMIND_BEFORE.equals(cursor.getString(nameIdx))) {
+                    exists = true;
+                    break;
+                }
+            }
+        }
+        if (!exists) {
+            db.execSQL("ALTER TABLE " + TABLE_TASKS + " ADD COLUMN " + COL_TASK_REMIND_BEFORE + " INTEGER DEFAULT -1");
+        }
     }
 
     private void seedInitialNotes(SQLiteDatabase db) {
@@ -204,6 +227,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 .dueAtMillis(dueFirst)
                 .done(false)
                 .createdAtMillis(now)
+                .remindBeforeMinutes(TaskReminderHelper.REMIND_60_MIN)
                 .build());
 
         insertTaskInternal(db, StudyTask.builder()
@@ -213,6 +237,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 .dueAtMillis(dueSecond)
                 .done(false)
                 .createdAtMillis(now)
+                .remindBeforeMinutes(TaskReminderHelper.REMIND_60_MIN)
                 .build());
 
         insertTaskInternal(db, StudyTask.builder()
@@ -222,6 +247,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 .dueAtMillis(0L)
                 .done(false)
                 .createdAtMillis(now)
+                .remindBeforeMinutes(TaskReminderHelper.REMIND_NONE)
                 .build());
 
         insertTaskInternal(db, StudyTask.builder()
@@ -231,6 +257,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 .dueAtMillis(0L)
                 .done(true)
                 .createdAtMillis(now)
+                .remindBeforeMinutes(TaskReminderHelper.REMIND_NONE)
                 .build());
     }
 
@@ -247,6 +274,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COL_TASK_DONE, task.isDone() ? 1 : 0);
         long createdAt = task.getCreatedAtMillis() > 0L ? task.getCreatedAtMillis() : System.currentTimeMillis();
         values.put(COL_TASK_CREATED_AT, createdAt);
+        int remindBefore = task.hasDueAt()
+                ? TaskReminderHelper.normalizeRemindBeforeMinutes(task.getRemindBeforeMinutes())
+                : TaskReminderHelper.REMIND_NONE;
+        values.put(COL_TASK_REMIND_BEFORE, remindBefore);
         return values;
     }
 
@@ -255,6 +286,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private StudyTask readTaskCursor(Cursor cursor) {
+        int remindIndex = cursor.getColumnIndex(COL_TASK_REMIND_BEFORE);
+        int remindBefore = remindIndex >= 0
+                ? TaskReminderHelper.normalizeRemindBeforeMinutes(cursor.getInt(remindIndex))
+                : TaskReminderHelper.REMIND_NONE;
         return StudyTask.builder()
                 .id(cursor.getInt(cursor.getColumnIndexOrThrow(COL_TASK_ID)))
                 .title(cursor.getString(cursor.getColumnIndexOrThrow(COL_TASK_TITLE)))
@@ -263,6 +298,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 .dueAtMillis(cursor.getLong(cursor.getColumnIndexOrThrow(COL_TASK_DUE_AT)))
                 .done(cursor.getInt(cursor.getColumnIndexOrThrow(COL_TASK_DONE)) == 1)
                 .createdAtMillis(cursor.getLong(cursor.getColumnIndexOrThrow(COL_TASK_CREATED_AT)))
+                .remindBeforeMinutes(remindBefore)
                 .build();
     }
 
@@ -559,6 +595,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_TASK_DUE_AT + " ASC, "
                 + COL_TASK_ID + " DESC";
         try (Cursor cursor = db.query(TABLE_TASKS, null, null, null, null, null, orderBy)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    list.add(readTaskCursor(cursor));
+                } while (cursor.moveToNext());
+            }
+        }
+        return list;
+    }
+
+    @Nullable
+    public StudyTask getTaskById(int id) {
+        if (id <= 0) {
+            return null;
+        }
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor cursor = db.query(
+                TABLE_TASKS,
+                null,
+                COL_TASK_ID + " = ?",
+                new String[]{String.valueOf(id)},
+                null,
+                null,
+                null
+        )) {
+            if (cursor.moveToFirst()) {
+                return readTaskCursor(cursor);
+            }
+        }
+        return null;
+    }
+
+    @NonNull
+    public List<StudyTask> getTasksWithPendingReminders() {
+        List<StudyTask> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        String selection = COL_TASK_DONE + " = 0 AND " + COL_TASK_DUE_AT + " > 0 AND " + COL_TASK_REMIND_BEFORE + " >= 0";
+        try (Cursor cursor = db.query(TABLE_TASKS, null, selection, null, null, null, COL_TASK_DUE_AT + " ASC")) {
             if (cursor.moveToFirst()) {
                 do {
                     list.add(readTaskCursor(cursor));

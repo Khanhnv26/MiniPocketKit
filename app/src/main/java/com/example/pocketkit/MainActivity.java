@@ -1,14 +1,19 @@
 package com.example.pocketkit;
 
+import android.Manifest;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.OpenableColumns;
@@ -41,6 +46,8 @@ import com.example.pocketkit.model.StudentProfile;
 import com.example.pocketkit.model.StudyTask;
 import com.example.pocketkit.profile.ProfileGpaHelper;
 import com.example.pocketkit.profile.StudentProfileStore;
+import com.example.pocketkit.reminder.TaskReminderHelper;
+import com.example.pocketkit.reminder.TaskReminderScheduler;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 import com.example.pocketkit.ui.FrostUiHelper;
 
@@ -89,6 +96,28 @@ public class MainActivity extends AppCompatActivity {
     private boolean pendingExportTemplate = false;
 
     private List<StudyTask> taskItems = new ArrayList<>();
+    private StudyTask pendingReminderTask;
+    private boolean taskReceiverRegistered = false;
+
+    private final BroadcastReceiver taskUpdatedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            refreshHomeDashboard(false);
+        }
+    };
+
+    private final ActivityResultLauncher<String> notificationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            granted -> {
+                StudyTask pending = pendingReminderTask;
+                pendingReminderTask = null;
+                if (granted && pending != null) {
+                    TaskReminderScheduler.scheduleOrCancel(this, pending);
+                } else if (!granted && pending != null) {
+                    Toast.makeText(this, R.string.task_reminder_permission_denied, Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     private static final class ExportDocumentSpec {
         final String fileName;
@@ -160,6 +189,30 @@ public class MainActivity extends AppCompatActivity {
         bindDockNavigation();
         applySavedSelections();
         refreshHomeDashboard(false);
+        ioExecutor.execute(() -> TaskReminderScheduler.rescheduleAllPendingReminders(getApplicationContext()));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!taskReceiverRegistered) {
+            ContextCompat.registerReceiver(
+                    this,
+                    taskUpdatedReceiver,
+                    new IntentFilter(TaskReminderHelper.ACTION_TASK_UPDATED),
+                    ContextCompat.RECEIVER_NOT_EXPORTED
+            );
+            taskReceiverRegistered = true;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        if (taskReceiverRegistered) {
+            unregisterReceiver(taskUpdatedReceiver);
+            taskReceiverRegistered = false;
+        }
+        super.onStop();
     }
 
     @Override
@@ -237,10 +290,7 @@ public class MainActivity extends AppCompatActivity {
             if ((currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.DEADLINE_TASK
                     || currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.PENDING_TASK)
                     && currentSpotlight.task != null) {
-                StudyTask task = currentSpotlight.task;
-                dbHelper.setTaskDone(task.getId(), true);
-                Toast.makeText(this, getString(R.string.task_toast_completed, task.getTitle()), Toast.LENGTH_SHORT).show();
-                refreshHomeDashboard(true);
+                toggleTaskCompletion(currentSpotlight.task, true);
             } else if (currentSpotlight.kind == HomeSummaryHelper.SpotlightKind.SCHEDULE_SLOT
                     && currentSpotlight.slot != null) {
                 int dayIdx = currentSpotlight.slot.getDayOfWeek() - ScheduleSlot.DAY_MIN;
@@ -501,9 +551,14 @@ public class MainActivity extends AppCompatActivity {
                         dbHelper.updateTask(savedTask);
                         Toast.makeText(this, R.string.task_toast_updated, Toast.LENGTH_SHORT).show();
                     } else {
-                        dbHelper.insertTask(savedTask);
+                        long insertedId = dbHelper.insertTask(savedTask);
+                        if (insertedId > 0L) {
+                            savedTask.setId((int) insertedId);
+                        }
                         Toast.makeText(this, R.string.task_toast_created, Toast.LENGTH_SHORT).show();
                     }
+                    TaskReminderScheduler.clearFiredMarker(this, savedTask.getId());
+                    scheduleTaskReminderWithPermission(savedTask);
                     refreshHomeDashboard(true);
                 },
                 targetTask -> FrostUiHelper.showConfirmDialog(
@@ -514,11 +569,45 @@ public class MainActivity extends AppCompatActivity {
                         true,
                         () -> {
                             dbHelper.deleteTask(targetTask.getId());
+                            TaskReminderScheduler.cancelReminder(this, targetTask.getId());
+                            TaskReminderScheduler.clearFiredMarker(this, targetTask.getId());
                             Toast.makeText(this, R.string.task_toast_deleted, Toast.LENGTH_SHORT).show();
                             refreshHomeDashboard(true);
                         }
                 )
         );
+    }
+
+    private void toggleTaskCompletion(@NonNull StudyTask task, boolean nextDone) {
+        dbHelper.setTaskDone(task.getId(), nextDone);
+        task.setDone(nextDone);
+        TaskReminderScheduler.clearFiredMarker(this, task.getId());
+        if (nextDone) {
+            TaskReminderScheduler.cancelReminder(this, task.getId());
+        } else {
+            scheduleTaskReminderWithPermission(task);
+        }
+        Toast.makeText(
+                this,
+                getString(nextDone ? R.string.task_toast_completed : R.string.task_toast_reopened, task.getTitle()),
+                Toast.LENGTH_SHORT
+        ).show();
+        refreshHomeDashboard(true);
+    }
+
+    private void scheduleTaskReminderWithPermission(@NonNull StudyTask task) {
+        if (!TaskReminderHelper.isReminderConfigured(task)) {
+            TaskReminderScheduler.cancelReminder(this, task.getId());
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            pendingReminderTask = task;
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            return;
+        }
+        TaskReminderScheduler.scheduleOrCancel(this, task);
     }
 
     private void renderChecklist(long nowMillis) {
@@ -559,16 +648,7 @@ public class MainActivity extends AppCompatActivity {
             boolean overdue = !item.isDone() && item.hasDueAt() && item.getDueAtMillis() < nowMillis;
             applyTaskRowStyle(checkBox, ivCheck, tvTitle, tvMeta, tvTag, item.isDone(), overdue);
 
-            checkArea.setOnClickListener(v -> {
-                boolean nextDone = !item.isDone();
-                dbHelper.setTaskDone(item.getId(), nextDone);
-                Toast.makeText(
-                        this,
-                        getString(nextDone ? R.string.task_toast_completed : R.string.task_toast_reopened, item.getTitle()),
-                        Toast.LENGTH_SHORT
-                ).show();
-                refreshHomeDashboard(true);
-            });
+            checkArea.setOnClickListener(v -> toggleTaskCompletion(item, !item.isDone()));
             row.setOnClickListener(v -> openTaskEditor(item));
             container.addView(row);
         }

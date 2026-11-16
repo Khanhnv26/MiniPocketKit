@@ -253,6 +253,17 @@
     <string name="task_dialog_btn_save">Lưu công việc</string>
     <string name="task_dialog_btn_delete">Xóa công việc</string>
     <string name="task_dialog_empty_title_error">Vui lòng nhập nội dung công việc</string>
+    <string name="task_dialog_reminder_label">NHẮC TRƯỚC HẠN NỘP</string>
+    <string name="task_dialog_remind_none">Không nhắc</string>
+    <string name="task_dialog_remind_at_due">Đúng giờ</string>
+    <string name="task_dialog_remind_30m">30 phút</string>
+    <string name="task_dialog_remind_1h">1 giờ</string>
+    <string name="task_dialog_remind_1d">1 ngày</string>
+    <string name="task_reminder_channel_name">Nhắc hạn nộp</string>
+    <string name="task_reminder_channel_desc">Thông báo nhắc các công việc và hạn nộp sắp đến hạn</string>
+    <string name="task_reminder_notif_title_subject">%1$s · %2$s</string>
+    <string name="task_reminder_notif_action_done">Đánh dấu xong</string>
+    <string name="task_reminder_permission_denied">Hãy bật quyền thông báo để nhận nhắc hạn nộp đúng giờ</string>
     <string name="task_delete_confirm_title">Xóa công việc</string>
     <string name="task_delete_confirm_message">Bạn muốn xóa công việc \"%1$s\"?</string>
 

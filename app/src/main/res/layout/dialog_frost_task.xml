@@ -1,210 +1,340 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/dialog_outer_padding_h"
     android:layout_marginVertical="@dimen/dialog_outer_padding_v"
     android:background="@drawable/bg_dialog_frost"
-    android:orientation="vertical"
     android:padding="@dimen/card_padding">
+
+    <LinearLayout
+        android:id="@+id/layoutTaskDialogHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvTaskDialogTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/ink_primary"
+            android:textSize="@dimen/text_size_dialog_title"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnTaskDialogDelete"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginStart="@dimen/dialog_button_gap"
+            android:background="@drawable/bg_pill_danger_soft"
+            android:clickable="true"
+            android:contentDescription="@string/task_dialog_btn_delete"
+            android:focusable="true"
+            android:scaleType="center"
+            android:src="@drawable/ic_delete"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrollTaskDialogBody"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/card_gap"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@id/layoutTaskDialogFooter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutTaskDialogHeader"
+        app:layout_constraintVertical_bias="0.0">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvTaskDialogTitle"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="@color/ink_primary"
-                android:textSize="@dimen/text_size_dialog_title"
+                android:text="@string/task_dialog_title_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
                 android:textStyle="bold" />
 
-            <ImageButton
-                android:id="@+id/btnTaskDialogDelete"
-                android:layout_width="@dimen/touch_target_min"
-                android:layout_height="@dimen/touch_target_min"
-                android:layout_marginStart="@dimen/dialog_button_gap"
-                android:background="@drawable/bg_pill_danger_soft"
-                android:clickable="true"
-                android:contentDescription="@string/task_dialog_btn_delete"
-                android:focusable="true"
-                android:scaleType="center"
-                android:src="@drawable/ic_delete"
-                android:visibility="gone" />
-        </LinearLayout>
+            <EditText
+                android:id="@+id/edtTaskDialogTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:background="@drawable/bg_dialog_input"
+                android:hint="@string/task_dialog_title_hint"
+                android:importantForAutofill="no"
+                android:inputType="textCapSentences"
+                android:maxLines="2"
+                android:minHeight="@dimen/input_min_height"
+                android:paddingHorizontal="@dimen/card_padding_compact"
+                android:textColor="@color/ink_primary"
+                android:textColorHint="@color/ink_muted"
+                android:textSize="@dimen/text_size_input" />
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_gap"
-            android:overScrollMode="never"
-            android:scrollbars="none">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/task_dialog_subject_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/edtTaskDialogSubject"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:background="@drawable/bg_dialog_input"
+                android:hint="@string/task_dialog_subject_hint"
+                android:importantForAutofill="no"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:minHeight="@dimen/input_min_height"
+                android:paddingHorizontal="@dimen/card_padding_compact"
+                android:textColor="@color/ink_primary"
+                android:textColorHint="@color/ink_muted"
+                android:textSize="@dimen/text_size_input" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/task_dialog_tag_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chipTaskTagDeadline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingHorizontal="@dimen/chip_padding_h"
+                        android:text="@string/task_tag_deadline"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipTaskTagAssignment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingHorizontal="@dimen/chip_padding_h"
+                        android:text="@string/task_tag_assignment"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipTaskTagExam"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingHorizontal="@dimen/chip_padding_h"
+                        android:text="@string/task_tag_exam"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipTaskTagGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingHorizontal="@dimen/chip_padding_h"
+                        android:text="@string/task_tag_group"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipTaskTagPersonal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingHorizontal="@dimen/chip_padding_h"
+                        android:text="@string/task_default_tag"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:text="@string/task_dialog_due_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_marginTop="@dimen/dialog_label_gap"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="match_parent"
+                <RelativeLayout
+                    android:id="@+id/btnTaskPickDue"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/task_dialog_title_label"
-                    android:textColor="@color/ink_secondary"
-                    android:textSize="@dimen/text_size_caption"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/edtTaskDialogTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dialog_label_gap"
+                    android:layout_weight="1"
                     android:background="@drawable/bg_dialog_input"
-                    android:hint="@string/task_dialog_title_hint"
-                    android:importantForAutofill="no"
-                    android:inputType="textCapSentences"
-                    android:maxLines="2"
-                    android:minHeight="@dimen/input_min_height"
-                    android:paddingHorizontal="@dimen/card_padding_compact"
-                    android:textColor="@color/ink_primary"
-                    android:textColorHint="@color/ink_muted"
-                    android:textSize="@dimen/text_size_input" />
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:paddingHorizontal="@dimen/card_padding_compact">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dialog_field_gap"
-                    android:text="@string/task_dialog_subject_label"
-                    android:textColor="@color/ink_secondary"
-                    android:textSize="@dimen/text_size_caption"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/edtTaskDialogSubject"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dialog_label_gap"
-                    android:background="@drawable/bg_dialog_input"
-                    android:hint="@string/task_dialog_subject_hint"
-                    android:importantForAutofill="no"
-                    android:inputType="textCapWords"
-                    android:maxLines="1"
-                    android:minHeight="@dimen/input_min_height"
-                    android:paddingHorizontal="@dimen/card_padding_compact"
-                    android:textColor="@color/ink_primary"
-                    android:textColorHint="@color/ink_muted"
-                    android:textSize="@dimen/text_size_input" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dialog_field_gap"
-                    android:text="@string/task_dialog_tag_label"
-                    android:textColor="@color/ink_secondary"
-                    android:textSize="@dimen/text_size_caption"
-                    android:textStyle="bold" />
-
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dialog_label_gap"
-                    android:overScrollMode="never"
-                    android:scrollbars="none">
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvTaskDuePickLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:text="@string/task_dialog_due_pick"
+                        android:textColor="@color/accent_sapphire"
+                        android:textSize="@dimen/text_size_caption"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:id="@+id/chipTaskTagDeadline"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/bg_chip_selected"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:minHeight="@dimen/touch_target_min"
-                            android:paddingHorizontal="@dimen/chip_padding_h"
-                            android:text="@string/task_tag_deadline"
-                            android:textColor="@color/white"
-                            android:textSize="@dimen/text_size_body"
-                            android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tvTaskDueDisplay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@id/tvTaskDuePickLabel"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_input"
+                        android:textStyle="bold" />
+                </RelativeLayout>
 
-                        <TextView
-                            android:id="@+id/chipTaskTagAssignment"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/chip_gap"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:minHeight="@dimen/touch_target_min"
-                            android:paddingHorizontal="@dimen/chip_padding_h"
-                            android:text="@string/task_tag_assignment"
-                            android:textColor="@color/ink_primary"
-                            android:textSize="@dimen/text_size_body"
-                            android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/btnTaskClearDue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/chip_gap"
+                    android:background="@drawable/bg_pill_danger_soft"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:paddingHorizontal="@dimen/badge_padding_h"
+                    android:text="@string/task_dialog_due_clear"
+                    android:textColor="@color/accent_danger"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+            </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/chipTaskTagExam"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/chip_gap"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:minHeight="@dimen/touch_target_min"
-                            android:paddingHorizontal="@dimen/chip_padding_h"
-                            android:text="@string/task_tag_exam"
-                            android:textColor="@color/ink_primary"
-                            android:textSize="@dimen/text_size_body"
-                            android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/chip_gap"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/chipTaskTagGroup"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/chip_gap"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:minHeight="@dimen/touch_target_min"
-                            android:paddingHorizontal="@dimen/chip_padding_h"
-                            android:text="@string/task_tag_group"
-                            android:textColor="@color/ink_primary"
-                            android:textSize="@dimen/text_size_body"
-                            android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/btnTaskPresetToday"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_pill_secondary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:paddingHorizontal="@dimen/chip_gap"
+                    android:text="@string/task_dialog_due_preset_today"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textStyle="bold" />
 
-                        <TextView
-                            android:id="@+id/chipTaskTagPersonal"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/chip_gap"
-                            android:background="@drawable/bg_chip_unselected"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:minHeight="@dimen/touch_target_min"
-                            android:paddingHorizontal="@dimen/chip_padding_h"
-                            android:text="@string/task_default_tag"
-                            android:textColor="@color/ink_primary"
-                            android:textSize="@dimen/text_size_body"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </HorizontalScrollView>
+                <TextView
+                    android:id="@+id/btnTaskPresetTomorrow"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/chip_gap"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_pill_secondary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_target_min"
+                    android:paddingHorizontal="@dimen/chip_gap"
+                    android:text="@string/task_dialog_due_preset_tomorrow"
+                    android:textColor="@color/ink_primary"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutTaskReminderSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_field_gap"
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dialog_field_gap"
-                    android:text="@string/task_dialog_due_label"
+                    android:text="@string/task_dialog_reminder_label"
                     android:textColor="@color/ink_secondary"
                     android:textSize="@dimen/text_size_caption"
                     android:textStyle="bold" />
@@ -213,62 +343,58 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/dialog_label_gap"
-                    android:gravity="center_vertical"
+                    android:baselineAligned="false"
                     android:orientation="horizontal">
 
-                    <RelativeLayout
-                        android:id="@+id/btnTaskPickDue"
+                    <TextView
+                        android:id="@+id/chipTaskRemindNone"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_dialog_input"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:minHeight="@dimen/touch_target_min"
-                        android:paddingHorizontal="@dimen/card_padding_compact">
-
-                        <TextView
-                            android:id="@+id/tvTaskDuePickLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:layout_marginStart="@dimen/chip_gap"
-                            android:text="@string/task_dialog_due_pick"
-                            android:textColor="@color/accent_sapphire"
-                            android:textSize="@dimen/text_size_caption"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvTaskDueDisplay"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:layout_toStartOf="@id/tvTaskDuePickLabel"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:textColor="@color/ink_primary"
-                            android:textSize="@dimen/text_size_input"
-                            android:textStyle="bold" />
-                    </RelativeLayout>
-
-                    <TextView
-                        android:id="@+id/btnTaskClearDue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/chip_gap"
-                        android:background="@drawable/bg_pill_danger_soft"
+                        android:layout_weight="1.15"
+                        android:background="@drawable/bg_chip_unselected"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:minHeight="@dimen/touch_target_min"
-                        android:paddingHorizontal="@dimen/badge_padding_h"
-                        android:text="@string/task_dialog_due_clear"
-                        android:textColor="@color/accent_danger"
-                        android:textSize="@dimen/text_size_caption"
-                        android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:paddingHorizontal="@dimen/chip_gap"
+                        android:text="@string/task_dialog_remind_none"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipTaskRemindAtDue"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingHorizontal="@dimen/chip_gap"
+                        android:text="@string/task_dialog_remind_at_due"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipTaskRemind30m"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:layout_weight="0.95"
+                        android:background="@drawable/bg_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingHorizontal="@dimen/chip_gap"
+                        android:text="@string/task_dialog_remind_30m"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -279,77 +405,83 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/btnTaskPresetToday"
+                        android:id="@+id/chipTaskRemind1h"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_pill_secondary"
+                        android:background="@drawable/bg_chip_unselected"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:minHeight="@dimen/touch_target_min"
                         android:paddingHorizontal="@dimen/chip_gap"
-                        android:text="@string/task_dialog_due_preset_today"
+                        android:text="@string/task_dialog_remind_1h"
                         android:textColor="@color/ink_primary"
-                        android:textSize="@dimen/text_size_caption"
+                        android:textSize="@dimen/text_size_body"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/btnTaskPresetTomorrow"
+                        android:id="@+id/chipTaskRemind1d"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/chip_gap"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_pill_secondary"
+                        android:background="@drawable/bg_chip_unselected"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:minHeight="@dimen/touch_target_min"
                         android:paddingHorizontal="@dimen/chip_gap"
-                        android:text="@string/task_dialog_due_preset_tomorrow"
+                        android:text="@string/task_dialog_remind_1d"
                         android:textColor="@color/ink_primary"
-                        android:textSize="@dimen/text_size_caption"
+                        android:textSize="@dimen/text_size_body"
                         android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
-        </ScrollView>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/section_gap"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/btnTaskDialogCancel"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_pill_secondary"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="@dimen/touch_target_min"
-                android:text="@string/notes_dialog_cancel"
-                android:textColor="@color/ink_primary"
-                android:textSize="@dimen/text_size_input"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/btnTaskDialogSave"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/dialog_button_gap"
-                android:layout_weight="1.25"
-                android:background="@drawable/bg_pill_primary"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:minHeight="@dimen/touch_target_min"
-                android:text="@string/task_dialog_btn_save"
-                android:textColor="@color/white"
-                android:textSize="@dimen/text_size_input"
-                android:textStyle="bold" />
         </LinearLayout>
-</LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/layoutTaskDialogFooter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/section_gap"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scrollTaskDialogBody">
+
+        <TextView
+            android:id="@+id/btnTaskDialogCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_pill_secondary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/notes_dialog_cancel"
+            android:textColor="@color/ink_primary"
+            android:textSize="@dimen/text_size_input"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btnTaskDialogSave"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dialog_button_gap"
+            android:layout_weight="1.25"
+            android:background="@drawable/bg_pill_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/task_dialog_btn_save"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_input"
+            android:textStyle="bold" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

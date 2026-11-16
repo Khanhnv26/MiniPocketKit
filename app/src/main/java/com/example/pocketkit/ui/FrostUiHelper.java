@@ -43,6 +43,7 @@ import com.example.pocketkit.home.HomeSummaryHelper;
 import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.model.StudentProfile;
 import com.example.pocketkit.model.StudyTask;
+import com.example.pocketkit.reminder.TaskReminderHelper;
 import com.example.pocketkit.profile.ProfileGpaHelper;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 
@@ -407,6 +408,7 @@ public final class FrostUiHelper {
         TextView btnClearDue = content.findViewById(R.id.btnTaskClearDue);
         TextView btnPresetToday = content.findViewById(R.id.btnTaskPresetToday);
         TextView btnPresetTomorrow = content.findViewById(R.id.btnTaskPresetTomorrow);
+        View reminderSection = content.findViewById(R.id.layoutTaskReminderSection);
         TextView btnCancel = content.findViewById(R.id.btnTaskDialogCancel);
         TextView btnSave = content.findViewById(R.id.btnTaskDialogSave);
         View btnDelete = content.findViewById(R.id.btnTaskDialogDelete);
@@ -426,11 +428,30 @@ public final class FrostUiHelper {
                 context.getString(R.string.task_default_tag)
         };
 
+        TextView[] reminderChips = new TextView[]{
+                content.findViewById(R.id.chipTaskRemindNone),
+                content.findViewById(R.id.chipTaskRemindAtDue),
+                content.findViewById(R.id.chipTaskRemind30m),
+                content.findViewById(R.id.chipTaskRemind1h),
+                content.findViewById(R.id.chipTaskRemind1d)
+        };
+        int[] reminderOffsets = new int[]{
+                TaskReminderHelper.REMIND_NONE,
+                TaskReminderHelper.REMIND_AT_DUE,
+                TaskReminderHelper.REMIND_30_MIN,
+                TaskReminderHelper.REMIND_60_MIN,
+                TaskReminderHelper.REMIND_1_DAY
+        };
+
         boolean editing = existingTask != null;
         tvTitle.setText(editing ? R.string.task_dialog_edit_title : R.string.task_dialog_add_title);
 
         final int[] selectedTagIdx = new int[]{0};
         final long[] selectedDueAt = new long[]{editing ? existingTask.getDueAtMillis() : 0L};
+        final int initialReminderIdx = editing
+                ? findReminderIndex(reminderOffsets, existingTask.getRemindBeforeMinutes())
+                : 0;
+        final int[] selectedReminderIdx = new int[]{initialReminderIdx};
 
         if (editing) {
             edtTitle.setText(existingTask.getTitle());
@@ -444,13 +465,7 @@ public final class FrostUiHelper {
             }
         }
 
-        Runnable refreshTags = () -> {
-            for (int i = 0; i < tagChips.length; i++) {
-                boolean active = i == selectedTagIdx[0];
-                tagChips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
-                tagChips[i].setTextColor(ContextCompat.getColor(context, active ? R.color.white : R.color.ink_primary));
-            }
-        };
+        Runnable refreshTags = () -> applyChipSelection(context, tagChips, selectedTagIdx[0]);
         refreshTags.run();
 
         for (int i = 0; i < tagChips.length; i++) {
@@ -461,18 +476,40 @@ public final class FrostUiHelper {
             });
         }
 
+        Runnable refreshReminderChips = () -> applyChipSelection(context, reminderChips, selectedReminderIdx[0]);
+        for (int i = 0; i < reminderChips.length; i++) {
+            final int index = i;
+            reminderChips[i].setOnClickListener(v -> {
+                selectedReminderIdx[0] = index;
+                refreshReminderChips.run();
+            });
+        }
+
         Runnable refreshDueDisplay = () -> {
             if (selectedDueAt[0] > 0L) {
                 tvDueDisplay.setText(HomeSummaryHelper.formatDueDateTime(context, selectedDueAt[0], System.currentTimeMillis()));
                 tvDueDisplay.setTextColor(ContextCompat.getColor(context, R.color.ink_primary));
                 btnClearDue.setVisibility(View.VISIBLE);
+                reminderSection.setVisibility(View.VISIBLE);
+                refreshReminderChips.run();
             } else {
                 tvDueDisplay.setText(R.string.task_no_due_label);
                 tvDueDisplay.setTextColor(ContextCompat.getColor(context, R.color.ink_secondary));
                 btnClearDue.setVisibility(View.GONE);
+                reminderSection.setVisibility(View.GONE);
             }
         };
         refreshDueDisplay.run();
+
+        final int defaultReminderIdx = findReminderIndex(reminderOffsets, TaskReminderHelper.REMIND_60_MIN);
+        java.util.function.LongConsumer applyDueMillis = dueMillis -> {
+            boolean wasNoDue = selectedDueAt[0] <= 0L;
+            selectedDueAt[0] = dueMillis;
+            if (wasNoDue && selectedReminderIdx[0] == 0) {
+                selectedReminderIdx[0] = defaultReminderIdx;
+            }
+            refreshDueDisplay.run();
+        };
 
         btnPickDue.setOnClickListener(v -> {
             Calendar initial = Calendar.getInstance();
@@ -495,8 +532,7 @@ public final class FrostUiHelper {
                                 chosen.set(Calendar.MINUTE, minute);
                                 chosen.set(Calendar.SECOND, 0);
                                 chosen.set(Calendar.MILLISECOND, 0);
-                                selectedDueAt[0] = chosen.getTimeInMillis();
-                                refreshDueDisplay.run();
+                                applyDueMillis.accept(chosen.getTimeInMillis());
                             },
                             initial.get(Calendar.HOUR_OF_DAY),
                             initial.get(Calendar.MINUTE),
@@ -508,18 +544,17 @@ public final class FrostUiHelper {
             ).show();
         });
 
-        btnPresetToday.setOnClickListener(v -> {
-            selectedDueAt[0] = HomeSummaryHelper.buildUpcomingDueAtMillis(0, 17, 0, System.currentTimeMillis(), false);
-            refreshDueDisplay.run();
-        });
+        btnPresetToday.setOnClickListener(v ->
+                applyDueMillis.accept(HomeSummaryHelper.buildUpcomingDueAtMillis(0, 17, 0, System.currentTimeMillis(), false))
+        );
 
-        btnPresetTomorrow.setOnClickListener(v -> {
-            selectedDueAt[0] = HomeSummaryHelper.buildUpcomingDueAtMillis(1, 9, 0, System.currentTimeMillis(), false);
-            refreshDueDisplay.run();
-        });
+        btnPresetTomorrow.setOnClickListener(v ->
+                applyDueMillis.accept(HomeSummaryHelper.buildUpcomingDueAtMillis(1, 9, 0, System.currentTimeMillis(), false))
+        );
 
         btnClearDue.setOnClickListener(v -> {
             selectedDueAt[0] = 0L;
+            selectedReminderIdx[0] = 0;
             refreshDueDisplay.run();
         });
 
@@ -531,6 +566,9 @@ public final class FrostUiHelper {
                 edtTitle.requestFocus();
                 return;
             }
+            int remindBeforeMinutes = selectedDueAt[0] > 0L
+                    ? reminderOffsets[selectedReminderIdx[0]]
+                    : TaskReminderHelper.REMIND_NONE;
             StudyTask saved = StudyTask.builder()
                     .id(editing ? existingTask.getId() : 0)
                     .title(title)
@@ -539,6 +577,7 @@ public final class FrostUiHelper {
                     .dueAtMillis(selectedDueAt[0])
                     .done(editing && existingTask.isDone())
                     .createdAtMillis(editing ? existingTask.getCreatedAtMillis() : System.currentTimeMillis())
+                    .remindBeforeMinutes(remindBeforeMinutes)
                     .build();
             dialog.dismiss();
             saveListener.onTaskSaved(saved);
@@ -554,6 +593,27 @@ public final class FrostUiHelper {
 
         configureFrostDialogWindow(dialog, !editing);
         dialog.show();
+    }
+
+    private static void applyChipSelection(
+            @NonNull Context context,
+            @NonNull TextView[] chips,
+            int selectedIndex
+    ) {
+        for (int i = 0; i < chips.length; i++) {
+            boolean active = i == selectedIndex;
+            chips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+            chips[i].setTextColor(ContextCompat.getColor(context, active ? R.color.white : R.color.ink_primary));
+        }
+    }
+
+    private static int findReminderIndex(@NonNull int[] offsets, int targetOffset) {
+        for (int i = 0; i < offsets.length; i++) {
+            if (offsets[i] == targetOffset) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     public static void showImportPreviewDialog(

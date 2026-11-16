@@ -22,8 +22,14 @@ public class StudyTask implements Serializable {
     private long dueAtMillis;
     private boolean done;
     private long createdAtMillis;
+    @Builder.Default
+    private int remindBeforeMinutes = -1;
 
     public boolean hasDueAt() {
         return dueAtMillis > 0L;
+    }
+
+    public boolean hasReminder() {
+        return hasDueAt() && remindBeforeMinutes >= 0;
     }
 }
