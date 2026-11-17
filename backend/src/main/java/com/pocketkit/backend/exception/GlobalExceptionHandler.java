@@ -20,8 +20,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ApiResponse.<Void>builder()
                         .message(message)
                         .success(false)
-                        .data(null)
-                        .build());
+                        .data(null)                        .build());
     }
 
     @ExceptionHandler(ResponseStatusException.class)
