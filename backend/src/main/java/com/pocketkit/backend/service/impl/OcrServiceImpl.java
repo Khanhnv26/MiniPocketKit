@@ -3,6 +3,7 @@ package com.pocketkit.backend.service.impl;
 import com.pocketkit.backend.dto.OcrResponseDto;
 import com.pocketkit.backend.service.OcrEngine;
 import com.pocketkit.backend.service.OcrService;
+import com.pocketkit.backend.utils.ImageFileHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,28 +29,15 @@ public class OcrServiceImpl implements OcrService {
 
     @Override
     public OcrResponseDto extractText(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tệp ảnh hợp lệ");
-        }
+        ImageFileHelper.ValidatedImage image = ImageFileHelper.validateAndRead(file);
 
-        String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_TYPES.contains(contentType.toLowerCase(Locale.ROOT))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP");
-        }
 
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (IOException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể đọc dữ liệu ảnh tải lên");
-        }
-
-        String text = ocrEngine.extractText(bytes, contentType, file.getOriginalFilename());
+        String text = ocrEngine.extractText(image.getBytes(), image.getContentType(), image.getOriginalFilename());
         return OcrResponseDto.builder()
                 .text(text)
                 .language("vie+eng")
-                .fileName(file.getOriginalFilename())
-                .sizeBytes(bytes.length)
+                .fileName(image.getOriginalFilename())
+                .sizeBytes(image.getBytes().length)
                 .build();
     }
 }

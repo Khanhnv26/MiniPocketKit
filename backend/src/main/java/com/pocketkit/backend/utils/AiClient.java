@@ -62,8 +62,12 @@ public class AiClient {
         return stripMarkdownCodeFence(raw);
     }
 
+    public boolean isConfigured() {
+        return !apiKey.isEmpty();
+    }
+
     private String callGenerateContent(String prompt, ImageFileHelper.ValidatedImage image, boolean expectJson) {
-        if(apiKey.isEmpty()) {
+        if(!isConfigured()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Chưa cấu hình AI trên server");
         }
 

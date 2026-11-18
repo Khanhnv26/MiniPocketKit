@@ -13,7 +13,7 @@ public class ImageFileHelper {
 
     private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg");
 
-    public static ValidatedImage validateAndRead(MultipartFile file) throws Exception {
+    public static ValidatedImage validateAndRead(MultipartFile file) {
         String normalizedContentType = getNormalizedContentType(file);
 
         try {
