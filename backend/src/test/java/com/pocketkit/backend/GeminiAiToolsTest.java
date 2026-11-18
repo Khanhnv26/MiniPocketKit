@@ -29,6 +29,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServiceUnavailable;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class GeminiAiToolsTest {
@@ -148,6 +149,29 @@ class GeminiAiToolsTest {
                 )
         );
         assertEquals(502, ex.getStatusCode().value());
+    }
+
+    @Test
+    void aiClient_fallsBackToSecondaryModelOnServiceUnavailable() throws Exception {
+        RestClient.Builder builder = RestClient.builder()
+                .baseUrl("https://generativelanguage.googleapis.com");
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        AiClient fallbackClient = new AiClient(
+                builder.build(),
+                objectMapper,
+                "test-gemini-key",
+                "gemini-3.5-flash-lite",
+                java.util.List.of("gemini-3.1-flash-lite")
+        );
+
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent"))
+                .andRespond(withServiceUnavailable());
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent"))
+                .andRespond(withSuccess(wrapGeminiText("Fallback OK"), MediaType.APPLICATION_JSON));
+
+        String result = fallbackClient.generateText("Hello", null);
+        assertEquals("Fallback OK", result);
+        server.verify();
     }
 
     private String wrapGeminiText(String text) throws Exception {

@@ -10,34 +10,40 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class AiClient {
 
+    private static final String DEFAULT_MODEL = "gemini-3.5-flash-lite";
+
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
     private final String apiKey;
-    private final String model;
+    private final List<String> models;
 
     @Autowired
     public AiClient(
             RestClient.Builder restClientBuilder,
             ObjectMapper objectMapper,
             @Value("${app.gemini.api-key:}") String apiKey,
-            @Value("${app.gemini.model:gemini-2.5-flash}") String model,
+            @Value("${app.gemini.model:" + DEFAULT_MODEL + "}") String model,
+            @Value("${app.gemini.fallback-models:}") String fallbackModelsCsv,
             @Value("${app.gemini.base-url:https://generativelanguage.googleapis.com}") String baseUrl
     ) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofSeconds(10));
-        requestFactory.setReadTimeout(Duration.ofSeconds(30));
+        requestFactory.setReadTimeout(Duration.ofSeconds(45));
 
         this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
@@ -45,14 +51,18 @@ public class AiClient {
                 .build();
         this.objectMapper = objectMapper;
         this.apiKey = apiKey != null ? apiKey.trim() : "";
-        this.model = model != null && !model.isBlank() ? model.trim() : "gemini-2.5-flash";
+        this.models = buildModelList(model, fallbackModelsCsv);
     }
 
     public AiClient(RestClient restClient, ObjectMapper objectMapper, String apiKey, String model) {
+        this(restClient, objectMapper, apiKey, model, List.of());
+    }
+
+    public AiClient(RestClient restClient, ObjectMapper objectMapper, String apiKey, String primaryModel, List<String> fallbackModels) {
         this.restClient = restClient;
         this.objectMapper = objectMapper;
         this.apiKey = apiKey != null ? apiKey.trim() : "";
-        this.model = model != null && !model.isBlank() ? model.trim() : "gemini-2.5-flash";
+        this.models = mergeModels(primaryModel, fallbackModels);
     }
 
     public boolean isConfigured() {
@@ -74,22 +84,78 @@ public class AiClient {
         }
 
         Map<String, Object> body = buildRequestBody(prompt, image, expectJson);
+        RestClientResponseException lastResponseException = null;
 
-        try {
-            String responseJson = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent", model)
-                    .header("x-goog-api-key", apiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .body(String.class);
+        for (int i = 0; i < models.size(); i++) {
+            String candidateModel = models.get(i);
+            boolean hasNext = i + 1 < models.size();
+            try {
+                String responseJson = restClient.post()
+                        .uri("/v1beta/models/{model}:generateContent", candidateModel)
+                        .header("x-goog-api-key", apiKey)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)
+                        .retrieve()
+                        .body(String.class);
 
-            return extractCandidateText(responseJson);
-        } catch (ResponseStatusException ex) {
-            throw ex;
-        } catch (RestClientException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Không thể kết nối tới AI");
+                return extractCandidateText(responseJson);
+            } catch (RestClientResponseException ex) {
+                lastResponseException = ex;
+                if (hasNext && isRetryableModelStatus(ex.getStatusCode().value())) {
+                    continue;
+                }
+                throw mapUpstreamError(ex);
+            } catch (ResponseStatusException ex) {
+                throw ex;
+            } catch (RestClientException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Không thể kết nối tới AI");
+            }
         }
+
+        throw lastResponseException != null
+                ? mapUpstreamError(lastResponseException)
+                : new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Không thể kết nối tới AI");
+    }
+
+    private ResponseStatusException mapUpstreamError(RestClientResponseException ex) {
+        int code = ex.getStatusCode().value();
+        if (code == 429 || code == 503) {
+            return new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "AI đang quá tải hoặc hết lượt gọi, vui lòng thử lại sau");
+        }
+        return new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Không thể kết nối tới AI");
+    }
+
+    private boolean isRetryableModelStatus(int statusCode) {
+        return statusCode == 404 || statusCode == 429 || statusCode == 503;
+    }
+
+    private List<String> buildModelList(String primaryModel, String fallbackModelsCsv) {
+        List<String> extras = new ArrayList<>();
+        if (fallbackModelsCsv != null && !fallbackModelsCsv.isBlank()) {
+            for (String token : fallbackModelsCsv.split(",")) {
+                if (!token.isBlank()) {
+                    extras.add(token.trim());
+                }
+            }
+        }
+        return mergeModels(primaryModel, extras);
+    }
+
+    private List<String> mergeModels(String primaryModel, List<String> fallbackModels) {
+        Set<String> unique = new LinkedHashSet<>();
+        if (primaryModel != null && !primaryModel.isBlank()) {
+            unique.add(primaryModel.trim());
+        } else {
+            unique.add(DEFAULT_MODEL);
+        }
+        if (fallbackModels != null) {
+            for (String m : fallbackModels) {
+                if (m != null && !m.isBlank()) {
+                    unique.add(m.trim());
+                }
+            }
+        }
+        return List.copyOf(unique);
     }
 
     private Map<String, Object> buildRequestBody(String prompt, ImageFileHelper.ValidatedImage image, boolean expectJson) {
