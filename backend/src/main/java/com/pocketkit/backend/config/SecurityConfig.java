@@ -1,7 +1,7 @@
 package com.pocketkit.backend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pocketkit.backend.dto.response.ApiResponse;
+import com.pocketkit.backend.dto.ApiResponse;
 import com.pocketkit.backend.filter.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
