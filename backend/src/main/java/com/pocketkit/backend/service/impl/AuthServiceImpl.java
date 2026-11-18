@@ -56,6 +56,15 @@ public class AuthServiceImpl implements AuthService {
         return buildAuthResponse(user);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AuthDtos.UserSummary getCurrentUser(Long userId) {
+       UserEntity user = userRepository.findById(userId)
+               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
+
+       return toUserSummary(user);
+    }
+
     private AuthDtos.AuthResponse buildAuthResponse(UserEntity user) {
         return AuthDtos.AuthResponse.builder()
                 .accessToken(jwtUtils.generateToken(user))
@@ -65,6 +74,14 @@ public class AuthServiceImpl implements AuthService {
                         .email(user.getEmail())
                         .fullName(user.getFullName())
                         .build())
+                .build();
+    }
+
+    private AuthDtos.UserSummary toUserSummary(UserEntity user) {
+        return AuthDtos.UserSummary.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
                 .build();
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -80,6 +81,36 @@ public class ScheduleShareServiceImpl implements ScheduleShareService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ScheduleShareDtos.ShareSummaryResponse> listMyShares(Long userId) {
+        long now = System.currentTimeMillis();
+
+        return scheduleShareRepository.findAllByOwnerUserIdOrderByCreatedAtEpoch(userId).stream()
+                .map(entity -> ScheduleShareDtos.ShareSummaryResponse.builder()
+                        .code(entity.getCode())
+                        .title(entity.getTitle())
+                        .createdAtEpoch(entity.getCreatedAtEpoch())
+                        .expiresAtEpoch(entity.getExpiresAtEpoch())
+                        .isExpired(entity.getExpiresAtEpoch() < now)
+                        .build())
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteShare(Long userId, String rawCode) {
+        String code = normalizeCode(rawCode);
+        ScheduleShareEntity entity = scheduleShareRepository.findById(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mã thời khóa biểu không tồn tại"));
+
+        if (!Objects.equals(entity.getOwnerUserId(), userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xóa mã thời khóa biểu này");
+        }
+
+        scheduleShareRepository.delete(entity);
+    }
+
     private String generateUniqueCode() {
         for (int attempt = 0; attempt < 10; attempt++) {
             StringBuilder sb = new StringBuilder(CODE_LENGTH);
@@ -93,5 +124,12 @@ public class ScheduleShareServiceImpl implements ScheduleShareService {
             }
         }
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể tạo mã chia sẻ");
+    }
+
+    private String normalizeCode(String rawCode) {
+        if (rawCode == null || rawCode.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã thời khóa biểu không được để trống");
+        }
+        return rawCode.trim().toUpperCase(Locale.US);
     }
 }

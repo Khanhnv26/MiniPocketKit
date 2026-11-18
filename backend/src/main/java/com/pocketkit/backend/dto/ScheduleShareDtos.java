@@ -53,4 +53,17 @@ public final class ScheduleShareDtos {
         private final long expiresAtEpoch;
         private final List<ScheduleSlotDto> slots;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor(force = true)
+    @AllArgsConstructor
+    public static class ShareSummaryResponse {
+        private final String code;
+        private final String title;
+        private final long createdAtEpoch;
+        private final long expiresAtEpoch;
+        private final boolean isExpired;
+
+    }
 }
