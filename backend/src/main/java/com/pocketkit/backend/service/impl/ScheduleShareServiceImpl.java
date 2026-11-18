@@ -58,11 +58,7 @@ public class ScheduleShareServiceImpl implements ScheduleShareService {
     @Override
     @Transactional(readOnly = true)
     public ScheduleShareDtos.ShareDetailResponse getByCode(String rawCode) {
-        if (rawCode == null || rawCode.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã thời khóa biểu không được để trống");
-        }
-
-        String code = rawCode.trim().toUpperCase(Locale.US);
+        String code = normalizeCode(rawCode);
         ScheduleShareEntity entity = scheduleShareRepository.findById(code)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mã thời khóa biểu không tồn tại"));
 
@@ -86,13 +82,13 @@ public class ScheduleShareServiceImpl implements ScheduleShareService {
     public List<ScheduleShareDtos.ShareSummaryResponse> listMyShares(Long userId) {
         long now = System.currentTimeMillis();
 
-        return scheduleShareRepository.findAllByOwnerUserIdOrderByCreatedAtEpoch(userId).stream()
+        return scheduleShareRepository.findAllByOwnerUserIdOrderByCreatedAtEpochDesc(userId).stream()
                 .map(entity -> ScheduleShareDtos.ShareSummaryResponse.builder()
                         .code(entity.getCode())
                         .title(entity.getTitle())
                         .createdAtEpoch(entity.getCreatedAtEpoch())
                         .expiresAtEpoch(entity.getExpiresAtEpoch())
-                        .isExpired(entity.getExpiresAtEpoch() < now)
+                        .expired(entity.getExpiresAtEpoch() < now)
                         .build())
                 .toList();
     }

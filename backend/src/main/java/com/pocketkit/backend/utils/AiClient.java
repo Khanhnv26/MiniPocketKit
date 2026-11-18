@@ -2,7 +2,6 @@ package com.pocketkit.backend.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -14,44 +13,51 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class AiClient {
+
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
     private final String apiKey;
     private final String model;
 
     @Autowired
-    public AiClient(RestClient.Builder restClient,
-                    ObjectMapper objectMapper,
-                    @Value("${app.gemini.api-key}") String apiKey,
-                    @Value("${app.gemini.model}") String model,
-                    @Value("${app.gemini.base-url}") String baseUrl
+    public AiClient(
+            RestClient.Builder restClientBuilder,
+            ObjectMapper objectMapper,
+            @Value("${app.gemini.api-key:}") String apiKey,
+            @Value("${app.gemini.model:gemini-2.5-flash}") String model,
+            @Value("${app.gemini.base-url:https://generativelanguage.googleapis.com}") String baseUrl
     ) {
-
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofSeconds(10));
         requestFactory.setReadTimeout(Duration.ofSeconds(30));
 
-        this.restClient = RestClient.builder()
+        this.restClient = restClientBuilder
                 .baseUrl(baseUrl)
                 .requestFactory(requestFactory)
                 .build();
         this.objectMapper = objectMapper;
         this.apiKey = apiKey != null ? apiKey.trim() : "";
-        this.model = model != null ? model.trim() : "";
+        this.model = model != null && !model.isBlank() ? model.trim() : "gemini-2.5-flash";
     }
 
-
-    public AiClient (RestClient restClient, ObjectMapper objectMapper, String apiKey, String model) {
+    public AiClient(RestClient restClient, ObjectMapper objectMapper, String apiKey, String model) {
         this.restClient = restClient;
         this.objectMapper = objectMapper;
         this.apiKey = apiKey != null ? apiKey.trim() : "";
-        this.model = model != null ? model.trim() : "";
+        this.model = model != null && !model.isBlank() ? model.trim() : "gemini-2.5-flash";
     }
 
+    public boolean isConfigured() {
+        return !apiKey.isEmpty();
+    }
 
     public String generateText(String prompt, ImageFileHelper.ValidatedImage image) {
         return callGenerateContent(prompt, image, false);
@@ -62,12 +68,8 @@ public class AiClient {
         return stripMarkdownCodeFence(raw);
     }
 
-    public boolean isConfigured() {
-        return !apiKey.isEmpty();
-    }
-
     private String callGenerateContent(String prompt, ImageFileHelper.ValidatedImage image, boolean expectJson) {
-        if(!isConfigured()) {
+        if (!isConfigured()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Chưa cấu hình AI trên server");
         }
 
@@ -92,7 +94,7 @@ public class AiClient {
 
     private Map<String, Object> buildRequestBody(String prompt, ImageFileHelper.ValidatedImage image, boolean expectJson) {
         List<Map<String, Object>> parts = new ArrayList<>();
-        parts.add(Map.of("text",prompt));
+        parts.add(Map.of("text", prompt));
 
         if (image != null) {
             parts.add(Map.of(
@@ -107,7 +109,7 @@ public class AiClient {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("contents", List.of(Map.of("parts", parts)));
 
-        if(expectJson) {
+        if (expectJson) {
             body.put("generationConfig", Map.of("responseMimeType", "application/json"));
         }
 
@@ -158,5 +160,4 @@ public class AiClient {
         }
         return trimmed.trim();
     }
-
 }

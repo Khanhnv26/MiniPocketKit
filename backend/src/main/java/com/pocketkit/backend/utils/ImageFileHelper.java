@@ -1,17 +1,27 @@
 package com.pocketkit.backend.utils;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Set;
 
-@NoArgsConstructor
-public class ImageFileHelper {
+public final class ImageFileHelper {
 
-    private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/gif", "image/webp", "image/jpg");
+    private static final Set<String> ALLOWED_TYPES = Set.of(
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp"
+    );
+
+    private ImageFileHelper() {
+    }
 
     public static ValidatedImage validateAndRead(MultipartFile file) {
         String normalizedContentType = getNormalizedContentType(file);
@@ -22,27 +32,24 @@ public class ImageFileHelper {
                     .contentType(normalizedContentType)
                     .originalFilename(file.getOriginalFilename())
                     .build();
-
-        } catch (IOException e) {
+        } catch (IOException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể đọc dữ liệu ảnh tải lên");
         }
-
     }
 
-    private static @NonNull String getNormalizedContentType(MultipartFile file) {
-        if(file == null || file.isEmpty()) {
+    private static String getNormalizedContentType(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tệp ảnh hợp lệ");
         }
 
         String contentType = file.getContentType();
-        String normalizedContentType = contentType != null ? contentType.toLowerCase() : null;
+        String normalizedContentType = contentType != null ? contentType.toLowerCase(Locale.ROOT) : null;
 
-        if(normalizedContentType == null || !ALLOWED_TYPES.contains(normalizedContentType)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ ảnh JPG, PNG, GIF hoặc WebP");
+        if (normalizedContentType == null || !ALLOWED_TYPES.contains(normalizedContentType)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP");
         }
         return normalizedContentType;
     }
-
 
     @Getter
     @AllArgsConstructor

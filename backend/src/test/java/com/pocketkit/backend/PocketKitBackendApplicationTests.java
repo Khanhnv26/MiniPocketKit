@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -100,6 +101,16 @@ class PocketKitBackendApplicationTests {
                         .content("{bad json"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(get("/api/auth/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.email", is("khanhnv@pocketkit.vn")))
+                .andExpect(jsonPath("$.data.fullName", is("Nguyễn Khánh")));
 
         mockMvc.perform(get("/api/backup"))
                 .andExpect(status().isUnauthorized())
@@ -260,6 +271,69 @@ class PocketKitBackendApplicationTests {
                         .file(textFile)
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(get("/api/schedules/share"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(get("/api/schedules/share")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].code", is(code)));
+
+        String secondRegisterBody = """
+                {
+                  "email": "user2@pocketkit.vn",
+                  "password": "secret123",
+                  "fullName": "User Two"
+                }
+                """;
+        MvcResult secondRegisterResult = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondRegisterBody))
+                .andExpect(status().isCreated())
+                .andReturn();
+        String token2 = objectMapper.readTree(secondRegisterResult.getResponse().getContentAsString())
+                .get("data").get("accessToken").asText();
+
+        mockMvc.perform(delete("/api/schedules/share/" + code)
+                        .header("Authorization", "Bearer " + token2))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(delete("/api/schedules/share/" + code)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)));
+
+        mockMvc.perform(get("/api/schedules/share/" + code))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(post("/api/tools/notes/summarize")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Ôn thi",
+                                  "content": "Spring Boot, JPA, JWT stateless"
+                                }
+                                """))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(multipart("/api/tools/schedules/parse-image")
+                        .file(textFile)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(multipart("/api/tools/schedules/parse-image")
+                        .file(imageFile)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.success", is(false)));
     }
 }

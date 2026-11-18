@@ -59,21 +59,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public AuthDtos.UserSummary getCurrentUser(Long userId) {
-       UserEntity user = userRepository.findById(userId)
-               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Phiên đăng nhập không hợp lệ"));
 
-       return toUserSummary(user);
+        return toUserSummary(user);
     }
 
     private AuthDtos.AuthResponse buildAuthResponse(UserEntity user) {
         return AuthDtos.AuthResponse.builder()
                 .accessToken(jwtUtils.generateToken(user))
                 .expiresInMs(jwtUtils.getExpirationMs())
-                .user(AuthDtos.UserSummary.builder()
-                        .id(user.getId())
-                        .email(user.getEmail())
-                        .fullName(user.getFullName())
-                        .build())
+                .user(toUserSummary(user))
                 .build();
     }
 

@@ -63,7 +63,6 @@ public final class ScheduleShareDtos {
         private final String title;
         private final long createdAtEpoch;
         private final long expiresAtEpoch;
-        private final boolean isExpired;
-
+        private final boolean expired;
     }
 }

@@ -9,6 +9,5 @@ import java.util.List;
 @Repository
 public interface ScheduleShareRepository extends JpaRepository<ScheduleShareEntity, String> {
 
-    List<ScheduleShareEntity> findAllByOwnerUserIdOrderByCreatedAtEpoch(Long ownerUserId);
-
+    List<ScheduleShareEntity> findAllByOwnerUserIdOrderByCreatedAtEpochDesc(Long ownerUserId);
 }
