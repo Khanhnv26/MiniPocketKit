@@ -7,7 +7,6 @@ import com.pocketkit.backend.service.BackupService;
 import com.pocketkit.backend.utils.JsonCodec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class BackupServiceImpl implements BackupService {
 
-    private final UserBackupRepository  userBackupRepository;
+    private final UserBackupRepository userBackupRepository;
     private final JsonCodec jsonCodec;
 
     @Override
@@ -39,14 +38,13 @@ public class BackupServiceImpl implements BackupService {
                 .backedUpAtEpoch(now)
                 .payload(payload)
                 .build();
-
     }
 
     @Override
     @Transactional(readOnly = true)
-    public BackupDtos.BackupSnapshotResponse getLastestBackup(Long userId) {
+    public BackupDtos.BackupSnapshotResponse getLatestBackup(Long userId) {
         UserBackupEntity entity = userBackupRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Không tìm thấy bản sao lưu cho người dùng"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bản sao lưu cho người dùng"));
 
         BackupDtos.BackupPayload payload = jsonCodec.readValue(entity.getPayloadJson(), BackupDtos.BackupPayload.class);
 

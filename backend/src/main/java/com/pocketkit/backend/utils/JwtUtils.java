@@ -18,7 +18,7 @@ public class JwtUtils {
     private final long expirationMs;
 
     public JwtUtils(@Value("${app.jwt.secret}") String secret,
-                    @Value("${app.jwt.expiration}") long expirationMs) {
+                    @Value("${app.jwt.expiration-ms}") long expirationMs) {
 
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
 

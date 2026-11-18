@@ -23,17 +23,15 @@ public class ScheduleShareServiceImpl implements ScheduleShareService {
 
     private static final String CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final int CODE_LENGTH = 6;
-    private static final long SHARE_TTL_MS = 30L * 24L * 60L * 60L * 1000L; // 30 days in milliseconds
+    private static final long SHARE_TTL_MS = 30L * 24L * 60L * 60L * 1000L;
 
     private final ScheduleShareRepository scheduleShareRepository;
     private final JsonCodec jsonCodec;
     private final SecureRandom secureRandom = new SecureRandom();
 
-
     @Override
     @Transactional
     public ScheduleShareDtos.CreateShareResponse createShare(Long userId, ScheduleShareDtos.CreateShareRequest request) {
-
         long now = System.currentTimeMillis();
         long expiresAt = now + SHARE_TTL_MS;
         String code = generateUniqueCode();
@@ -59,16 +57,20 @@ public class ScheduleShareServiceImpl implements ScheduleShareService {
     @Override
     @Transactional(readOnly = true)
     public ScheduleShareDtos.ShareDetailResponse getByCode(String rawCode) {
+        if (rawCode == null || rawCode.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã thời khóa biểu không được để trống");
+        }
 
         String code = rawCode.trim().toUpperCase(Locale.US);
         ScheduleShareEntity entity = scheduleShareRepository.findById(code)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mã thời khóa biểu không tồn tại"));
 
-        if(entity.getExpiresAtEpoch() < System.currentTimeMillis()) {
+        if (entity.getExpiresAtEpoch() < System.currentTimeMillis()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Mã thời khóa biểu đã hết hạn");
         }
 
-        List<BackupDtos.ScheduleSlotDto> slots = jsonCodec.readValue(entity.getSlotsJson(), new TypeReference<>() {});
+        List<BackupDtos.ScheduleSlotDto> slots = jsonCodec.readValue(entity.getSlotsJson(), new TypeReference<>() {
+        });
 
         return ScheduleShareDtos.ShareDetailResponse.builder()
                 .code(entity.getCode())
@@ -79,10 +81,9 @@ public class ScheduleShareServiceImpl implements ScheduleShareService {
     }
 
     private String generateUniqueCode() {
-        for (int attempt = 0; attempt < 10; attempt ++) {
-
+        for (int attempt = 0; attempt < 10; attempt++) {
             StringBuilder sb = new StringBuilder(CODE_LENGTH);
-            for (int i = 0; i< CODE_LENGTH; i ++) {
+            for (int i = 0; i < CODE_LENGTH; i++) {
                 sb.append(CODE_ALPHABET.charAt(secureRandom.nextInt(CODE_ALPHABET.length())));
             }
 
