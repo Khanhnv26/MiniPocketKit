@@ -19,7 +19,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        }
+
         release {
+            buildConfigField("String", "API_BASE_URL", "\"https://api.example.com/\"")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
@@ -32,6 +37,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -52,4 +58,8 @@ dependencies {
     testImplementation(libs.core.testing)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp)
 }
