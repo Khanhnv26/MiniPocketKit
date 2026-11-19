@@ -662,4 +662,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         return db.delete(TABLE_TASKS, COL_TASK_ID + " = ?", new String[]{String.valueOf(id)});
     }
+
+    public void replaceAllBackupData(
+            @NonNull List<String> categories,
+            @NonNull List<ScheduleSlot> schedules,
+            @NonNull List<StudyTask> tasks,
+            @NonNull List<Note> notes
+    ) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+
+        try {
+            db.delete(TABLE_CATEGORIES, null, null);
+            db.delete(TABLE_SCHEDULES, null, null);
+            db.delete(TABLE_TASKS, null, null);
+            db.delete(TABLE_NOTES, null, null);
+
+            for (String category : categories) {
+                if(hasText(category)) {
+                    insertCategoryInternal(db, category);
+                }
+            }
+
+            for (ScheduleSlot slot : schedules) {
+                if(slot != null && hasText(slot.getSubject())) {
+                    insertScheduleInternal(db, slot);
+                }
+            }
+
+            for(StudyTask task: tasks) {
+                if(task != null && hasText(task.getTitle())) {
+                    insertTaskInternal(db, task);
+                }
+            }
+
+            for(Note note : notes) {
+                if(note != null && hasText(note.getTitle())) {
+                    insertNoteInternal(db, note);
+                }
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
 }

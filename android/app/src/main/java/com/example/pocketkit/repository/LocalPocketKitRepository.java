@@ -162,4 +162,9 @@ public class LocalPocketKitRepository implements PocketKitRepository {
     public void saveSimulatedScoreProgress(int progress) {
         profileStore.saveSimulatedProgress(progress);
     }
+
+    @Override
+    public void replaceAllBackupData(@NonNull List<String> categories, @NonNull List<ScheduleSlot> schedules, @NonNull List<StudyTask> tasks, @NonNull List<Note> notes) {
+        dbHelper.replaceAllBackupData(categories,schedules,tasks,notes);
+    }
 }

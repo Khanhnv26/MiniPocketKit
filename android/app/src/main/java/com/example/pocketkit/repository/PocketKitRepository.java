@@ -70,4 +70,11 @@ public interface PocketKitRepository {
     int loadSimulatedScoreProgress();
 
     void saveSimulatedScoreProgress(int progress);
+
+    void replaceAllBackupData(
+            @NonNull List<String> categories,
+            @NonNull List<ScheduleSlot> schedules,
+            @NonNull List<StudyTask> tasks,
+            @NonNull List<Note> notes
+    );
 }
