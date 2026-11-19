@@ -21,5 +21,5 @@ public interface PocketKitApi {
     Call<ApiModels.ApiResponse<ApiModels.BackupSnapshotResponse>> saveBackup(@Body ApiModels.BackupPayload payload);
 
     @GET("api/backup/latest")
-    Call<ApiModels.ApiResponse<ApiModels.BackupSnapshotResponse>> getLastestBackup();
+    Call<ApiModels.ApiResponse<ApiModels.BackupSnapshotResponse>> getLatestBackup();
 }

@@ -25,7 +25,7 @@ public class SessionStore {
 
 
     public void saveAuth(@NonNull ApiModels.AuthResponse authResponse, long nowMillis) {
-        long expiresAt = authResponse.getExpiresMs() > 0L ? nowMillis + authResponse.getExpiresMs() : 0L;
+        long expiresAt = authResponse.getExpiresInMs() > 0L ? nowMillis + authResponse.getExpiresInMs() : 0L;
 
         SharedPreferences.Editor editor = prefs.edit()
                 .putString(KEY_TOKEN, authResponse.getAccessToken())

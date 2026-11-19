@@ -25,18 +25,18 @@ public interface CloudGateway {
     ) throws CloudException;
 
     @NonNull
-    ApiModels.AuthResponse lgon(
+    ApiModels.AuthResponse login(
             @NonNull String email,
             @NonNull String password
     ) throws CloudException;
 
     void logout();
-    
+
     @NonNull
     ApiModels.BackupSnapshotResponse saveBackup(@NonNull ApiModels.BackupPayload payload) throws CloudException;
 
     @NonNull
-    ApiModels.BackupSnapshotResponse getLastestBackup() throws CloudException;
+    ApiModels.BackupSnapshotResponse getLatestBackup() throws CloudException;
 
 
 }

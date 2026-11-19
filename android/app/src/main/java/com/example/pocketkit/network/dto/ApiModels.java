@@ -33,6 +33,7 @@ public final class ApiModels {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class RegisterRequest {
         private String email;
         private String password;
@@ -43,6 +44,7 @@ public final class ApiModels {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class LoginRequest {
         private String email;
         private String password;
@@ -56,7 +58,7 @@ public final class ApiModels {
     @Builder
     public static class AuthResponse {
         private String accessToken;
-        private long expiresMs;
+        private long expiresInMs;
         private UserSummary user;
     }
 
@@ -90,7 +92,7 @@ public final class ApiModels {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class BackupSnapshotResponse {
-        private long backUpAtEpoch;
+        private long backedUpAtEpoch;
         private BackupPayload payload;
     }
 
