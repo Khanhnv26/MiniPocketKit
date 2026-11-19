@@ -1,4 +1,4 @@
-package com.example.pocketkit.network;
+package com.example.pocketkit.network.dto;
 
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.model.ScheduleSlot;

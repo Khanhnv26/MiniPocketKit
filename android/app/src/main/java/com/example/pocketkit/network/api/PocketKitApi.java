@@ -1,4 +1,6 @@
-package com.example.pocketkit.network;
+package com.example.pocketkit.network.api;
+
+import com.example.pocketkit.network.dto.ApiModels;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -17,7 +19,7 @@ public interface PocketKitApi {
 
     @POST("api/backup")
     Call<ApiModels.ApiResponse<ApiModels.BackupSnapshotResponse>> saveBackup(@Body ApiModels.BackupPayload payload);
-    
+
     @GET("api/backup/latest")
     Call<ApiModels.ApiResponse<ApiModels.BackupSnapshotResponse>> getLastestBackup();
 }
