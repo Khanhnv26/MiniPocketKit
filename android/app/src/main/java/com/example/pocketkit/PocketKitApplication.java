@@ -5,6 +5,9 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.example.pocketkit.network.gateway.CloudGateway;
+import com.example.pocketkit.network.gateway.RetrofitCloudGateway;
+import com.example.pocketkit.network.session.SessionStore;
 import com.example.pocketkit.reminder.ReminderGateway;
 import com.example.pocketkit.reminder.SystemReminderGateway;
 import com.example.pocketkit.reminder.TaskNotificationHelper;
@@ -22,7 +25,9 @@ public class PocketKitApplication extends Application {
     private PocketKitRepository repository;
     private ReminderGateway reminderGateway;
     private ScheduleTransferGateway scheduleTransferGateway;
+    private CloudGateway cloudGateway;
     private ExecutorService sharedIoExecutor;
+    private ExecutorService networkExecutor;
     private PocketKitViewModelFactory viewModelFactory;
 
     @Override
@@ -34,12 +39,16 @@ public class PocketKitApplication extends Application {
         this.repository = new LocalPocketKitRepository(this);
         this.reminderGateway = new SystemReminderGateway(this);
         this.scheduleTransferGateway = new AndroidScheduleTransferGateway(this);
+        this.cloudGateway = new RetrofitCloudGateway(BuildConfig.API_BASE_URL, new SessionStore(this));
         this.sharedIoExecutor = Executors.newSingleThreadExecutor();
+        this.networkExecutor = Executors.newFixedThreadPool(2);
         this.viewModelFactory = new PocketKitViewModelFactory(
                 repository,
                 reminderGateway,
                 scheduleTransferGateway,
-                sharedIoExecutor
+                cloudGateway,
+                sharedIoExecutor,
+                networkExecutor
         );
     }
 

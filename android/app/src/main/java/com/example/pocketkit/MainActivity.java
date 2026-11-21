@@ -269,6 +269,14 @@ public class MainActivity extends AppCompatActivity {
         );
 
         profileViewModel.getProfileState().observe(this, this::renderProfileState);
+        profileViewModel.getCloudState().observe(this, this::renderCloudState);
+        profileViewModel.getDataRestoredEvent().observe(this, event -> {
+            if (event.getContentIfNotHandled() != null) {
+                homeViewModel.loadDashboard(true);
+                calendarViewModel.refreshCurrentDay();
+                toolsViewModel.refreshNotesCount();
+            }
+        });
     }
 
     private void observeToast(@NonNull LiveData<UiEvent<UiMessage>> liveData) {
@@ -843,6 +851,28 @@ public class MainActivity extends AppCompatActivity {
                 )
         );
         binding.tabProfile.btnProfileNotes.setOnClickListener(v -> openNotesActivity());
+        binding.tabProfile.btnCloudAuth.setOnClickListener(v -> openAuthDialog());
+        binding.tabProfile.btnCloudBackup.setOnClickListener(v -> profileViewModel.backupNow());
+        binding.tabProfile.btnCloudRestore.setOnClickListener(v ->
+                FrostUiHelper.showConfirmDialog(
+                        this,
+                        R.string.cloud_restore_confirm_title,
+                        getString(R.string.cloud_restore_confirm_message),
+                        R.string.cloud_btn_restore,
+                        false,
+                        () -> profileViewModel.restoreLatest()
+                )
+        );
+        binding.tabProfile.btnCloudLogout.setOnClickListener(v ->
+                FrostUiHelper.showConfirmDialog(
+                        this,
+                        R.string.cloud_logout_confirm_title,
+                        getString(R.string.cloud_logout_confirm_message),
+                        R.string.cloud_btn_logout,
+                        true,
+                        () -> profileViewModel.logout()
+                )
+        );
     }
 
     private void renderProfileState(@NonNull ProfileViewModel.ProfileUiState state) {
@@ -908,6 +938,53 @@ public class MainActivity extends AppCompatActivity {
                 binding.tabProfile.tvGpaRankBadge.setTextColor(ContextCompat.getColor(this, R.color.accent_danger));
                 break;
         }
+    }
+
+    private void openAuthDialog() {
+        FrostUiHelper.showAuthDialog(this, (isRegister, fullName, email, password) -> {
+            if (isRegister) {
+                profileViewModel.register(fullName, email, password);
+            } else {
+                profileViewModel.login(email, password);
+            }
+        });
+    }
+
+    private void renderCloudState(@NonNull ProfileViewModel.CloudUiState state) {
+        if (state.loggedIn) {
+            binding.tabProfile.layoutCloudGuest.setVisibility(View.GONE);
+            binding.tabProfile.layoutCloudSignedIn.setVisibility(View.VISIBLE);
+            binding.tabProfile.tvCloudEmail.setText(state.email);
+            if (state.lastBackupEpoch > 0L) {
+                Locale vi = Locale.forLanguageTag("vi-VN");
+                String formatted = new SimpleDateFormat("dd/MM/yyyy HH:mm", vi)
+                        .format(new Date(state.lastBackupEpoch));
+                binding.tabProfile.tvCloudLastBackup.setText(
+                        getString(R.string.cloud_last_backup_format, formatted)
+                );
+            } else {
+                binding.tabProfile.tvCloudLastBackup.setText(R.string.cloud_last_backup_none);
+            }
+        } else {
+            binding.tabProfile.layoutCloudGuest.setVisibility(View.VISIBLE);
+            binding.tabProfile.layoutCloudSignedIn.setVisibility(View.GONE);
+        }
+
+        boolean enabled = !state.busy;
+        float alpha = enabled ? 1.0f : 0.55f;
+        TextView[] actionButtons = new TextView[]{
+                binding.tabProfile.btnCloudAuth,
+                binding.tabProfile.btnCloudBackup,
+                binding.tabProfile.btnCloudRestore,
+                binding.tabProfile.btnCloudLogout
+        };
+        for (TextView btn : actionButtons) {
+            btn.setEnabled(enabled);
+            btn.setAlpha(alpha);
+        }
+        binding.tabProfile.btnCloudBackup.setText(
+                state.busy ? R.string.cloud_busy_label : R.string.cloud_btn_backup
+        );
     }
 
     private void bindDockNavigation() {

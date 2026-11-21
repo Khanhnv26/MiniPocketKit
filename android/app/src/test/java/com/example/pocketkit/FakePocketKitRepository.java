@@ -257,4 +257,41 @@ final class FakePocketKitRepository implements PocketKitRepository {
     public void saveSimulatedScoreProgress(int progress) {
         this.simulatedProgress = progress;
     }
+
+    @Override
+    public void replaceAllBackupData(
+            @NonNull List<String> newCategories,
+            @NonNull List<ScheduleSlot> newSchedules,
+            @NonNull List<StudyTask> newTasks,
+            @NonNull List<Note> newNotes
+    ) {
+        categories.clear();
+        schedules.clear();
+        tasks.clear();
+        notes.clear();
+        nextScheduleId = 1;
+        nextTaskId = 1;
+        nextNoteId = 1;
+
+        for (String cat : newCategories) {
+            if (cat != null && !cat.trim().isEmpty()) {
+                insertCategory(cat);
+            }
+        }
+        for (ScheduleSlot slot : newSchedules) {
+            if (slot != null) {
+                insertSchedule(slot);
+            }
+        }
+        for (StudyTask task : newTasks) {
+            if (task != null) {
+                insertTask(task);
+            }
+        }
+        for (Note note : newNotes) {
+            if (note != null) {
+                insertNote(note);
+            }
+        }
+    }
 }

@@ -11,6 +11,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Patterns;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -87,6 +88,10 @@ public final class FrostUiHelper {
 
     public interface OnProfileSavedListener {
         void onProfileSaved(@NonNull StudentProfile profile);
+    }
+
+    public interface OnAuthSubmitListener {
+        void onSubmit(boolean isRegister, @NonNull String fullName, @NonNull String email, @NonNull String password);
     }
 
     private FrostUiHelper() {
@@ -817,6 +822,79 @@ public final class FrostUiHelper {
         });
 
         configureFrostDialogWindow(dialog, false);
+        dialog.show();
+    }
+
+    public static void showAuthDialog(
+            @NonNull Context context,
+            @NonNull OnAuthSubmitListener listener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_auth);
+        dialog.setContentView(content);
+
+        TextView chipLogin = content.findViewById(R.id.chipAuthLogin);
+        TextView chipRegister = content.findViewById(R.id.chipAuthRegister);
+        View layoutFullName = content.findViewById(R.id.layoutAuthFullName);
+        EditText edtFullName = content.findViewById(R.id.edtAuthFullName);
+        EditText edtEmail = content.findViewById(R.id.edtAuthEmail);
+        EditText edtPassword = content.findViewById(R.id.edtAuthPassword);
+        TextView btnCancel = content.findViewById(R.id.btnAuthCancel);
+        TextView btnSubmit = content.findViewById(R.id.btnAuthSubmit);
+
+        TextView[] tabs = new TextView[]{chipLogin, chipRegister};
+        final boolean[] registerMode = new boolean[]{false};
+
+        Runnable refreshMode = () -> {
+            applyChipSelection(context, tabs, registerMode[0] ? 1 : 0);
+            layoutFullName.setVisibility(registerMode[0] ? View.VISIBLE : View.GONE);
+            btnSubmit.setText(registerMode[0] ? R.string.cloud_tab_register : R.string.cloud_tab_login);
+        };
+        refreshMode.run();
+
+        chipLogin.setOnClickListener(v -> {
+            registerMode[0] = false;
+            refreshMode.run();
+        });
+        chipRegister.setOnClickListener(v -> {
+            registerMode[0] = true;
+            refreshMode.run();
+        });
+
+        Runnable submit = () -> {
+            String fullName = edtFullName.getText().toString().trim();
+            String email = edtEmail.getText().toString().trim();
+            String password = edtPassword.getText().toString();
+
+            if (registerMode[0] && fullName.isEmpty()) {
+                setFieldError(edtFullName, context.getString(R.string.cloud_error_fullname));
+                return;
+            }
+            if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                setFieldError(edtEmail, context.getString(R.string.cloud_error_email));
+                return;
+            }
+            if (password.length() < 6 || password.length() > 72) {
+                setFieldError(edtPassword, context.getString(R.string.cloud_error_password));
+                return;
+            }
+            dialog.dismiss();
+            listener.onSubmit(registerMode[0], fullName, email, password);
+        };
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnSubmit.setOnClickListener(v -> submit.run());
+        edtPassword.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                submit.run();
+                return true;
+            }
+            return false;
+        });
+
+        configureFrostDialogWindow(dialog, true);
+        edtEmail.requestFocus();
         dialog.show();
     }
 

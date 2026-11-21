@@ -384,4 +384,42 @@
         <item quantity="one">Quá hạn %1$d ngày</item>
         <item quantity="other">Quá hạn %1$d ngày</item>
     </plurals>
+
+    <string name="cloud_message_raw">%1$s</string>
+    <string name="cloud_card_title">Tài khoản &amp; Đám mây</string>
+    <string name="cloud_guest_subtitle">Đăng nhập để đồng bộ ghi chú, lịch học và công việc lên server.</string>
+    <string name="cloud_btn_auth_open">Đăng nhập / Đăng ký</string>
+    <string name="cloud_last_backup_none">Chưa sao lưu lần nào</string>
+    <string name="cloud_last_backup_format">Sao lưu gần nhất: %1$s</string>
+    <string name="cloud_btn_backup">Sao lưu</string>
+    <string name="cloud_btn_restore">Khôi phục</string>
+    <string name="cloud_btn_logout">Đăng xuất</string>
+    <string name="cloud_busy_label">Đang xử lý…</string>
+
+    <string name="cloud_dialog_title">Tài khoản PocketKit</string>
+    <string name="cloud_tab_login">Đăng nhập</string>
+    <string name="cloud_tab_register">Đăng ký</string>
+    <string name="cloud_label_fullname">HỌ VÀ TÊN</string>
+    <string name="cloud_hint_fullname">VD: Nguyễn Khánh</string>
+    <string name="cloud_label_email">EMAIL</string>
+    <string name="cloud_hint_email">sinhvien@fpt.edu.vn</string>
+    <string name="cloud_label_password">MẬT KHẨU</string>
+    <string name="cloud_hint_password">Ít nhất 6 ký tự</string>
+    <string name="cloud_btn_submit">Xác nhận</string>
+    <string name="cloud_error_fullname">Vui lòng nhập họ và tên</string>
+    <string name="cloud_error_email">Email không đúng định dạng</string>
+    <string name="cloud_error_password">Mật khẩu phải từ 6 đến 72 ký tự</string>
+
+    <string name="cloud_auth_login_success">Đăng nhập thành công</string>
+    <string name="cloud_auth_register_success">Đăng ký và đăng nhập thành công</string>
+    <string name="cloud_logout_success">Đã đăng xuất khỏi tài khoản</string>
+    <string name="cloud_backup_success">Đã sao lưu toàn bộ dữ liệu lên server</string>
+    <string name="cloud_restore_success">Đã khôi phục dữ liệu từ bản sao lưu mới nhất</string>
+    <string name="cloud_restore_empty_error">Bản sao lưu trên server bị thiếu dữ liệu</string>
+    <string name="cloud_error_login_required">Vui lòng đăng nhập ở tab Cá nhân trước</string>
+
+    <string name="cloud_restore_confirm_title">Khôi phục dữ liệu</string>
+    <string name="cloud_restore_confirm_message">Dữ liệu lịch học, công việc, ghi chú và hồ sơ hiện tại trên máy sẽ được thay thế bằng bản sao lưu mới nhất trên server.</string>
+    <string name="cloud_logout_confirm_title">Đăng xuất</string>
+    <string name="cloud_logout_confirm_message">Bạn vẫn giữ nguyên dữ liệu ngoại tuyến hiện tại trên thiết bị.</string>
 </resources>

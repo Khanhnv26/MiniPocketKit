@@ -26,7 +26,8 @@ public final class BackupPayloadSanitizer {
     private BackupPayloadSanitizer() {
     }
 
-    public static ApiModels.BackupPayload santize(
+    @NonNull
+    public static ApiModels.BackupPayload sanitize(
             int simulatedScoreProgress,
             @Nullable StudentProfile rawProfile,
             @Nullable List<String> rawCategories,
@@ -44,23 +45,22 @@ public final class BackupPayloadSanitizer {
                 .build();
     }
 
-
-
     @NonNull
     private static StudentProfile sanitizeProfile(@Nullable StudentProfile raw) {
-        if(raw == null) {
+        if (raw == null) {
             return StudentProfile.builder()
                     .fullName("Sinh viên")
                     .majorAndCohort("")
                     .earnedCredits(ProfileGpaHelper.DEFAULT_EARNED_CREDITS)
                     .totalCredits(ProfileGpaHelper.DEFAULT_TOTAL_CREDITS)
                     .attendancePercent(ProfileGpaHelper.DEFAULT_ATTENDANCE_PERCENT)
+                    .baselineGpa(ProfileGpaHelper.DEFAULT_BASELINE_GPA)
                     .currentTermCredits(ProfileGpaHelper.DEFAULT_TERM_CREDITS)
                     .build();
         }
 
         String name = trimMax(raw.getFullName(), 120);
-        if(name.isEmpty()) {
+        if (name.isEmpty()) {
             name = "Sinh viên";
         }
 
@@ -70,7 +70,7 @@ public final class BackupPayloadSanitizer {
         int termCredits = clamp(raw.getCurrentTermCredits(), 0, ProfileGpaHelper.MAX_TERM_CREDITS_LIMIT);
         float gpa = raw.getBaselineGpa();
 
-        if(Float.isNaN(gpa) || Float.isFinite(gpa)){
+        if (Float.isNaN(gpa) || Float.isInfinite(gpa)) {
             gpa = 0f;
         } else {
             gpa = Math.max(0f, Math.min(ProfileGpaHelper.GPA_MAX, gpa));
