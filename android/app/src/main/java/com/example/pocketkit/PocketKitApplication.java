@@ -39,7 +39,7 @@ public class PocketKitApplication extends Application {
         this.repository = new LocalPocketKitRepository(this);
         this.reminderGateway = new SystemReminderGateway(this);
         this.scheduleTransferGateway = new AndroidScheduleTransferGateway(this);
-        this.cloudGateway = new RetrofitCloudGateway(BuildConfig.API_BASE_URL, new SessionStore(this));
+        this.cloudGateway = new RetrofitCloudGateway(this, BuildConfig.API_BASE_URL, new SessionStore(this));
         this.sharedIoExecutor = Executors.newSingleThreadExecutor();
         this.networkExecutor = Executors.newFixedThreadPool(2);
         this.viewModelFactory = new PocketKitViewModelFactory(

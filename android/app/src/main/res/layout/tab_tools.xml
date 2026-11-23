@@ -237,6 +237,21 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/btnPickOcrImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/card_gap"
+            android:background="@drawable/bg_pill_accent_soft"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/tools_ocr_btn_pick"
+            android:textColor="@color/accent_sapphire"
+            android:textSize="@dimen/text_size_input"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/tvOcrOutput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -248,20 +263,44 @@
             android:textColor="@color/ink_primary"
             android:textSize="@dimen/text_size_body" />
 
-        <TextView
-            android:id="@+id/btnCopyOcr"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/card_gap"
-            android:background="@drawable/bg_pill_primary"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:minHeight="@dimen/touch_target_min"
-            android:text="@string/tools_ocr_btn_copy"
-            android:textColor="@color/white"
-            android:textSize="@dimen/text_size_input"
-            android:textStyle="bold" />
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnCopyOcr"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pill_secondary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_ocr_btn_copy"
+                android:textColor="@color/ink_primary"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnOcrCreateNote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dialog_button_gap"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pill_primary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/tools_ocr_btn_create_note"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_body"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout

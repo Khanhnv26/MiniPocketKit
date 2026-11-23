@@ -7,6 +7,9 @@ import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.network.exception.CloudException;
 import com.example.pocketkit.network.gateway.CloudGateway;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 final class FakeCloudGateway implements CloudGateway {
 
     boolean loggedIn = false;
@@ -17,6 +20,16 @@ final class FakeCloudGateway implements CloudGateway {
     ApiModels.BackupSnapshotResponse latestBackup;
     @Nullable
     ApiModels.BackupPayload lastSavedPayload;
+    @Nullable
+    ApiModels.OcrResponse ocrResponse;
+    @Nullable
+    ApiModels.NoteSummarizeResponse summarizeResponse;
+    @Nullable
+    String lastOcrUri;
+    @Nullable
+    String lastSummarizedContent;
+    @Nullable
+    String lastSummarizedImageUri;
     @Nullable
     CloudException errorToThrow;
 
@@ -107,6 +120,54 @@ final class FakeCloudGateway implements CloudGateway {
         }
         this.lastBackupEpoch = latestBackup.getBackedUpAtEpoch();
         return latestBackup;
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.OcrResponse scanOcr(@NonNull String imageUriString) throws CloudException {
+        throwIfConfigured();
+        this.lastOcrUri = imageUriString;
+        if (ocrResponse != null) {
+            return ocrResponse;
+        }
+        return new ApiModels.OcrResponse("Nội dung OCR mẫu", "vie+eng", "slide.png", 1024L);
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.NoteSummarizeResponse summarizeNote(
+            @NonNull String title,
+            @NonNull String content
+    ) throws CloudException {
+        throwIfConfigured();
+        this.lastSummarizedContent = content;
+        if (summarizeResponse != null) {
+            return summarizeResponse;
+        }
+        return new ApiModels.NoteSummarizeResponse(
+                title.isEmpty() ? "Tiêu đề AI" : title,
+                "Tóm tắt ngắn gọn.",
+                "- Ý đã trình bày lại",
+                Arrays.asList("Ý chính 1", "Ý chính 2"),
+                true
+        );
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.NoteSummarizeResponse summarizeNoteImage(@NonNull String imageUriString) throws CloudException {
+        throwIfConfigured();
+        this.lastSummarizedImageUri = imageUriString;
+        if (summarizeResponse != null) {
+            return summarizeResponse;
+        }
+        return new ApiModels.NoteSummarizeResponse(
+                "Ghi chú từ ảnh",
+                "Tóm tắt nội dung slide.",
+                "1. Ý trong ảnh",
+                Collections.singletonList("Điểm quan trọng"),
+                true
+        );
     }
 
     private void throwIfConfigured() throws CloudException {

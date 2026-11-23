@@ -93,7 +93,7 @@ public class CalendarViewModelTest {
     public void toolsViewModel_tracksSelectionsAndNotesCount() {
         FakePocketKitRepository repository = new FakePocketKitRepository();
         repository.insertCategory("PRM392");
-        ToolsViewModel viewModel = new ToolsViewModel(repository, Runnable::run);
+        ToolsViewModel viewModel = new ToolsViewModel(repository, new FakeCloudGateway(), Runnable::run, Runnable::run);
 
         viewModel.selectCompressPreset(2);
         viewModel.selectOcrSample(1);
@@ -104,5 +104,24 @@ public class CalendarViewModelTest {
         assertEquals(Integer.valueOf(1), viewModel.getOcrSample().getValue());
         assertEquals(Integer.valueOf(0), viewModel.getTotalNotesCount().getValue());
         assertNotNull(viewModel.getToastEvent().getValue().getContentIfNotHandled());
+    }
+
+    @Test
+    public void toolsViewModel_scanOcrImage_requiresLoginAndUpdatesStateWhenLoggedIn() {
+        FakePocketKitRepository repository = new FakePocketKitRepository();
+        FakeCloudGateway cloudGateway = new FakeCloudGateway();
+        ToolsViewModel viewModel = new ToolsViewModel(repository, cloudGateway, Runnable::run, Runnable::run);
+
+        viewModel.scanOcrImage("content://media/slide.png");
+        assertNull(cloudGateway.lastOcrUri);
+        assertNotNull(viewModel.getToastEvent().getValue().getContentIfNotHandled());
+
+        cloudGateway.loggedIn = true;
+        viewModel.scanOcrImage("content://media/slide.png");
+
+        ToolsViewModel.OcrUiState state = viewModel.getOcrState().getValue();
+        assertNotNull(state);
+        assertEquals("Nội dung OCR mẫu", state.scannedText);
+        assertEquals("content://media/slide.png", cloudGateway.lastOcrUri);
     }
 }

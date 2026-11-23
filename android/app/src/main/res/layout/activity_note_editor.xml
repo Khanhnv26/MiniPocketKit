@@ -176,6 +176,45 @@
                     android:textColorHint="@color/ink_secondary"
                     android:textSize="@dimen/text_size_input" />
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/card_gap"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/btnAiSummarizeText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_pill_accent_soft"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:text="@string/editor_ai_btn_summarize"
+                        android:textColor="@color/accent_sapphire"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnAiSummarizeImage"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/chip_gap"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_pill_secondary"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:text="@string/editor_ai_btn_scan_image"
+                        android:textColor="@color/ink_primary"
+                        android:textSize="@dimen/text_size_body"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/hairline_height"

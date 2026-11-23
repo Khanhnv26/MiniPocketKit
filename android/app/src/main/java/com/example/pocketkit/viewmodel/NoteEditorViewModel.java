@@ -8,6 +8,9 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.pocketkit.R;
 import com.example.pocketkit.model.Note;
+import com.example.pocketkit.network.dto.ApiModels;
+import com.example.pocketkit.network.exception.CloudException;
+import com.example.pocketkit.network.gateway.CloudGateway;
 import com.example.pocketkit.repository.PocketKitRepository;
 import com.example.pocketkit.ui.UiEvent;
 import com.example.pocketkit.ui.UiMessage;
@@ -44,11 +47,40 @@ public class NoteEditorViewModel extends ViewModel {
         }
     }
 
+    public static final class AiNoteDraft {
+        @NonNull
+        public final String suggestedTitle;
+        @NonNull
+        public final String previewSummary;
+        @NonNull
+        public final String formattedBody;
+
+        public AiNoteDraft(
+                @NonNull String suggestedTitle,
+                @NonNull String previewSummary,
+                @NonNull String formattedBody
+        ) {
+            this.suggestedTitle = suggestedTitle;
+            this.previewSummary = previewSummary;
+            this.formattedBody = formattedBody;
+        }
+    }
+
+    @FunctionalInterface
+    private interface AiSummaryCall {
+        @NonNull
+        ApiModels.NoteSummarizeResponse call() throws CloudException;
+    }
+
     private final PocketKitRepository repository;
+    private final CloudGateway cloudGateway;
     private final Executor ioExecutor;
+    private final Executor networkExecutor;
 
     private final MutableLiveData<EditorUiState> editorState = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> aiBusy = new MutableLiveData<>(false);
     private final MutableLiveData<UiEvent<Note>> initialPopulateEvent = new MutableLiveData<>();
+    private final MutableLiveData<UiEvent<AiNoteDraft>> aiResultEvent = new MutableLiveData<>();
     private final MutableLiveData<UiEvent<Boolean>> emptyTitleErrorEvent = new MutableLiveData<>();
     private final MutableLiveData<UiEvent<UiMessage>> toastEvent = new MutableLiveData<>();
     private final MutableLiveData<UiEvent<Boolean>> closeScreenEvent = new MutableLiveData<>();
@@ -58,10 +90,18 @@ public class NoteEditorViewModel extends ViewModel {
     private String defaultCategory = "";
     private boolean isPinned = false;
     private boolean initialized = false;
+    private volatile boolean aiRequestRunning = false;
 
-    public NoteEditorViewModel(@NonNull PocketKitRepository repository, @NonNull Executor ioExecutor) {
+    public NoteEditorViewModel(
+            @NonNull PocketKitRepository repository,
+            @NonNull CloudGateway cloudGateway,
+            @NonNull Executor ioExecutor,
+            @NonNull Executor networkExecutor
+    ) {
         this.repository = repository;
+        this.cloudGateway = cloudGateway;
         this.ioExecutor = ioExecutor;
+        this.networkExecutor = networkExecutor;
     }
 
     @NonNull
@@ -70,8 +110,18 @@ public class NoteEditorViewModel extends ViewModel {
     }
 
     @NonNull
+    public LiveData<Boolean> getAiBusy() {
+        return aiBusy;
+    }
+
+    @NonNull
     public LiveData<UiEvent<Note>> getInitialPopulateEvent() {
         return initialPopulateEvent;
+    }
+
+    @NonNull
+    public LiveData<UiEvent<AiNoteDraft>> getAiResultEvent() {
+        return aiResultEvent;
     }
 
     @NonNull
@@ -129,6 +179,24 @@ public class NoteEditorViewModel extends ViewModel {
         refreshCategories(true);
     }
 
+    public void summarizeNoteText(@NonNull String rawTitle, @NonNull String rawContent) {
+        String content = rawContent.trim();
+        if (content.isEmpty()) {
+            toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.editor_ai_empty_content_error)));
+            return;
+        }
+        String title = rawTitle.trim();
+        runAiSummary(() -> cloudGateway.summarizeNote(title, content));
+    }
+
+    public void summarizeNoteImage(@NonNull String imageUriString) {
+        runAiSummary(() -> cloudGateway.summarizeNoteImage(imageUriString));
+    }
+
+    public void notifyAiApplied() {
+        toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.editor_ai_applied_toast)));
+    }
+
     public void saveNote(@NonNull String rawTitle, @NonNull String rawContent, @NonNull String timestampText) {
         String title = rawTitle.trim();
         if (title.isEmpty()) {
@@ -178,6 +246,78 @@ public class NoteEditorViewModel extends ViewModel {
         });
     }
 
+    @NonNull
+    public static String formatAiNoteBody(@NonNull ApiModels.NoteSummarizeResponse res) {
+        StringBuilder sb = new StringBuilder();
+        String summary = safeTrim(res.getSummary());
+        if (!summary.isEmpty()) {
+            sb.append("Tóm tắt: ").append(summary);
+        }
+
+        List<String> keyPoints = res.getKeyPoints();
+        if (keyPoints != null && !keyPoints.isEmpty()) {
+            StringBuilder pointsBuilder = new StringBuilder();
+            for (String point : keyPoints) {
+                String clean = safeTrim(point);
+                if (!clean.isEmpty()) {
+                    if (pointsBuilder.length() > 0) {
+                        pointsBuilder.append('\n');
+                    }
+                    pointsBuilder.append("• ").append(clean);
+                }
+            }
+            if (pointsBuilder.length() > 0) {
+                if (sb.length() > 0) {
+                    sb.append("\n\n");
+                }
+                sb.append("Ý chính:\n").append(pointsBuilder);
+            }
+        }
+
+        String formatted = safeTrim(res.getFormattedContent());
+        if (!formatted.isEmpty()) {
+            if (sb.length() > 0) {
+                sb.append("\n\n");
+            }
+            sb.append("Chi tiết:\n").append(formatted);
+        }
+        return sb.toString();
+    }
+
+    private void runAiSummary(@NonNull AiSummaryCall call) {
+        if (aiRequestRunning) {
+            return;
+        }
+        if (!cloudGateway.isLoggedIn()) {
+            toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_error_login_required)));
+            return;
+        }
+        aiRequestRunning = true;
+        aiBusy.postValue(true);
+        networkExecutor.execute(() -> {
+            try {
+                ApiModels.NoteSummarizeResponse response = call.call();
+                String body = formatAiNoteBody(response);
+                String title = safeTrim(response.getTitle());
+                String preview = safeTrim(response.getSummary());
+                if (preview.isEmpty()) {
+                    preview = body;
+                }
+                aiRequestRunning = false;
+                aiBusy.postValue(false);
+                if (body.isEmpty()) {
+                    toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.editor_ai_empty_result_error)));
+                    return;
+                }
+                aiResultEvent.postValue(new UiEvent<>(new AiNoteDraft(title, preview, body)));
+            } catch (CloudException ex) {
+                aiRequestRunning = false;
+                aiBusy.postValue(false);
+                toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_message_raw, ex.getMessage())));
+            }
+        });
+    }
+
     private void refreshCategories(boolean animatePin) {
         ioExecutor.execute(() -> postState(animatePin));
     }
@@ -198,5 +338,10 @@ public class NoteEditorViewModel extends ViewModel {
                 animatePin,
                 new ArrayList<>(uniqueCategories)
         ));
+    }
+
+    @NonNull
+    private static String safeTrim(@Nullable String value) {
+        return value == null ? "" : value.trim();
     }
 }

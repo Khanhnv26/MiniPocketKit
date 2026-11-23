@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -95,6 +96,15 @@ public class MainActivity extends AppCompatActivity {
             uri -> {
                 if (uri != null) {
                     calendarViewModel.parseImportFile(uri.toString(), queryFileDisplayName(uri));
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickOcrImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(),
+            uri -> {
+                if (uri != null) {
+                    toolsViewModel.scanOcrImage(uri.toString());
                 }
             }
     );
@@ -262,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
 
         toolsViewModel.getCompressPreset().observe(this, this::renderCompressPreset);
         toolsViewModel.getOcrSample().observe(this, this::renderOcrSample);
+        toolsViewModel.getOcrState().observe(this, this::renderOcrState);
         toolsViewModel.getTotalNotesCount().observe(this, count ->
                 binding.tabTools.tvToolNotesCount.setText(
                         getResources().getQuantityString(R.plurals.tools_notes_count_format, count, count)
@@ -775,6 +786,11 @@ public class MainActivity extends AppCompatActivity {
 
         binding.tabTools.chipOcrSample1.setOnClickListener(v -> toolsViewModel.selectOcrSample(0));
         binding.tabTools.chipOcrSample2.setOnClickListener(v -> toolsViewModel.selectOcrSample(1));
+        binding.tabTools.btnPickOcrImage.setOnClickListener(v ->
+                pickOcrImageLauncher.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build())
+        );
         binding.tabTools.btnCopyOcr.setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             if (clipboard != null) {
@@ -785,6 +801,14 @@ public class MainActivity extends AppCompatActivity {
                 clipboard.setPrimaryClip(clip);
                 toolsViewModel.notifyOcrCopied();
             }
+        });
+        binding.tabTools.btnOcrCreateNote.setOnClickListener(v -> {
+            String ocrText = binding.tabTools.tvOcrOutput.getText().toString().trim();
+            Intent intent = new Intent(this, NoteEditorActivity.class);
+            if (!ocrText.isEmpty()) {
+                intent.putExtra(Note.EXTRA_INITIAL_CONTENT, ocrText);
+            }
+            startActivity(intent);
         });
 
         binding.tabTools.btnToolOpenNotes.setOnClickListener(v -> openNotesActivity());
@@ -819,9 +843,28 @@ public class MainActivity extends AppCompatActivity {
                 binding.tabTools.chipOcrSample2
         };
         FrostUiHelper.applyChipSelection(this, chips, sample);
-        binding.tabTools.tvOcrOutput.setText(
-                sample == 0 ? R.string.tools_ocr_sample_slide : R.string.tools_ocr_sample_meeting
+        ToolsViewModel.OcrUiState currentOcr = toolsViewModel.getOcrState().getValue();
+        if (currentOcr != null && hasText(currentOcr.scannedText)) {
+            binding.tabTools.tvOcrOutput.setText(currentOcr.scannedText);
+        } else {
+            binding.tabTools.tvOcrOutput.setText(
+                    sample == 0 ? R.string.tools_ocr_sample_slide : R.string.tools_ocr_sample_meeting
+            );
+        }
+    }
+
+    private void renderOcrState(@NonNull ToolsViewModel.OcrUiState state) {
+        if (hasText(state.scannedText)) {
+            binding.tabTools.tvOcrOutput.setText(state.scannedText);
+        }
+        boolean enabled = !state.scanning;
+        binding.tabTools.btnPickOcrImage.setEnabled(enabled);
+        binding.tabTools.btnPickOcrImage.setAlpha(enabled ? 1.0f : 0.55f);
+        binding.tabTools.btnPickOcrImage.setText(
+                state.scanning ? R.string.tools_ocr_scanning : R.string.tools_ocr_btn_pick
         );
+        binding.tabTools.btnOcrCreateNote.setEnabled(enabled);
+        binding.tabTools.btnOcrCreateNote.setAlpha(enabled ? 1.0f : 0.55f);
     }
 
     private void bindProfileTab() {

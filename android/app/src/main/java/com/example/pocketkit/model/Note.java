@@ -16,6 +16,7 @@ import lombok.Setter;
 public class Note implements Serializable {
 
     public static final String EXTRA_NOTE_ITEM = "note_item";
+    public static final String EXTRA_INITIAL_CONTENT = "initial_content";
 
     private int id;
     private String title;

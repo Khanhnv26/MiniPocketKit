@@ -47,7 +47,7 @@ public final class PocketKitViewModelFactory implements ViewModelProvider.Factor
             return (T) new CalendarViewModel(repository, transferGateway, ioExecutor);
         }
         if (modelClass.isAssignableFrom(ToolsViewModel.class)) {
-            return (T) new ToolsViewModel(repository, ioExecutor);
+            return (T) new ToolsViewModel(repository, cloudGateway, ioExecutor, networkExecutor);
         }
         if (modelClass.isAssignableFrom(ProfileViewModel.class)) {
             return (T) new ProfileViewModel(repository, cloudGateway, reminderGateway, ioExecutor, networkExecutor);
@@ -56,7 +56,7 @@ public final class PocketKitViewModelFactory implements ViewModelProvider.Factor
             return (T) new NotesViewModel(repository, ioExecutor);
         }
         if (modelClass.isAssignableFrom(NoteEditorViewModel.class)) {
-            return (T) new NoteEditorViewModel(repository, ioExecutor);
+            return (T) new NoteEditorViewModel(repository, cloudGateway, ioExecutor, networkExecutor);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

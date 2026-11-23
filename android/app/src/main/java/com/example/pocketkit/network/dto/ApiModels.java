@@ -96,4 +96,37 @@ public final class ApiModels {
         private BackupPayload payload;
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OcrResponse {
+        private String text;
+        private String language;
+        private String fileName;
+        private long sizeBytes;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class NoteSummarizeRequest {
+        private String title;
+        private String content;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class NoteSummarizeResponse {
+        private String title;
+        private String summary;
+        private String formattedContent;
+        private List<String> keyPoints;
+        private boolean aiPowered;
+    }
+
 }

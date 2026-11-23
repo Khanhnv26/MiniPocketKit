@@ -38,5 +38,15 @@ public interface CloudGateway {
     @NonNull
     ApiModels.BackupSnapshotResponse getLatestBackup() throws CloudException;
 
+    @NonNull
+    ApiModels.OcrResponse scanOcr(@NonNull String imageUriString) throws CloudException;
 
+    @NonNull
+    ApiModels.NoteSummarizeResponse summarizeNote(
+            @NonNull String title,
+            @NonNull String content
+    ) throws CloudException;
+
+    @NonNull
+    ApiModels.NoteSummarizeResponse summarizeNoteImage(@NonNull String imageUriString) throws CloudException;
 }

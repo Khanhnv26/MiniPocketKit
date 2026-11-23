@@ -1,5 +1,7 @@
 package com.example.pocketkit.network.gateway;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -7,11 +9,13 @@ import com.example.pocketkit.network.api.PocketKitApi;
 import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.network.exception.CloudException;
 import com.example.pocketkit.network.session.SessionStore;
+import com.example.pocketkit.network.utils.ImageUploadHelper;
 import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
@@ -22,11 +26,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitCloudGateway implements CloudGateway {
 
+    private final Context appContext;
     private final SessionStore sessionStore;
     private final Gson gson;
     private final PocketKitApi api;
 
-    public RetrofitCloudGateway(@NonNull String baseUrl, @NonNull SessionStore sessionStore) {
+    public RetrofitCloudGateway(
+            @NonNull Context context,
+            @NonNull String baseUrl,
+            @NonNull SessionStore sessionStore
+    ) {
+        this.appContext = context.getApplicationContext();
         this.sessionStore = sessionStore;
         this.gson = new Gson();
 
@@ -133,6 +143,39 @@ public class RetrofitCloudGateway implements CloudGateway {
     }
 
     @NonNull
+    @Override
+    public ApiModels.OcrResponse scanOcr(@NonNull String imageUriString) throws CloudException {
+        MultipartBody.Part part = ImageUploadHelper.prepareImagePart(
+                appContext.getContentResolver(),
+                imageUriString
+        );
+        return execute(api.scanOcr(part));
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.NoteSummarizeResponse summarizeNote(
+            @NonNull String title,
+            @NonNull String content
+    ) throws CloudException {
+        ApiModels.NoteSummarizeRequest request = ApiModels.NoteSummarizeRequest.builder()
+                .title(trimMax(title, 200))
+                .content(trimMax(content, 20000))
+                .build();
+        return execute(api.summarizeNote(request));
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.NoteSummarizeResponse summarizeNoteImage(@NonNull String imageUriString) throws CloudException {
+        MultipartBody.Part part = ImageUploadHelper.prepareImagePart(
+                appContext.getContentResolver(),
+                imageUriString
+        );
+        return execute(api.summarizeNoteImage(part));
+    }
+
+    @NonNull
     private <T> T execute(@NonNull Call<ApiModels.ApiResponse<T>> call) throws CloudException {
         try {
             Response<ApiModels.ApiResponse<T>> response = call.execute();
@@ -180,6 +223,15 @@ public class RetrofitCloudGateway implements CloudGateway {
             return "Chưa có dữ liệu sao lưu trên đám mây";
         }
         return "Yêu cầu thất bại (mã " + httpCode + ")";
+    }
+
+    @NonNull
+    private String trimMax(@Nullable String value, int maxLen) {
+        if (value == null) {
+            return "";
+        }
+        String trimmed = value.trim();
+        return trimmed.length() > maxLen ? trimmed.substring(0, maxLen) : trimmed;
     }
 
     private boolean hasText(@Nullable String value) {

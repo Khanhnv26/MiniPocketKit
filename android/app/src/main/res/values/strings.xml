@@ -422,4 +422,20 @@
     <string name="cloud_restore_confirm_message">Dữ liệu lịch học, công việc, ghi chú và hồ sơ hiện tại trên máy sẽ được thay thế bằng bản sao lưu mới nhất trên server.</string>
     <string name="cloud_logout_confirm_title">Đăng xuất</string>
     <string name="cloud_logout_confirm_message">Bạn vẫn giữ nguyên dữ liệu ngoại tuyến hiện tại trên thiết bị.</string>
+
+    <string name="tools_ocr_btn_pick">Chọn ảnh quét OCR</string>
+    <string name="tools_ocr_scanning">Đang quét ảnh bằng AI…</string>
+    <string name="tools_ocr_scan_success">Đã trích xuất văn bản từ ảnh</string>
+    <string name="tools_ocr_empty_result">Không nhận diện được chữ trong ảnh</string>
+    <string name="tools_ocr_btn_create_note">Tạo ghi chú</string>
+
+    <string name="editor_ai_btn_summarize">AI Tóm tắt</string>
+    <string name="editor_ai_btn_scan_image">Quét ảnh ghi chú</string>
+    <string name="editor_ai_busy">Đang xử lý AI…</string>
+    <string name="editor_ai_empty_content_error">Hãy nhập nội dung ghi chú trước khi tóm tắt</string>
+    <string name="editor_ai_empty_result_error">AI không trả về nội dung tóm tắt</string>
+    <string name="editor_ai_preview_title">Áp dụng bản tóm tắt AI?</string>
+    <string name="editor_ai_preview_message_format">%1$s\n\nNội dung trong ô ghi chú sẽ được thay bằng bản trình bày đã tóm tắt.</string>
+    <string name="editor_ai_btn_apply">Áp dụng</string>
+    <string name="editor_ai_applied_toast">Đã điền bản tóm tắt AI vào ghi chú</string>
 </resources>
