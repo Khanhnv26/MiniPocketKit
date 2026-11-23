@@ -106,13 +106,18 @@ public final class BackupPayloadSanitizer {
     }
 
     @NonNull
-    private static List<ScheduleSlot> sanitizeSchedules(@Nullable List<ScheduleSlot> raw) {
+    public static List<ScheduleSlot> sanitizeSchedules(@Nullable List<ScheduleSlot> raw) {
+        return sanitizeSchedules(raw, MAX_SCHEDULES);
+    }
+
+    @NonNull
+    public static List<ScheduleSlot> sanitizeSchedules(@Nullable List<ScheduleSlot> raw, int maxCount) {
         List<ScheduleSlot> out = new ArrayList<>();
-        if (raw == null) {
+        if (raw == null || maxCount <= 0) {
             return out;
         }
         for (ScheduleSlot slot : raw) {
-            if (out.size() >= MAX_SCHEDULES) {
+            if (out.size() >= maxCount) {
                 break;
             }
             if (slot == null) {

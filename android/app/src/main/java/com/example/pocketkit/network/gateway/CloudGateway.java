@@ -1,9 +1,13 @@
 package com.example.pocketkit.network.gateway;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.network.exception.CloudException;
+
+import java.util.List;
 
 public interface CloudGateway {
 
@@ -49,4 +53,21 @@ public interface CloudGateway {
 
     @NonNull
     ApiModels.NoteSummarizeResponse summarizeNoteImage(@NonNull String imageUriString) throws CloudException;
+
+    @NonNull
+    ApiModels.CreateShareResponse createScheduleShare(
+            @Nullable String title,
+            @NonNull List<ScheduleSlot> slots
+    ) throws CloudException;
+
+    @NonNull
+    ApiModels.ShareDetailResponse getScheduleShare(@NonNull String code) throws CloudException;
+
+    @NonNull
+    List<ApiModels.ShareSummaryResponse> listMyScheduleShares() throws CloudException;
+
+    void deleteScheduleShare(@NonNull String code) throws CloudException;
+
+    @NonNull
+    ApiModels.ScheduleScanResponse parseScheduleImage(@NonNull String imageUriString) throws CloudException;
 }

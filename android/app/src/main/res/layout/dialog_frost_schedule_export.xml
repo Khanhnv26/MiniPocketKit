@@ -135,6 +135,21 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/btnExportOnlineShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_button_gap"
+        android:background="@drawable/bg_pill_accent_soft"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/schedule_export_btn_online_share"
+        android:textColor="@color/accent_sapphire"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/btnExportTemplate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

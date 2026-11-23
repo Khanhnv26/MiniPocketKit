@@ -1,6 +1,7 @@
 package com.example.pocketkit.viewmodel;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -8,6 +9,10 @@ import androidx.lifecycle.ViewModel;
 import com.example.pocketkit.R;
 import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.model.ScheduleSlot;
+import com.example.pocketkit.network.dto.ApiModels;
+import com.example.pocketkit.network.exception.CloudException;
+import com.example.pocketkit.network.gateway.CloudGateway;
+import com.example.pocketkit.network.utils.BackupPayloadSanitizer;
 import com.example.pocketkit.repository.PocketKitRepository;
 import com.example.pocketkit.transfer.ScheduleTransferGateway;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
@@ -17,12 +22,15 @@ import com.example.pocketkit.ui.UiMessage;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 
 public class CalendarViewModel extends ViewModel {
+
+    private static final int MAX_SHARE_SLOTS = 200;
 
     public static final class CalendarUiState {
         public final int selectedDayIndex;
@@ -81,7 +89,9 @@ public class CalendarViewModel extends ViewModel {
 
     private final PocketKitRepository repository;
     private final ScheduleTransferGateway transferGateway;
+    private final CloudGateway cloudGateway;
     private final Executor ioExecutor;
+    private final Executor networkExecutor;
 
     private final MutableLiveData<CalendarUiState> calendarState = new MutableLiveData<>();
     private final MutableLiveData<UiEvent<ImportPreviewEventData>> importPreviewEvent = new MutableLiveData<>();
@@ -90,19 +100,27 @@ public class CalendarViewModel extends ViewModel {
     private final MutableLiveData<UiEvent<Integer>> openExportDialogEvent = new MutableLiveData<>();
     private final MutableLiveData<UiEvent<UiMessage>> toastEvent = new MutableLiveData<>();
     private final MutableLiveData<UiEvent<Boolean>> scheduleMutatedEvent = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> cloudBusy = new MutableLiveData<>(false);
+    private final MutableLiveData<List<ApiModels.ShareSummaryResponse>> myShares = new MutableLiveData<>(Collections.emptyList());
+    private final MutableLiveData<UiEvent<ApiModels.CreateShareResponse>> shareCreatedEvent = new MutableLiveData<>();
 
     private int selectedDayIndex = getInitialDayIndex();
     private ScheduleTransferHelper.TransferFormat pendingExportFormat = ScheduleTransferHelper.TransferFormat.XLSX;
     private boolean pendingExportTemplate = false;
+    private volatile boolean cloudActionRunning = false;
 
     public CalendarViewModel(
             @NonNull PocketKitRepository repository,
             @NonNull ScheduleTransferGateway transferGateway,
-            @NonNull Executor ioExecutor
+            @NonNull CloudGateway cloudGateway,
+            @NonNull Executor ioExecutor,
+            @NonNull Executor networkExecutor
     ) {
         this.repository = repository;
         this.transferGateway = transferGateway;
+        this.cloudGateway = cloudGateway;
         this.ioExecutor = ioExecutor;
+        this.networkExecutor = networkExecutor;
     }
 
     @NonNull
@@ -138,6 +156,25 @@ public class CalendarViewModel extends ViewModel {
     @NonNull
     public LiveData<UiEvent<Boolean>> getScheduleMutatedEvent() {
         return scheduleMutatedEvent;
+    }
+
+    @NonNull
+    public LiveData<Boolean> getCloudBusy() {
+        return cloudBusy;
+    }
+
+    @NonNull
+    public LiveData<List<ApiModels.ShareSummaryResponse>> getMyShares() {
+        return myShares;
+    }
+
+    @NonNull
+    public LiveData<UiEvent<ApiModels.CreateShareResponse>> getShareCreatedEvent() {
+        return shareCreatedEvent;
+    }
+
+    public boolean isCloudLoggedIn() {
+        return cloudGateway.isLoggedIn();
     }
 
     public int getSelectedDayOfWeek() {
@@ -201,6 +238,154 @@ public class CalendarViewModel extends ViewModel {
                 toastEvent.postValue(new UiEvent<>(UiMessage.longToast(R.string.schedule_import_legacy_xls_error)));
             } catch (Exception e) {
                 toastEvent.postValue(new UiEvent<>(UiMessage.longToast(R.string.schedule_import_read_error)));
+            }
+        });
+    }
+
+    public void importByShareCode(@NonNull String rawCode) {
+        String code = rawCode.trim().toUpperCase(Locale.ROOT);
+        if (code.isEmpty()) {
+            toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.schedule_share_code_empty_error)));
+            return;
+        }
+        if (cloudActionRunning) {
+            return;
+        }
+        setCloudActionBusy(true);
+        networkExecutor.execute(() -> {
+            try {
+                ApiModels.ShareDetailResponse detail = cloudGateway.getScheduleShare(code);
+                List<ScheduleSlot> slots = detail.getSlots() != null ? detail.getSlots() : Collections.emptyList();
+                setCloudActionBusy(false);
+                if (slots.isEmpty()) {
+                    toastEvent.postValue(new UiEvent<>(UiMessage.longToast(R.string.schedule_import_empty_error)));
+                    return;
+                }
+                String label = detail.getTitle() != null && !detail.getTitle().trim().isEmpty()
+                        ? detail.getTitle().trim()
+                        : ("Mã " + code);
+                ScheduleTransferHelper.ImportResult result = new ScheduleTransferHelper.ImportResult(
+                        ScheduleTransferHelper.TransferFormat.JSON,
+                        slots.size(),
+                        slots,
+                        Collections.emptyList()
+                );
+                importPreviewEvent.postValue(new UiEvent<>(new ImportPreviewEventData(label, result)));
+            } catch (CloudException ex) {
+                setCloudActionBusy(false);
+                toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_message_raw, ex.getMessage())));
+            }
+        });
+    }
+
+    public void scanScheduleImage(@NonNull String imageUriString) {
+        if (cloudActionRunning) {
+            return;
+        }
+        if (!cloudGateway.isLoggedIn()) {
+            toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_error_login_required)));
+            return;
+        }
+        setCloudActionBusy(true);
+        networkExecutor.execute(() -> {
+            try {
+                ApiModels.ScheduleScanResponse res = cloudGateway.parseScheduleImage(imageUriString);
+                List<ScheduleSlot> slots = res.getSlots() != null ? res.getSlots() : Collections.emptyList();
+                setCloudActionBusy(false);
+                if (slots.isEmpty()) {
+                    toastEvent.postValue(new UiEvent<>(UiMessage.longToast(R.string.schedule_ai_scan_empty_error)));
+                    return;
+                }
+                int totalRows = slots.size() + Math.max(0, res.getSkippedCount());
+                ScheduleTransferHelper.ImportResult result = new ScheduleTransferHelper.ImportResult(
+                        ScheduleTransferHelper.TransferFormat.JSON,
+                        totalRows,
+                        slots,
+                        Collections.emptyList()
+                );
+                importPreviewEvent.postValue(new UiEvent<>(new ImportPreviewEventData("Ảnh TKB (AI)", result)));
+            } catch (CloudException ex) {
+                setCloudActionBusy(false);
+                toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_message_raw, ex.getMessage())));
+            }
+        });
+    }
+
+    public void createOnlineShare(@Nullable String rawTitle) {
+        if (cloudActionRunning) {
+            return;
+        }
+        if (!cloudGateway.isLoggedIn()) {
+            toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_error_login_required)));
+            return;
+        }
+        String cleanTitle = rawTitle != null ? rawTitle.trim() : "";
+        setCloudActionBusy(true);
+        ioExecutor.execute(() -> {
+            List<ScheduleSlot> sanitized = BackupPayloadSanitizer.sanitizeSchedules(
+                    repository.getAllSchedules(),
+                    MAX_SHARE_SLOTS
+            );
+            if (sanitized.isEmpty()) {
+                setCloudActionBusy(false);
+                toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.schedule_export_empty_error)));
+                return;
+            }
+            networkExecutor.execute(() -> {
+                try {
+                    ApiModels.CreateShareResponse created = cloudGateway.createScheduleShare(cleanTitle, sanitized);
+                    refreshSharesQuietly();
+                    setCloudActionBusy(false);
+                    shareCreatedEvent.postValue(new UiEvent<>(created));
+                    toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.schedule_share_created_toast, created.getCode())));
+                } catch (CloudException ex) {
+                    setCloudActionBusy(false);
+                    toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_message_raw, ex.getMessage())));
+                }
+            });
+        });
+    }
+
+    public void loadMyShares() {
+        if (!cloudGateway.isLoggedIn()) {
+            myShares.postValue(Collections.emptyList());
+            return;
+        }
+        if (cloudActionRunning) {
+            return;
+        }
+        setCloudActionBusy(true);
+        networkExecutor.execute(() -> {
+            try {
+                List<ApiModels.ShareSummaryResponse> list = cloudGateway.listMyScheduleShares();
+                myShares.postValue(list);
+                setCloudActionBusy(false);
+            } catch (CloudException ex) {
+                setCloudActionBusy(false);
+                toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_message_raw, ex.getMessage())));
+            }
+        });
+    }
+
+    public void deleteOnlineShare(@NonNull String rawCode) {
+        String code = rawCode.trim().toUpperCase(Locale.ROOT);
+        if (code.isEmpty() || cloudActionRunning) {
+            return;
+        }
+        if (!cloudGateway.isLoggedIn()) {
+            toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_error_login_required)));
+            return;
+        }
+        setCloudActionBusy(true);
+        networkExecutor.execute(() -> {
+            try {
+                cloudGateway.deleteScheduleShare(code);
+                refreshSharesQuietly();
+                setCloudActionBusy(false);
+                toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.schedule_share_deleted_toast)));
+            } catch (CloudException ex) {
+                setCloudActionBusy(false);
+                toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_message_raw, ex.getMessage())));
             }
         });
     }
@@ -285,6 +470,18 @@ public class CalendarViewModel extends ViewModel {
                 toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.schedule_export_failed_toast)));
             }
         });
+    }
+
+    private void refreshSharesQuietly() {
+        try {
+            myShares.postValue(cloudGateway.listMyScheduleShares());
+        } catch (CloudException ignored) {
+        }
+    }
+
+    private void setCloudActionBusy(boolean busy) {
+        cloudActionRunning = busy;
+        cloudBusy.postValue(busy);
     }
 
     public static int getDayShortNameRes(int dayOfWeek) {

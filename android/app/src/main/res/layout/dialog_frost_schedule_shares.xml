@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/dialog_outer_padding_h"
+    android:layout_marginVertical="@dimen/dialog_outer_padding_v"
+    android:background="@drawable/bg_dialog_frost"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_inner_padding">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/schedule_share_manager_title"
+        android:textColor="@color/ink_primary"
+        android:textSize="@dimen/text_size_dialog_title"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/edtShareTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/card_gap"
+        android:background="@drawable/bg_dialog_input"
+        android:hint="@string/schedule_share_title_hint"
+        android:imeOptions="actionDone"
+        android:importantForAutofill="no"
+        android:inputType="textCapSentences"
+        android:maxLength="120"
+        android:maxLines="1"
+        android:minHeight="@dimen/input_min_height"
+        android:paddingHorizontal="@dimen/card_padding_compact"
+        android:singleLine="true"
+        android:textColor="@color/ink_primary"
+        android:textColorHint="@color/ink_muted"
+        android:textSize="@dimen/text_size_input" />
+
+    <TextView
+        android:id="@+id/btnCreateShareCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_button_gap"
+        android:background="@drawable/bg_pill_primary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/schedule_share_btn_create"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/layoutCreatedShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/card_gap"
+        android:background="@drawable/bg_glass_inner"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/card_padding_compact"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/schedule_share_latest_label"
+                android:textColor="@color/ink_secondary"
+                android:textSize="@dimen/text_size_caption" />
+
+            <TextView
+                android:id="@+id/tvCreatedShareCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/micro_gap"
+                android:textColor="@color/accent_sapphire"
+                android:textSize="@dimen/text_size_dialog_title"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnCopyCreatedCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill_accent_soft"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minHeight="@dimen/touch_target_min"
+            android:paddingHorizontal="@dimen/chip_padding_h"
+            android:text="@string/schedule_share_btn_copy"
+            android:textColor="@color/accent_sapphire"
+            android:textSize="@dimen/text_size_body"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_field_gap"
+        android:text="@string/schedule_share_list_title"
+        android:textColor="@color/ink_secondary"
+        android:textSize="@dimen/text_size_caption"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvShareListEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_label_gap"
+        android:text="@string/schedule_share_list_empty"
+        android:textColor="@color/ink_secondary"
+        android:textSize="@dimen/text_size_body" />
+
+    <ScrollView
+        android:id="@+id/scrollShareList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_label_gap"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/layoutShareListContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/btnCloseShareManager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_section_gap"
+        android:background="@drawable/bg_pill_secondary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/schedule_export_btn_close"
+        android:textColor="@color/ink_secondary"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+</LinearLayout>

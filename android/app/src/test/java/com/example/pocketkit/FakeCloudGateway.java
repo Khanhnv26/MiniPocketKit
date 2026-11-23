@@ -3,12 +3,15 @@ package com.example.pocketkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.network.exception.CloudException;
 import com.example.pocketkit.network.gateway.CloudGateway;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 final class FakeCloudGateway implements CloudGateway {
 
@@ -25,11 +28,24 @@ final class FakeCloudGateway implements CloudGateway {
     @Nullable
     ApiModels.NoteSummarizeResponse summarizeResponse;
     @Nullable
+    ApiModels.ShareDetailResponse shareDetailResponse;
+    @Nullable
+    ApiModels.ScheduleScanResponse scheduleScanResponse;
+    final List<ApiModels.ShareSummaryResponse> myShares = new ArrayList<>();
+    @Nullable
+    List<ScheduleSlot> lastSharedSlots;
+    @Nullable
     String lastOcrUri;
     @Nullable
     String lastSummarizedContent;
     @Nullable
     String lastSummarizedImageUri;
+    @Nullable
+    String lastShareCodeQueried;
+    @Nullable
+    String lastDeletedShareCode;
+    @Nullable
+    String lastScheduleImageUri;
     @Nullable
     CloudException errorToThrow;
 
@@ -166,6 +182,81 @@ final class FakeCloudGateway implements CloudGateway {
                 "Tóm tắt nội dung slide.",
                 "1. Ý trong ảnh",
                 Collections.singletonList("Điểm quan trọng"),
+                true
+        );
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.CreateShareResponse createScheduleShare(
+            @Nullable String title,
+            @NonNull List<ScheduleSlot> slots
+    ) throws CloudException {
+        throwIfConfigured();
+        this.lastSharedSlots = new ArrayList<>(slots);
+        String code = "ABC123";
+        long expires = 1797600000000L;
+        myShares.add(0, new ApiModels.ShareSummaryResponse(code, title != null ? title : "", 1795000000000L, expires, false));
+        return new ApiModels.CreateShareResponse(code, expires);
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.ShareDetailResponse getScheduleShare(@NonNull String code) throws CloudException {
+        throwIfConfigured();
+        this.lastShareCodeQueried = code;
+        if (shareDetailResponse != null) {
+            return shareDetailResponse;
+        }
+        return new ApiModels.ShareDetailResponse(
+                code,
+                "TKB Chia Sẻ",
+                1797600000000L,
+                Collections.singletonList(ScheduleSlot.builder()
+                        .dayOfWeek(2)
+                        .startTime("07:30")
+                        .endTime("09:45")
+                        .subject("PRM392")
+                        .room("BE201")
+                        .build())
+        );
+    }
+
+    @NonNull
+    @Override
+    public List<ApiModels.ShareSummaryResponse> listMyScheduleShares() throws CloudException {
+        throwIfConfigured();
+        return new ArrayList<>(myShares);
+    }
+
+    @Override
+    public void deleteScheduleShare(@NonNull String code) throws CloudException {
+        throwIfConfigured();
+        this.lastDeletedShareCode = code;
+        for (int i = myShares.size() - 1; i >= 0; i--) {
+            if (code.equals(myShares.get(i).getCode())) {
+                myShares.remove(i);
+            }
+        }
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.ScheduleScanResponse parseScheduleImage(@NonNull String imageUriString) throws CloudException {
+        throwIfConfigured();
+        this.lastScheduleImageUri = imageUriString;
+        if (scheduleScanResponse != null) {
+            return scheduleScanResponse;
+        }
+        return new ApiModels.ScheduleScanResponse(
+                Collections.singletonList(ScheduleSlot.builder()
+                        .dayOfWeek(4)
+                        .startTime("13:00")
+                        .endTime("15:15")
+                        .subject("SWP391")
+                        .room("DE302")
+                        .build()),
+                0,
                 true
         );
     }

@@ -11,6 +11,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.provider.Settings;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.Patterns;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -83,7 +85,25 @@ public final class FrostUiHelper {
 
         void onShareSchedules(@NonNull ScheduleTransferHelper.TransferFormat format);
 
+        void onManageOnlineShares();
+
         void onExportTemplate(@NonNull ScheduleTransferHelper.TransferFormat format);
+    }
+
+    public interface OnImportSourceListener {
+        void onImportFromFile();
+
+        void onImportFromCode();
+
+        void onImportFromAiImage();
+    }
+
+    public interface OnShareCodeSubmittedListener {
+        void onCodeSubmitted(@NonNull String code);
+    }
+
+    public interface OnOnlineShareCreateListener {
+        void onCreateShare(@NonNull String title);
     }
 
     public interface OnProfileSavedListener {
@@ -687,6 +707,7 @@ public final class FrostUiHelper {
         TextView chipJson = content.findViewById(R.id.chipExportJson);
         TextView btnSave = content.findViewById(R.id.btnExportSave);
         TextView btnShare = content.findViewById(R.id.btnExportShare);
+        TextView btnOnlineShare = content.findViewById(R.id.btnExportOnlineShare);
         TextView btnTemplate = content.findViewById(R.id.btnExportTemplate);
         TextView btnClose = content.findViewById(R.id.btnExportClose);
 
@@ -737,6 +758,11 @@ public final class FrostUiHelper {
             listener.onShareSchedules(selectedFormat[0]);
         });
 
+        btnOnlineShare.setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.onManageOnlineShares();
+        });
+
         btnTemplate.setOnClickListener(v -> {
             dialog.dismiss();
             listener.onExportTemplate(selectedFormat[0]);
@@ -746,6 +772,154 @@ public final class FrostUiHelper {
 
         configureFrostDialogWindow(dialog, false);
         dialog.show();
+    }
+
+    public static void showImportSourceDialog(
+            @NonNull Context context,
+            @NonNull OnImportSourceListener listener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_schedule_source);
+        dialog.setContentView(content);
+
+        content.findViewById(R.id.btnImportSourceFile).setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.onImportFromFile();
+        });
+        content.findViewById(R.id.btnImportSourceCode).setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.onImportFromCode();
+        });
+        content.findViewById(R.id.btnImportSourceAiImage).setOnClickListener(v -> {
+            dialog.dismiss();
+            listener.onImportFromAiImage();
+        });
+        content.findViewById(R.id.btnImportSourceCancel).setOnClickListener(v -> dialog.dismiss());
+
+        configureFrostDialogWindow(dialog, false);
+        dialog.show();
+    }
+
+    public static void showShareCodeInputDialog(
+            @NonNull Context context,
+            @NonNull OnShareCodeSubmittedListener listener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_input);
+        dialog.setContentView(content);
+
+        TextView tvTitle = content.findViewById(R.id.tvDialogTitle);
+        EditText edtInput = content.findViewById(R.id.edtDialogInput);
+        TextView btnCancel = content.findViewById(R.id.btnDialogCancel);
+        TextView btnConfirm = content.findViewById(R.id.btnDialogConfirm);
+
+        tvTitle.setText(R.string.schedule_share_code_dialog_title);
+        edtInput.setHint(R.string.schedule_share_code_hint);
+        edtInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+        edtInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(12)});
+        btnConfirm.setText(R.string.schedule_share_code_confirm);
+
+        Runnable submit = () -> {
+            String code = edtInput.getText().toString().trim().toUpperCase(Locale.ROOT);
+            if (code.isEmpty()) {
+                setFieldError(edtInput, context.getString(R.string.schedule_share_code_empty_error));
+                return;
+            }
+            dialog.dismiss();
+            listener.onCodeSubmitted(code);
+        };
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnConfirm.setOnClickListener(v -> submit.run());
+        edtInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                submit.run();
+                return true;
+            }
+            return false;
+        });
+
+        configureFrostDialogWindow(dialog, true);
+        edtInput.requestFocus();
+        dialog.show();
+    }
+
+    public static final class OnlineShareDialogHandle {
+        @NonNull
+        public final AppCompatDialog dialog;
+        @NonNull
+        public final EditText edtTitle;
+        @NonNull
+        public final TextView btnCreate;
+        @NonNull
+        public final View layoutCreatedShare;
+        @NonNull
+        public final TextView tvCreatedCode;
+        @NonNull
+        public final TextView btnCopyCreatedCode;
+        @NonNull
+        public final TextView tvListEmpty;
+        @NonNull
+        public final LinearLayout layoutListContainer;
+
+        private OnlineShareDialogHandle(
+                @NonNull AppCompatDialog dialog,
+                @NonNull EditText edtTitle,
+                @NonNull TextView btnCreate,
+                @NonNull View layoutCreatedShare,
+                @NonNull TextView tvCreatedCode,
+                @NonNull TextView btnCopyCreatedCode,
+                @NonNull TextView tvListEmpty,
+                @NonNull LinearLayout layoutListContainer
+        ) {
+            this.dialog = dialog;
+            this.edtTitle = edtTitle;
+            this.btnCreate = btnCreate;
+            this.layoutCreatedShare = layoutCreatedShare;
+            this.tvCreatedCode = tvCreatedCode;
+            this.btnCopyCreatedCode = btnCopyCreatedCode;
+            this.tvListEmpty = tvListEmpty;
+            this.layoutListContainer = layoutListContainer;
+        }
+    }
+
+    @NonNull
+    public static OnlineShareDialogHandle createOnlineShareDialog(
+            @NonNull Context context,
+            @NonNull OnOnlineShareCreateListener onCreateListener
+    ) {
+        AppCompatDialog dialog = new AppCompatDialog(context);
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        View content = inflateDialogView(context, R.layout.dialog_frost_schedule_shares);
+        dialog.setContentView(content);
+
+        EditText edtTitle = content.findViewById(R.id.edtShareTitle);
+        TextView btnCreate = content.findViewById(R.id.btnCreateShareCode);
+        View layoutCreatedShare = content.findViewById(R.id.layoutCreatedShare);
+        TextView tvCreatedCode = content.findViewById(R.id.tvCreatedShareCode);
+        TextView btnCopyCreatedCode = content.findViewById(R.id.btnCopyCreatedCode);
+        TextView tvListEmpty = content.findViewById(R.id.tvShareListEmpty);
+        LinearLayout layoutListContainer = content.findViewById(R.id.layoutShareListContainer);
+        TextView btnClose = content.findViewById(R.id.btnCloseShareManager);
+
+        btnCreate.setOnClickListener(v -> onCreateListener.onCreateShare(edtTitle.getText().toString()));
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        configureFrostDialogWindow(dialog, false);
+        dialog.show();
+
+        return new OnlineShareDialogHandle(
+                dialog,
+                edtTitle,
+                btnCreate,
+                layoutCreatedShare,
+                tvCreatedCode,
+                btnCopyCreatedCode,
+                tvListEmpty,
+                layoutListContainer
+        );
     }
 
     public static void showProfileEditorDialog(

@@ -438,4 +438,35 @@
     <string name="editor_ai_preview_message_format">%1$s\n\nNội dung trong ô ghi chú sẽ được thay bằng bản trình bày đã tóm tắt.</string>
     <string name="editor_ai_btn_apply">Áp dụng</string>
     <string name="editor_ai_applied_toast">Đã điền bản tóm tắt AI vào ghi chú</string>
+
+    <string name="schedule_import_source_title">Chọn nguồn nhập thời khóa biểu</string>
+    <string name="schedule_import_source_file">Từ tệp (XLSX / CSV / JSON)</string>
+    <string name="schedule_import_source_code">Nhập mã chia sẻ 6 ký tự</string>
+    <string name="schedule_import_source_ai_image">Quét ảnh TKB bằng AI</string>
+
+    <string name="schedule_share_code_dialog_title">Nhập mã thời khóa biểu</string>
+    <string name="schedule_share_code_hint">VD: ABC123</string>
+    <string name="schedule_share_code_confirm">Tải lịch học</string>
+    <string name="schedule_share_code_empty_error">Vui lòng nhập mã chia sẻ</string>
+
+    <string name="schedule_export_btn_online_share">Chia sẻ qua mã 6 ký tự</string>
+    <string name="schedule_share_manager_title">Chia sẻ TKB trực tuyến</string>
+    <string name="schedule_share_title_hint">Tiêu đề (tùy chọn, VD: TKB Kỳ Spring)</string>
+    <string name="schedule_share_btn_create">Tạo mã 6 ký tự</string>
+    <string name="schedule_share_latest_label">Mã vừa tạo</string>
+    <string name="schedule_share_btn_copy">Sao chép</string>
+    <string name="schedule_share_copied_toast">Đã sao chép mã chia sẻ %1$s</string>
+    <string name="schedule_share_created_toast">Đã tạo mã chia sẻ %1$s</string>
+    <string name="schedule_share_deleted_toast">Đã xoá mã chia sẻ</string>
+    <string name="schedule_share_delete_title">Xoá mã chia sẻ</string>
+    <string name="schedule_share_delete_message">Bạn muốn xoá mã %1$s? Người khác sẽ không thể tải thời khóa biểu từ mã này nữa.</string>
+    <string name="schedule_share_list_title">MÃ ĐÃ TẠO</string>
+    <string name="schedule_share_list_empty">Chưa có mã chia sẻ nào.</string>
+    <string name="schedule_share_login_hint">Đăng nhập ở tab Cá nhân để tạo và quản lý mã chia sẻ trực tuyến.</string>
+    <string name="schedule_share_status_active_format">Còn hiệu lực · HSD %1$s</string>
+    <string name="schedule_share_status_expired">Đã hết hạn</string>
+    <string name="schedule_share_default_title">Thời khóa biểu chia sẻ</string>
+    <string name="schedule_share_btn_delete">Xoá</string>
+    <string name="schedule_ai_scan_empty_error">AI không trích xuất được ca học hợp lệ nào từ ảnh đã chọn.</string>
+    <string name="schedule_cloud_busy_label">Đang xử lý…</string>
 </resources>

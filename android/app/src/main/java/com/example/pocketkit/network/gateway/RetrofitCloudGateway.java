@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.network.api.PocketKitApi;
 import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.network.exception.CloudException;
@@ -13,6 +14,8 @@ import com.example.pocketkit.network.utils.ImageUploadHelper;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.MultipartBody;
@@ -176,12 +179,67 @@ public class RetrofitCloudGateway implements CloudGateway {
     }
 
     @NonNull
+    @Override
+    public ApiModels.CreateShareResponse createScheduleShare(
+            @Nullable String title,
+            @NonNull List<ScheduleSlot> slots
+    ) throws CloudException {
+        ApiModels.CreateShareRequest request = ApiModels.CreateShareRequest.builder()
+                .title(trimMax(title, 120))
+                .slots(slots)
+                .build();
+        return execute(api.createScheduleShare(request));
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.ShareDetailResponse getScheduleShare(@NonNull String code) throws CloudException {
+        String normalizedCode = code.trim().toUpperCase(Locale.ROOT);
+        return execute(api.getScheduleShare(normalizedCode));
+    }
+
+    @NonNull
+    @Override
+    public List<ApiModels.ShareSummaryResponse> listMyScheduleShares() throws CloudException {
+        return execute(api.listMyScheduleShares());
+    }
+
+    @Override
+    public void deleteScheduleShare(@NonNull String code) throws CloudException {
+        String normalizedCode = code.trim().toUpperCase(Locale.ROOT);
+        executeVoid(api.deleteScheduleShare(normalizedCode));
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.ScheduleScanResponse parseScheduleImage(@NonNull String imageUriString) throws CloudException {
+        MultipartBody.Part part = ImageUploadHelper.prepareImagePart(
+                appContext.getContentResolver(),
+                imageUriString
+        );
+        return execute(api.parseScheduleImage(part));
+    }
+
+    @NonNull
     private <T> T execute(@NonNull Call<ApiModels.ApiResponse<T>> call) throws CloudException {
+        T data = executeInternal(call, true);
+        if (data == null) {
+            throw new CloudException(0, "Máy chủ trả về phản hồi không hợp lệ");
+        }
+        return data;
+    }
+
+    private void executeVoid(@NonNull Call<ApiModels.ApiResponse<Void>> call) throws CloudException {
+        executeInternal(call, false);
+    }
+
+    @Nullable
+    private <T> T executeInternal(@NonNull Call<ApiModels.ApiResponse<T>> call, boolean requireData) throws CloudException {
         try {
             Response<ApiModels.ApiResponse<T>> response = call.execute();
             if (response.isSuccessful()) {
                 ApiModels.ApiResponse<T> body = response.body();
-                if (body != null && body.isSuccess() && body.getData() != null) {
+                if (body != null && body.isSuccess() && (!requireData || body.getData() != null)) {
                     return body.getData();
                 }
                 String msg = body != null && hasText(body.getMessage())
@@ -220,7 +278,7 @@ public class RetrofitCloudGateway implements CloudGateway {
             return "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại";
         }
         if (httpCode == 404) {
-            return "Chưa có dữ liệu sao lưu trên đám mây";
+            return "Không tìm thấy dữ liệu yêu cầu";
         }
         return "Yêu cầu thất bại (mã " + httpCode + ")";
     }

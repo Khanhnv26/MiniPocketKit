@@ -44,7 +44,7 @@ public final class PocketKitViewModelFactory implements ViewModelProvider.Factor
             return (T) new HomeViewModel(repository, reminderGateway, ioExecutor);
         }
         if (modelClass.isAssignableFrom(CalendarViewModel.class)) {
-            return (T) new CalendarViewModel(repository, transferGateway, ioExecutor);
+            return (T) new CalendarViewModel(repository, transferGateway, cloudGateway, ioExecutor, networkExecutor);
         }
         if (modelClass.isAssignableFrom(ToolsViewModel.class)) {
             return (T) new ToolsViewModel(repository, cloudGateway, ioExecutor, networkExecutor);

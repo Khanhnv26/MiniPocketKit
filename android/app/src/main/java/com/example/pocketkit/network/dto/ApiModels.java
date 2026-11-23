@@ -129,4 +129,56 @@ public final class ApiModels {
         private boolean aiPowered;
     }
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CreateShareRequest {
+        private String title;
+        private List<ScheduleSlot> slots;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateShareResponse {
+        private String code;
+        private long expiresAtEpoch;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ShareDetailResponse {
+        private String code;
+        private String title;
+        private long expiresAtEpoch;
+        private List<ScheduleSlot> slots;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ShareSummaryResponse {
+        private String code;
+        private String title;
+        private long createdAtEpoch;
+        private long expiresAtEpoch;
+        private boolean expired;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ScheduleScanResponse {
+        private List<ScheduleSlot> slots;
+        private int skippedCount;
+        private boolean aiPowered;
+    }
+
 }

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/dialog_outer_padding_h"
+    android:layout_marginVertical="@dimen/dialog_outer_padding_v"
+    android:background="@drawable/bg_dialog_frost"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_inner_padding">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/schedule_import_source_title"
+        android:textColor="@color/ink_primary"
+        android:textSize="@dimen/text_size_dialog_title"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/btnImportSourceFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_field_gap"
+        android:background="@drawable/bg_pill_primary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/schedule_import_source_file"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/btnImportSourceCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_button_gap"
+        android:background="@drawable/bg_pill_accent_soft"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/schedule_import_source_code"
+        android:textColor="@color/accent_sapphire"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/btnImportSourceAiImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_button_gap"
+        android:background="@drawable/bg_pill_secondary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/schedule_import_source_ai_image"
+        android:textColor="@color/ink_primary"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/btnImportSourceCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialog_section_gap"
+        android:background="@drawable/bg_pill_secondary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/notes_dialog_cancel"
+        android:textColor="@color/ink_secondary"
+        android:textSize="@dimen/text_size_input"
+        android:textStyle="bold" />
+</LinearLayout>

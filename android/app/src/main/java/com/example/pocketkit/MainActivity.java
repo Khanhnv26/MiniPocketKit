@@ -16,6 +16,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -44,6 +46,7 @@ import com.example.pocketkit.model.Note;
 import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.model.StudentProfile;
 import com.example.pocketkit.model.StudyTask;
+import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.profile.ProfileGpaHelper;
 import com.example.pocketkit.reminder.TaskReminderHelper;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
@@ -74,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
     private int selectedTab = 0;
     private StudyTask pendingReminderTask;
     private boolean taskReceiverRegistered = false;
+    private boolean calendarCloudBusy = false;
+    @Nullable
+    private FrostUiHelper.OnlineShareDialogHandle onlineShareDialog;
 
     private final BroadcastReceiver taskUpdatedReceiver = new BroadcastReceiver() {
         @Override
@@ -105,6 +111,15 @@ public class MainActivity extends AppCompatActivity {
             uri -> {
                 if (uri != null) {
                     toolsViewModel.scanOcrImage(uri.toString());
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickScheduleImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(),
+            uri -> {
+                if (uri != null) {
+                    calendarViewModel.scanScheduleImage(uri.toString());
                 }
             }
     );
@@ -218,6 +233,15 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    protected void onDestroy() {
+        if (onlineShareDialog != null) {
+            onlineShareDialog.dialog.dismiss();
+            onlineShareDialog = null;
+        }
+        super.onDestroy();
+    }
+
     private void observeViewModels() {
         observeToast(homeViewModel.getToastEvent());
         observeToast(calendarViewModel.getToastEvent());
@@ -267,6 +291,17 @@ public class MainActivity extends AppCompatActivity {
         calendarViewModel.getScheduleMutatedEvent().observe(this, event -> {
             if (event.getContentIfNotHandled() != null) {
                 homeViewModel.loadDashboard(true);
+            }
+        });
+        calendarViewModel.getCloudBusy().observe(this, this::renderCalendarCloudBusy);
+        calendarViewModel.getMyShares().observe(this, this::renderOnlineShareList);
+        calendarViewModel.getShareCreatedEvent().observe(this, event -> {
+            ApiModels.CreateShareResponse created = event.getContentIfNotHandled();
+            if (created != null && onlineShareDialog != null && onlineShareDialog.dialog.isShowing()) {
+                onlineShareDialog.layoutCreatedShare.setVisibility(View.VISIBLE);
+                onlineShareDialog.tvCreatedCode.setText(created.getCode());
+                onlineShareDialog.edtTitle.setText("");
+                onlineShareDialog.btnCopyCreatedCode.setOnClickListener(v -> copyShareCode(created.getCode()));
             }
         });
 
@@ -636,12 +671,34 @@ public class MainActivity extends AppCompatActivity {
 
         binding.tabCalendar.btnScheduleAdd.setOnClickListener(v -> openScheduleEditor(null));
         binding.tabCalendar.btnScheduleEmptyAdd.setOnClickListener(v -> openScheduleEditor(null));
-        binding.tabCalendar.btnScheduleImport.setOnClickListener(v ->
-                importScheduleLauncher.launch(new String[]{"*/*"})
-        );
+        binding.tabCalendar.btnScheduleImport.setOnClickListener(v -> openScheduleImportSourceDialog());
         binding.tabCalendar.btnScheduleExport.setOnClickListener(v ->
                 calendarViewModel.requestOpenExportDialog()
         );
+    }
+
+    private void openScheduleImportSourceDialog() {
+        FrostUiHelper.showImportSourceDialog(this, new FrostUiHelper.OnImportSourceListener() {
+            @Override
+            public void onImportFromFile() {
+                importScheduleLauncher.launch(new String[]{"*/*"});
+            }
+
+            @Override
+            public void onImportFromCode() {
+                FrostUiHelper.showShareCodeInputDialog(
+                        MainActivity.this,
+                        code -> calendarViewModel.importByShareCode(code)
+                );
+            }
+
+            @Override
+            public void onImportFromAiImage() {
+                pickScheduleImageLauncher.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build());
+            }
+        });
     }
 
     @NonNull
@@ -738,10 +795,206 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onManageOnlineShares() {
+                openOnlineShareDialog();
+            }
+
+            @Override
             public void onExportTemplate(@NonNull ScheduleTransferHelper.TransferFormat format) {
                 calendarViewModel.prepareExportDocument(format, true);
             }
         });
+    }
+
+    private void openOnlineShareDialog() {
+        if (onlineShareDialog != null) {
+            onlineShareDialog.dialog.dismiss();
+        }
+        onlineShareDialog = FrostUiHelper.createOnlineShareDialog(
+                this,
+                title -> calendarViewModel.createOnlineShare(title)
+        );
+        onlineShareDialog.dialog.setOnDismissListener(d -> onlineShareDialog = null);
+        renderCalendarCloudBusy(calendarCloudBusy);
+        List<ApiModels.ShareSummaryResponse> currentShares = calendarViewModel.getMyShares().getValue();
+        renderOnlineShareList(currentShares);
+        if (calendarViewModel.isCloudLoggedIn()) {
+            calendarViewModel.loadMyShares();
+        }
+    }
+
+    private void renderCalendarCloudBusy(@Nullable Boolean busy) {
+        calendarCloudBusy = Boolean.TRUE.equals(busy);
+        boolean enabled = !calendarCloudBusy;
+        float alpha = enabled ? 1.0f : 0.55f;
+
+        binding.tabCalendar.btnScheduleImport.setEnabled(enabled);
+        binding.tabCalendar.btnScheduleImport.setAlpha(alpha);
+        binding.tabCalendar.btnScheduleImport.setText(
+                calendarCloudBusy ? R.string.schedule_cloud_busy_label : R.string.schedule_action_import
+        );
+        binding.tabCalendar.btnScheduleExport.setEnabled(enabled);
+        binding.tabCalendar.btnScheduleExport.setAlpha(alpha);
+
+        if (onlineShareDialog != null && onlineShareDialog.dialog.isShowing()) {
+            onlineShareDialog.btnCreate.setEnabled(enabled);
+            onlineShareDialog.btnCreate.setAlpha(alpha);
+            onlineShareDialog.btnCreate.setText(
+                    calendarCloudBusy ? R.string.schedule_cloud_busy_label : R.string.schedule_share_btn_create
+            );
+            int childCount = onlineShareDialog.layoutListContainer.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View row = onlineShareDialog.layoutListContainer.getChildAt(i);
+                View btnDelete = row.findViewWithTag("delete_share");
+                if (btnDelete != null) {
+                    btnDelete.setEnabled(enabled);
+                    btnDelete.setAlpha(alpha);
+                }
+            }
+        }
+    }
+
+    private void renderOnlineShareList(@Nullable List<ApiModels.ShareSummaryResponse> shares) {
+        if (onlineShareDialog == null || !onlineShareDialog.dialog.isShowing()) {
+            return;
+        }
+        onlineShareDialog.layoutListContainer.removeAllViews();
+
+        if (!calendarViewModel.isCloudLoggedIn()) {
+            onlineShareDialog.tvListEmpty.setVisibility(View.VISIBLE);
+            onlineShareDialog.tvListEmpty.setText(R.string.schedule_share_login_hint);
+            return;
+        }
+        if (shares == null || shares.isEmpty()) {
+            onlineShareDialog.tvListEmpty.setVisibility(View.VISIBLE);
+            onlineShareDialog.tvListEmpty.setText(R.string.schedule_share_list_empty);
+            return;
+        }
+        onlineShareDialog.tvListEmpty.setVisibility(View.GONE);
+        for (ApiModels.ShareSummaryResponse item : shares) {
+            onlineShareDialog.layoutListContainer.addView(createShareItemRow(item));
+        }
+    }
+
+    @NonNull
+    private LinearLayout createShareItemRow(@NonNull ApiModels.ShareSummaryResponse item) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setBackgroundResource(R.drawable.bg_glass_inner);
+        int pad = getResources().getDimensionPixelSize(R.dimen.card_padding_compact);
+        row.setPadding(pad, pad, pad, pad);
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        rowParams.bottomMargin = getResources().getDimensionPixelSize(R.dimen.chip_gap);
+        row.setLayoutParams(rowParams);
+
+        LinearLayout infoCol = new LinearLayout(this);
+        infoCol.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams infoParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        infoCol.setLayoutParams(infoParams);
+
+        TextView tvCodeTitle = new TextView(this);
+        String shareTitle = hasText(item.getTitle())
+                ? item.getTitle().trim()
+                : getString(R.string.schedule_share_default_title);
+        tvCodeTitle.setText(getString(R.string.home_spotlight_title_format, item.getCode(), shareTitle));
+        tvCodeTitle.setTextColor(ContextCompat.getColor(this, R.color.ink_primary));
+        tvCodeTitle.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_size_input));
+        tvCodeTitle.setTypeface(null, Typeface.BOLD);
+
+        TextView tvStatus = new TextView(this);
+        tvStatus.setText(item.isExpired()
+                ? getString(R.string.schedule_share_status_expired)
+                : getString(R.string.schedule_share_status_active_format, formatShareExpiry(item.getExpiresAtEpoch())));
+        tvStatus.setTextColor(ContextCompat.getColor(
+                this,
+                item.isExpired() ? R.color.accent_danger : R.color.ink_secondary
+        ));
+        tvStatus.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_size_caption));
+
+        infoCol.addView(tvCodeTitle);
+        infoCol.addView(tvStatus);
+        row.addView(infoCol);
+
+        int gap = getResources().getDimensionPixelSize(R.dimen.chip_gap);
+        TextView btnCopy = createShareRowButton(
+                getString(R.string.schedule_share_btn_copy),
+                R.color.accent_sapphire,
+                R.drawable.bg_pill_accent_soft,
+                gap,
+                () -> copyShareCode(item.getCode())
+        );
+        row.addView(btnCopy);
+
+        TextView btnDelete = createShareRowButton(
+                getString(R.string.schedule_share_btn_delete),
+                R.color.accent_danger,
+                R.drawable.bg_pill_danger_soft,
+                gap,
+                () -> FrostUiHelper.showConfirmDialog(
+                        this,
+                        R.string.schedule_share_delete_title,
+                        getString(R.string.schedule_share_delete_message, item.getCode()),
+                        R.string.notes_dialog_delete_confirm,
+                        true,
+                        () -> calendarViewModel.deleteOnlineShare(item.getCode())
+                )
+        );
+        btnDelete.setTag("delete_share");
+        btnDelete.setEnabled(!calendarCloudBusy);
+        btnDelete.setAlpha(calendarCloudBusy ? 0.55f : 1.0f);
+        row.addView(btnDelete);
+
+        return row;
+    }
+
+    @NonNull
+    private TextView createShareRowButton(
+            @NonNull String label,
+            int textColorRes,
+            int backgroundRes,
+            int marginStart,
+            @NonNull Runnable onClick
+    ) {
+        int chipPadH = getResources().getDimensionPixelSize(R.dimen.chip_padding_h);
+        int minTouch = getResources().getDimensionPixelSize(R.dimen.touch_target_min);
+        TextView btn = new TextView(this);
+        btn.setText(label);
+        btn.setTextColor(ContextCompat.getColor(this, textColorRes));
+        btn.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_size_caption));
+        btn.setTypeface(null, Typeface.BOLD);
+        btn.setBackgroundResource(backgroundRes);
+        btn.setGravity(Gravity.CENTER);
+        btn.setMinHeight(minTouch);
+        btn.setPadding(chipPadH, 0, chipPadH, 0);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMarginStart(marginStart);
+        btn.setLayoutParams(params);
+        btn.setOnClickListener(v -> onClick.run());
+        return btn;
+    }
+
+    private void copyShareCode(@NonNull String code) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(ClipData.newPlainText("schedule_share_code", code));
+            Toast.makeText(this, getString(R.string.schedule_share_copied_toast, code), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @NonNull
+    private String formatShareExpiry(long expiresAtEpoch) {
+        if (expiresAtEpoch <= 0L) {
+            return "";
+        }
+        return new SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("vi-VN"))
+                .format(new Date(expiresAtEpoch));
     }
 
     private void launchShareChooser(@NonNull CalendarViewModel.ShareFileEventData data) {
