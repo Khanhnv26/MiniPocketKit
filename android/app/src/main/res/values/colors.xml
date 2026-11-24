@@ -16,6 +16,10 @@
     <color name="glass_card_fill">#CCFFFFFF</color>
     <color name="glass_inner_fill">#9EFFFFFF</color>
     <color name="glass_dock_fill">#EEFFFFFF</color>
+    <color name="dock_track_fill">#F5EEF3F8</color>
+    <color name="dock_track_stroke">#FFDCE6F1</color>
+    <color name="dock_indicator_fill">#FFFFFFFF</color>
+    <color name="dock_indicator_stroke">#0F0F172A</color>
     <color name="frost_dialog_fill">#FAFFFFFF</color>
     <color name="glass_rim_bright">#FFFFFFFF</color>
     <color name="glass_rim_soft">#FFD9E5F2</color>

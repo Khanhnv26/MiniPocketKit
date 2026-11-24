@@ -22,6 +22,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.PathInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -54,6 +55,7 @@ import com.example.pocketkit.reminder.TaskReminderHelper;
 import com.example.pocketkit.tools.ImageCompressGateway;
 import com.example.pocketkit.tools.ImageCompressHelper;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
+import com.example.pocketkit.ui.DockMotionHelper;
 import com.example.pocketkit.ui.FrostUiHelper;
 import com.example.pocketkit.ui.UiEvent;
 import com.example.pocketkit.ui.UiMessage;
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     private ProfileViewModel profileViewModel;
 
     private int selectedTab = 0;
+    private boolean dockInitialized = false;
     private StudyTask pendingReminderTask;
     private boolean taskReceiverRegistered = false;
     private boolean calendarCloudBusy = false;
@@ -210,7 +213,8 @@ public class MainActivity extends AppCompatActivity {
         bindProfileTab();
         bindDockNavigation();
         observeViewModels();
-        switchTab(selectedTab);
+        switchTab(selectedTab, false);
+        dockInitialized = true;
 
         if (savedInstanceState == null) {
             homeViewModel.reschedulePendingRemindersOnStart();
@@ -260,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        binding.dockBar.cancelAnimations();
         if (onlineShareDialog != null) {
             onlineShareDialog.dialog.dismiss();
             onlineShareDialog = null;
@@ -1434,22 +1439,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindDockNavigation() {
-        binding.dockTabHome.setOnClickListener(v -> switchTab(0));
-        binding.dockTabCalendar.setOnClickListener(v -> switchTab(1));
-        binding.dockTabTools.setOnClickListener(v -> switchTab(2));
-        binding.dockTabProfile.setOnClickListener(v -> switchTab(3));
-    }
-
-    private void switchTab(int index) {
-        selectedTab = index;
-
-        View[] containers = new View[]{
-                binding.tabHome.getRoot(),
-                binding.tabCalendar.getRoot(),
-                binding.tabTools.getRoot(),
-                binding.tabProfile.getRoot()
-        };
-        LinearLayout[] dockTabs = new LinearLayout[]{
+        View[] dockTabs = new View[]{
                 binding.dockTabHome,
                 binding.dockTabCalendar,
                 binding.dockTabTools,
@@ -1467,6 +1457,52 @@ public class MainActivity extends AppCompatActivity {
                 binding.tvDockTools,
                 binding.tvDockProfile
         };
+        int activeColor = ContextCompat.getColor(this, R.color.accent_sapphire);
+        int inactiveColor = ContextCompat.getColor(this, R.color.ink_secondary);
+
+        binding.dockBar.configure(
+                binding.dockActiveIndicator,
+                binding.dockTabsRow,
+                dockTabs,
+                dockIcons,
+                dockLabels,
+                activeColor,
+                inactiveColor,
+                (index, fromUser) -> handleDockTabSelected(index)
+        );
+    }
+
+    private void handleDockTabSelected(int index) {
+        if (dockInitialized && index == selectedTab) {
+            binding.mainScrollView.smoothScrollTo(0, 0);
+            return;
+        }
+        applyTabContentSwitch(index, dockInitialized);
+    }
+
+    private void switchTab(int index) {
+        switchTab(index, dockInitialized);
+    }
+
+    private void switchTab(int index, boolean animate) {
+        if (dockInitialized && index == selectedTab) {
+            binding.mainScrollView.smoothScrollTo(0, 0);
+            return;
+        }
+        binding.dockBar.selectTab(index, animate, false);
+        applyTabContentSwitch(index, animate);
+    }
+
+    private void applyTabContentSwitch(int index, boolean animate) {
+        int previousTab = selectedTab;
+        selectedTab = index;
+
+        View[] containers = new View[]{
+                binding.tabHome.getRoot(),
+                binding.tabCalendar.getRoot(),
+                binding.tabTools.getRoot(),
+                binding.tabProfile.getRoot()
+        };
         String[] headers = new String[]{
                 getString(R.string.tab_header_home),
                 getString(R.string.tab_header_calendar),
@@ -1474,27 +1510,43 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.tab_header_profile)
         };
 
-        int activeColor = ContextCompat.getColor(this, R.color.accent_sapphire);
-        int inactiveColor = ContextCompat.getColor(this, R.color.ink_secondary);
-
-        binding.tvHeaderTitle.setText(headers[index]);
+        boolean shouldAnimate = animate && FrostUiHelper.areAnimationsEnabled(this) && previousTab != index;
+        if (shouldAnimate) {
+            binding.tvHeaderTitle.animate().cancel();
+            binding.tvHeaderTitle.setAlpha(0.45f);
+            binding.tvHeaderTitle.setText(headers[index]);
+            binding.tvHeaderTitle.animate().alpha(1f).setDuration(160L).start();
+        } else {
+            binding.tvHeaderTitle.setAlpha(1f);
+            binding.tvHeaderTitle.setText(headers[index]);
+        }
 
         for (int i = 0; i < containers.length; i++) {
-            boolean active = i == index;
-            containers[i].setVisibility(active ? View.VISIBLE : View.GONE);
-            if (active) {
-                dockTabs[i].setBackgroundResource(R.drawable.bg_dock_active_pill);
-                dockIcons[i].setColorFilter(activeColor);
-                dockLabels[i].setTextColor(activeColor);
-                dockLabels[i].setTypeface(null, Typeface.BOLD);
-            } else {
-                dockTabs[i].setBackgroundResource(android.R.color.transparent);
-                dockIcons[i].setColorFilter(inactiveColor);
-                dockLabels[i].setTextColor(inactiveColor);
-                dockLabels[i].setTypeface(null, Typeface.NORMAL);
-            }
+            View container = containers[i];
+            container.animate().cancel();
+            container.setAlpha(1f);
+            container.setTranslationX(0f);
+            container.setVisibility(i == index ? View.VISIBLE : View.GONE);
         }
         binding.mainScrollView.scrollTo(0, 0);
+
+        if (shouldAnimate) {
+            View targetView = containers[index];
+            float slidePx = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    14f,
+                    getResources().getDisplayMetrics()
+            );
+            float startTx = DockMotionHelper.computeContentSlideOffsetPx(previousTab, index, slidePx);
+            targetView.setAlpha(0f);
+            targetView.setTranslationX(startTx);
+            targetView.animate()
+                    .alpha(1f)
+                    .translationX(0f)
+                    .setDuration(200L)
+                    .setInterpolator(new PathInterpolator(0.2f, 0f, 0f, 1f))
+                    .start();
+        }
     }
 
     private void openNotesActivity() {

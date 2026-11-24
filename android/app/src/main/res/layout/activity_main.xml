@@ -102,7 +102,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <LinearLayout
+    <com.example.pocketkit.ui.FloatingDockBar
         android:id="@+id/dockBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -110,136 +110,156 @@
         android:layout_marginHorizontal="@dimen/dock_horizontal_padding"
         android:layout_marginBottom="@dimen/dock_bottom_padding"
         android:background="@drawable/bg_dock_bar"
-        android:baselineAligned="false"
-        android:gravity="center_vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:elevation="8dp"
         android:minHeight="@dimen/dock_min_height"
-        android:orientation="horizontal"
         android:paddingHorizontal="@dimen/dock_padding_h"
         android:paddingVertical="@dimen/dock_padding_v">
 
-        <LinearLayout
-            android:id="@+id/dockTabHome"
+        <View
+            android:id="@+id/dockActiveIndicator"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_height="@dimen/dock_tab_min_height"
+            android:layout_gravity="start|center_vertical"
             android:background="@drawable/bg_dock_active_pill"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:minHeight="@dimen/dock_tab_min_height"
-            android:orientation="vertical"
-            android:paddingVertical="@dimen/dock_padding_v">
-
-            <ImageView
-                android:id="@+id/ivDockHome"
-                android:layout_width="@dimen/icon_size_md"
-                android:layout_height="@dimen/icon_size_md"
-                android:contentDescription="@string/dock_tab_home"
-                android:src="@drawable/ic_home"
-                app:tint="@color/accent_sapphire" />
-
-            <TextView
-                android:id="@+id/tvDockHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/micro_gap"
-                android:text="@string/dock_tab_home"
-                android:textColor="@color/accent_sapphire"
-                android:textSize="@dimen/text_size_caption"
-                android:textStyle="bold" />
-        </LinearLayout>
+            android:elevation="2dp"
+            android:importantForAccessibility="no" />
 
         <LinearLayout
-            android:id="@+id/dockTabCalendar"
-            android:layout_width="0dp"
+            android:id="@+id/dockTabsRow"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:minHeight="@dimen/dock_tab_min_height"
-            android:orientation="vertical"
-            android:paddingVertical="@dimen/dock_padding_v">
+            android:baselineAligned="false"
+            android:elevation="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:outlineProvider="none">
 
-            <ImageView
-                android:id="@+id/ivDockCalendar"
-                android:layout_width="@dimen/icon_size_md"
-                android:layout_height="@dimen/icon_size_md"
-                android:contentDescription="@string/dock_tab_calendar"
-                android:src="@drawable/ic_timetable"
-                app:tint="@color/ink_secondary" />
-
-            <TextView
-                android:id="@+id/tvDockCalendar"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/dockTabHome"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/micro_gap"
-                android:text="@string/dock_tab_calendar"
-                android:textColor="@color/ink_secondary"
-                android:textSize="@dimen/text_size_caption" />
-        </LinearLayout>
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/dock_tab_min_height"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/dock_padding_v">
 
-        <LinearLayout
-            android:id="@+id/dockTabTools"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:minHeight="@dimen/dock_tab_min_height"
-            android:orientation="vertical"
-            android:paddingVertical="@dimen/dock_padding_v">
+                <ImageView
+                    android:id="@+id/ivDockHome"
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:contentDescription="@string/dock_tab_home"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/accent_sapphire" />
 
-            <ImageView
-                android:id="@+id/ivDockTools"
-                android:layout_width="@dimen/icon_size_md"
-                android:layout_height="@dimen/icon_size_md"
-                android:contentDescription="@string/dock_tab_tools"
-                android:src="@drawable/ic_all"
-                app:tint="@color/ink_secondary" />
+                <TextView
+                    android:id="@+id/tvDockHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/micro_gap"
+                    android:text="@string/dock_tab_home"
+                    android:textColor="@color/accent_sapphire"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/tvDockTools"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/dockTabCalendar"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/micro_gap"
-                android:text="@string/dock_tab_tools"
-                android:textColor="@color/ink_secondary"
-                android:textSize="@dimen/text_size_caption" />
-        </LinearLayout>
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/dock_tab_min_height"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/dock_padding_v">
 
-        <LinearLayout
-            android:id="@+id/dockTabProfile"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:minHeight="@dimen/dock_tab_min_height"
-            android:orientation="vertical"
-            android:paddingVertical="@dimen/dock_padding_v">
+                <ImageView
+                    android:id="@+id/ivDockCalendar"
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:contentDescription="@string/dock_tab_calendar"
+                    android:src="@drawable/ic_timetable"
+                    app:tint="@color/ink_secondary" />
 
-            <ImageView
-                android:id="@+id/ivDockProfile"
-                android:layout_width="@dimen/icon_size_md"
-                android:layout_height="@dimen/icon_size_md"
-                android:contentDescription="@string/dock_tab_profile"
-                android:src="@drawable/ic_profile"
-                app:tint="@color/ink_secondary" />
+                <TextView
+                    android:id="@+id/tvDockCalendar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/micro_gap"
+                    android:text="@string/dock_tab_calendar"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_caption" />
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/tvDockProfile"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/dockTabTools"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/micro_gap"
-                android:text="@string/dock_tab_profile"
-                android:textColor="@color/ink_secondary"
-                android:textSize="@dimen/text_size_caption" />
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/dock_tab_min_height"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/dock_padding_v">
+
+                <ImageView
+                    android:id="@+id/ivDockTools"
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:contentDescription="@string/dock_tab_tools"
+                    android:src="@drawable/ic_all"
+                    app:tint="@color/ink_secondary" />
+
+                <TextView
+                    android:id="@+id/tvDockTools"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/micro_gap"
+                    android:text="@string/dock_tab_tools"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_caption" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dockTabProfile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:minHeight="@dimen/dock_tab_min_height"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/dock_padding_v">
+
+                <ImageView
+                    android:id="@+id/ivDockProfile"
+                    android:layout_width="@dimen/icon_size_md"
+                    android:layout_height="@dimen/icon_size_md"
+                    android:contentDescription="@string/dock_tab_profile"
+                    android:src="@drawable/ic_profile"
+                    app:tint="@color/ink_secondary" />
+
+                <TextView
+                    android:id="@+id/tvDockProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/micro_gap"
+                    android:text="@string/dock_tab_profile"
+                    android:textColor="@color/ink_secondary"
+                    android:textSize="@dimen/text_size_caption" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </com.example.pocketkit.ui.FloatingDockBar>
 </FrameLayout>
