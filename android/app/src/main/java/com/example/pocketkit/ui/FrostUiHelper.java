@@ -1,5 +1,8 @@
 package com.example.pocketkit.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -9,6 +12,8 @@ import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.provider.Settings;
 import android.text.InputFilter;
@@ -199,6 +204,8 @@ public final class FrostUiHelper {
             chip.setBackgroundResource(R.drawable.bg_chip_unselected);
             chip.setTextColor(ContextCompat.getColor(context, R.color.ink_primary));
         }
+        chip.setTag(R.id.tag_chip_selected, selected);
+        MotionHelper.attachButtonPress(chip);
         return chip;
     }
 
@@ -222,8 +229,7 @@ public final class FrostUiHelper {
         Runnable submit = () -> {
             String name = edtInput.getText().toString().trim();
             if (name.isEmpty()) {
-                edtInput.setError(context.getString(R.string.notes_dialog_empty_category_error));
-                edtInput.requestFocus();
+                setFieldError(edtInput, context.getString(R.string.notes_dialog_empty_category_error));
                 return;
             }
             dialog.dismiss();
@@ -378,8 +384,7 @@ public final class FrostUiHelper {
         btnSave.setOnClickListener(v -> {
             String subject = edtSubject.getText().toString().trim();
             if (subject.isEmpty()) {
-                edtSubject.setError(context.getString(R.string.schedule_error_empty_subject));
-                edtSubject.requestFocus();
+                setFieldError(edtSubject, context.getString(R.string.schedule_error_empty_subject));
                 return;
             }
             int startMinutes = ScheduleSlot.toMinutes(startTime[0]);
@@ -587,8 +592,7 @@ public final class FrostUiHelper {
         btnSave.setOnClickListener(v -> {
             String title = edtTitle.getText().toString().trim();
             if (title.isEmpty()) {
-                edtTitle.setError(context.getString(R.string.task_dialog_empty_title_error));
-                edtTitle.requestFocus();
+                setFieldError(edtTitle, context.getString(R.string.task_dialog_empty_title_error));
                 return;
             }
             int remindBeforeMinutes = selectedDueAt[0] > 0L
@@ -625,10 +629,74 @@ public final class FrostUiHelper {
             @NonNull TextView[] chips,
             int selectedIndex
     ) {
+        int activeTextColor = ContextCompat.getColor(context, R.color.white);
+        int inactiveTextColor = ContextCompat.getColor(context, R.color.ink_primary);
+        boolean animateEnabled = areAnimationsEnabled(context);
+
         for (int i = 0; i < chips.length; i++) {
+            TextView chip = chips[i];
             boolean active = i == selectedIndex;
-            chips[i].setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
-            chips[i].setTextColor(ContextCompat.getColor(context, active ? R.color.white : R.color.ink_primary));
+            Object prevTag = chip.getTag(R.id.tag_chip_selected);
+            chip.setTag(R.id.tag_chip_selected, active);
+
+            Object prevColorAnim = chip.getTag(R.id.tag_color_animator);
+            if (prevColorAnim instanceof Animator) {
+                ((Animator) prevColorAnim).cancel();
+                chip.setTag(R.id.tag_color_animator, null);
+            }
+
+            if (prevTag == null || !animateEnabled || Boolean.TRUE.equals(prevTag) == active) {
+                chip.setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+                chip.setTextColor(active ? activeTextColor : inactiveTextColor);
+                continue;
+            }
+
+            boolean wasActive = Boolean.TRUE.equals(prevTag);
+            Drawable fromBg = ContextCompat.getDrawable(
+                    context,
+                    wasActive ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected
+            );
+            Drawable toBg = ContextCompat.getDrawable(
+                    context,
+                    active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected
+            );
+            if (fromBg != null && toBg != null) {
+                TransitionDrawable transition = new TransitionDrawable(
+                        new Drawable[]{fromBg.mutate(), toBg.mutate()}
+                );
+                transition.setCrossFadeEnabled(true);
+                chip.setBackground(transition);
+                transition.startTransition(160);
+            } else {
+                chip.setBackgroundResource(active ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
+            }
+
+            int startTextColor = wasActive ? activeTextColor : inactiveTextColor;
+            int endTextColor = active ? activeTextColor : inactiveTextColor;
+            ValueAnimator colorAnim = ValueAnimator.ofObject(new ArgbEvaluator(), startTextColor, endTextColor);
+            colorAnim.setDuration(160L);
+            colorAnim.addUpdateListener(anim -> chip.setTextColor((Integer) anim.getAnimatedValue()));
+            colorAnim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (chip.getTag(R.id.tag_color_animator) == animation) {
+                        chip.setTag(R.id.tag_color_animator, null);
+                    }
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    if (chip.getTag(R.id.tag_color_animator) == animation) {
+                        chip.setTag(R.id.tag_color_animator, null);
+                    }
+                }
+            });
+            chip.setTag(R.id.tag_color_animator, colorAnim);
+            colorAnim.start();
+
+            if (active) {
+                MotionHelper.pulseChip(chip);
+            }
         }
     }
 
@@ -1111,6 +1179,7 @@ public final class FrostUiHelper {
     private static void setFieldError(@NonNull EditText field, @NonNull String message) {
         field.setError(message);
         field.requestFocus();
+        MotionHelper.shakeError(field);
     }
 
     private static int parseIntOrInvalid(@Nullable String raw) {
@@ -1231,6 +1300,7 @@ public final class FrostUiHelper {
     }
 
     private static void configureFrostDialogWindow(@NonNull AppCompatDialog dialog, boolean showKeyboard) {
+        MotionHelper.attachDialogTactilePress(dialog.findViewById(android.R.id.content));
         Window window = dialog.getWindow();
         if (window == null) {
             return;
@@ -1238,6 +1308,9 @@ public final class FrostUiHelper {
         window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         window.setDimAmount(0.28f);
+        if (areAnimationsEnabled(dialog.getContext())) {
+            window.setWindowAnimations(R.style.FrostDialogAnimation);
+        }
         if (showKeyboard) {
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         }

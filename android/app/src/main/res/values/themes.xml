@@ -9,4 +9,9 @@
     </style>
 
     <style name="Theme.PocketKit" parent="Base.Theme.PocketKit" />
+
+    <style name="FrostDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/dialog_frost_enter</item>
+        <item name="android:windowExitAnimation">@anim/dialog_frost_exit</item>
+    </style>
 </resources>

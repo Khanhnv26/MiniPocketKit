@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.pocketkit.R;
 import com.example.pocketkit.databinding.ItemNoteBinding;
 import com.example.pocketkit.model.Note;
+import com.example.pocketkit.ui.MotionHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
 
     private List<Note> noteList;
     private final OnNoteInteractionListener listener;
+    private int recentlyToggledNoteId = -1;
 
     public NoteAdapter(List<Note> noteList, OnNoteInteractionListener listener) {
         this.noteList = noteList == null ? new ArrayList<>() : new ArrayList<>(noteList);
@@ -87,7 +89,9 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     @Override
     public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ItemNoteBinding binding = ItemNoteBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-        return new NoteViewHolder(binding);
+        NoteViewHolder holder = new NoteViewHolder(binding);
+        MotionHelper.attachCardPress(holder.itemView);
+        return holder;
     }
 
     @Override
@@ -113,9 +117,19 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
 
         boolean done = note.getIsDone() == 1;
         applyDoneVisualState(holder.binding, context, done);
+        if (note.getId() == recentlyToggledNoteId) {
+            MotionHelper.animateCheckPop(holder.binding.ivNoteCheckBox);
+            recentlyToggledNoteId = -1;
+        } else {
+            holder.binding.ivNoteCheckBox.animate().cancel();
+            holder.binding.ivNoteCheckBox.setScaleX(1f);
+            holder.binding.ivNoteCheckBox.setScaleY(1f);
+        }
 
         holder.binding.btnNoteCheckContainer.setOnClickListener(v -> {
             if (listener != null) {
+                recentlyToggledNoteId = note.getId();
+                MotionHelper.performStateHaptic(v);
                 listener.onNoteCheckChanged(note, !done);
             }
         });

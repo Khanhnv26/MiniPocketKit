@@ -17,6 +17,7 @@ import com.example.pocketkit.database.DatabaseHelper;
 import com.example.pocketkit.databinding.ActivityNotesBinding;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.ui.FrostUiHelper;
+import com.example.pocketkit.ui.MotionHelper;
 import com.example.pocketkit.viewmodel.NotesViewModel;
 
 import java.util.ArrayList;
@@ -49,8 +50,13 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
         adapter = new NoteAdapter(new ArrayList<>(), this);
         binding.rvNotes.setAdapter(adapter);
 
+        MotionHelper.registerClosePopTransition(this);
+        MotionHelper.attachButtonPress(binding.btnBackFromNotes, binding.btnAddNote, binding.btnClearSearch);
+
         binding.btnBackFromNotes.setOnClickListener(v -> finish());
-        binding.btnAddNote.setOnClickListener(v -> startActivity(new Intent(this, NoteEditorActivity.class)));
+        binding.btnAddNote.setOnClickListener(v ->
+                MotionHelper.startActivityPush(this, new Intent(this, NoteEditorActivity.class))
+        );
         binding.btnClearSearch.setOnClickListener(v -> binding.edtSearchNote.setText(""));
 
         binding.edtSearchNote.addTextChangedListener(new TextWatcher() {
@@ -156,7 +162,13 @@ public class NotesActivity extends AppCompatActivity implements NoteAdapter.OnNo
     public void onNoteClick(Note note) {
         Intent intent = new Intent(this, NoteEditorActivity.class);
         intent.putExtra(Note.EXTRA_NOTE_ITEM, note);
-        startActivity(intent);
+        MotionHelper.startActivityPush(this, intent);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        MotionHelper.applyLegacyClosePopTransition(this);
     }
 
     @Override

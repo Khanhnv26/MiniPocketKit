@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.pocketkit.databinding.ActivityNoteEditorBinding;
 import com.example.pocketkit.model.Note;
 import com.example.pocketkit.ui.FrostUiHelper;
+import com.example.pocketkit.ui.MotionHelper;
 import com.example.pocketkit.viewmodel.NoteEditorViewModel;
 
 import java.text.SimpleDateFormat;
@@ -65,6 +66,16 @@ public class NoteEditorActivity extends AppCompatActivity {
                 binding.edtNoteContent.setText(initialContent.trim());
             }
         }
+
+        MotionHelper.registerClosePopTransition(this);
+        MotionHelper.attachButtonPress(
+                binding.btnBackEditor,
+                binding.btnAiSummarizeText,
+                binding.btnAiSummarizeImage,
+                binding.btnSaveNote,
+                binding.btnDeleteNote,
+                binding.layoutPinToggle
+        );
 
         binding.layoutPinToggle.setOnClickListener(v -> viewModel.togglePinned());
         binding.btnBackEditor.setOnClickListener(v -> finish());
@@ -136,6 +147,7 @@ public class NoteEditorActivity extends AppCompatActivity {
             if (event.getContentIfNotHandled() != null) {
                 binding.edtNoteTitle.setError(getString(R.string.editor_error_empty_title));
                 binding.edtNoteTitle.requestFocus();
+                MotionHelper.shakeError(binding.edtNoteTitle);
             }
         });
 
@@ -221,5 +233,11 @@ public class NoteEditorActivity extends AppCompatActivity {
                 true,
                 () -> viewModel.deleteNote()
         );
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        MotionHelper.applyLegacyClosePopTransition(this);
     }
 }

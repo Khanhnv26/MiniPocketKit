@@ -37,7 +37,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.lifecycle.LiveData;
@@ -57,6 +56,7 @@ import com.example.pocketkit.tools.ImageCompressHelper;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 import com.example.pocketkit.ui.DockMotionHelper;
 import com.example.pocketkit.ui.FrostUiHelper;
+import com.example.pocketkit.ui.MotionHelper;
 import com.example.pocketkit.ui.UiEvent;
 import com.example.pocketkit.ui.UiMessage;
 import com.example.pocketkit.viewmodel.CalendarViewModel;
@@ -83,6 +83,12 @@ public class MainActivity extends AppCompatActivity {
 
     private int selectedTab = 0;
     private boolean dockInitialized = false;
+    private int recentlyToggledTaskId = -1;
+    private int lastRenderedCalendarDay = -1;
+    private boolean pinnedBarWasVisible = false;
+    private boolean compressResultWasVisible = false;
+    @Nullable
+    private String lastAnimatedOcrText;
     private StudyTask pendingReminderTask;
     private boolean taskReceiverRegistered = false;
     private boolean calendarCloudBusy = false;
@@ -376,10 +382,12 @@ public class MainActivity extends AppCompatActivity {
         Locale vi = Locale.forLanguageTag("vi-VN");
         String formatted = new SimpleDateFormat(getString(R.string.home_header_date_pattern), vi).format(new Date());
         binding.tvHeaderDate.setText(formatted.toUpperCase(vi));
+        MotionHelper.attachButtonPress(binding.btnHeaderProfile);
         binding.btnHeaderProfile.setOnClickListener(v -> switchTab(3));
     }
 
     private void bindHeroCard() {
+        MotionHelper.attachButtonPress(binding.tabHome.btnSpotlightAction);
         binding.tabHome.btnSpotlightAction.setOnClickListener(v -> {
             HomeViewModel.HomeDashboardUiState state = homeViewModel.getDashboardState().getValue();
             if (state == null) {
@@ -422,6 +430,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void renderPinnedHomeNote(@Nullable Note pinnedNote) {
         if (pinnedNote != null) {
+            boolean reveal = !pinnedBarWasVisible;
+            pinnedBarWasVisible = true;
             binding.tabHome.layoutPinnedNoteBar.setVisibility(View.VISIBLE);
             String subject = hasText(pinnedNote.getSubject())
                     ? pinnedNote.getSubject().trim()
@@ -429,7 +439,11 @@ public class MainActivity extends AppCompatActivity {
             binding.tabHome.tvPinnedNoteSummary.setText(
                     getString(R.string.notes_summary_pinned_bar, subject, pinnedNote.getTitle())
             );
+            if (reveal) {
+                MotionHelper.animateSectionReveal(binding.tabHome.layoutPinnedNoteBar);
+            }
         } else {
+            pinnedBarWasVisible = false;
             binding.tabHome.layoutPinnedNoteBar.setVisibility(View.GONE);
         }
     }
@@ -530,6 +544,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindFocusTimer() {
+        MotionHelper.attachButtonPress(binding.tabHome.btnTimerToggle, binding.tabHome.btnTimerReset);
         binding.tabHome.btnTimerToggle.setOnClickListener(v -> homeViewModel.toggleFocusTimer());
         binding.tabHome.btnTimerReset.setOnClickListener(v -> homeViewModel.resetFocusTimer());
     }
@@ -558,6 +573,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindChecklist() {
+        MotionHelper.attachButtonPress(binding.tabHome.btnHomeOpenNotes, binding.tabHome.btnAddTask);
+        MotionHelper.attachCardPress(binding.tabHome.layoutPinnedNoteBar);
         binding.tabHome.btnHomeOpenNotes.setOnClickListener(v -> openNotesActivity());
         binding.tabHome.btnAddTask.setOnClickListener(v -> {
             String quickTitle = binding.tabHome.edtNewTask.getText().toString().trim();
@@ -579,7 +596,7 @@ public class MainActivity extends AppCompatActivity {
             if (state != null && state.pinnedNote != null) {
                 Intent intent = new Intent(this, NoteEditorActivity.class);
                 intent.putExtra(Note.EXTRA_NOTE_ITEM, state.pinnedNote);
-                startActivity(intent);
+                MotionHelper.startActivityPush(this, intent);
             }
         });
     }
@@ -654,10 +671,17 @@ public class MainActivity extends AppCompatActivity {
 
             boolean overdue = !item.isDone() && item.hasDueAt() && item.getDueAtMillis() < nowMillis;
             applyTaskRowStyle(checkBox, ivCheck, tvTitle, tvMeta, tvTag, item.isDone(), overdue);
+            if (item.getId() == recentlyToggledTaskId) {
+                MotionHelper.animateCheckPop(checkBox);
+                recentlyToggledTaskId = -1;
+            }
 
-            checkArea.setOnClickListener(v ->
-                    homeViewModel.toggleTaskCompletion(item, !item.isDone(), hasNotificationPermission())
-            );
+            MotionHelper.attachCardPress(row);
+            checkArea.setOnClickListener(v -> {
+                recentlyToggledTaskId = item.getId();
+                MotionHelper.performStateHaptic(v);
+                homeViewModel.toggleTaskCompletion(item, !item.isDone(), hasNotificationPermission());
+            });
             row.setOnClickListener(v -> openTaskEditor(item));
             container.addView(row);
         }
@@ -707,11 +731,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void bindCalendarTab() {
         TextView[] chips = getCalendarDayChips();
+        MotionHelper.attachButtonPress(chips);
         for (int i = 0; i < chips.length; i++) {
             final int index = i;
             chips[i].setOnClickListener(v -> calendarViewModel.selectDay(index));
         }
 
+        MotionHelper.attachButtonPress(
+                binding.tabCalendar.btnScheduleAdd,
+                binding.tabCalendar.btnScheduleEmptyAdd,
+                binding.tabCalendar.btnScheduleImport,
+                binding.tabCalendar.btnScheduleExport
+        );
         binding.tabCalendar.btnScheduleAdd.setOnClickListener(v -> openScheduleEditor(null));
         binding.tabCalendar.btnScheduleEmptyAdd.setOnClickListener(v -> openScheduleEditor(null));
         binding.tabCalendar.btnScheduleImport.setOnClickListener(v -> openScheduleImportSourceDialog());
@@ -757,8 +788,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void renderCalendarState(@NonNull CalendarViewModel.CalendarUiState state) {
+        int direction = MotionHelper.computeDaySlideDirection(lastRenderedCalendarDay, state.selectedDayIndex);
+        boolean dayChanged = direction != 0;
+        lastRenderedCalendarDay = state.selectedDayIndex;
+
         FrostUiHelper.applyChipSelection(this, getCalendarDayChips(), state.selectedDayIndex);
         binding.tabCalendar.tvCalendarDayTitle.setText(CalendarViewModel.getDayFullTitleRes(state.dayOfWeek));
+        if (dayChanged) {
+            MotionHelper.performStateHaptic(binding.tabCalendar.dayChipRow);
+            MotionHelper.animateTextCrossFade(binding.tabCalendar.tvCalendarDayTitle);
+        }
         binding.tabCalendar.tvCalendarCountBadge.setText(
                 getString(R.string.schedule_count_badge_format, state.daySlots.size())
         );
@@ -768,12 +807,16 @@ public class MainActivity extends AppCompatActivity {
 
         if (state.daySlots.isEmpty()) {
             binding.tabCalendar.cardCalendarEmpty.setVisibility(View.VISIBLE);
+            if (dayChanged) {
+                MotionHelper.animateCardEntrance(binding.tabCalendar.cardCalendarEmpty, 0, direction);
+            }
             return;
         }
         binding.tabCalendar.cardCalendarEmpty.setVisibility(View.GONE);
 
         LayoutInflater inflater = LayoutInflater.from(this);
-        for (ScheduleSlot slot : state.daySlots) {
+        for (int idx = 0; idx < state.daySlots.size(); idx++) {
+            ScheduleSlot slot = state.daySlots.get(idx);
             View card = inflater.inflate(R.layout.item_schedule_slot, container, false);
             TextView tvTime = card.findViewById(R.id.tvSlotTime);
             TextView tvRoom = card.findViewById(R.id.tvSlotRoom);
@@ -793,12 +836,16 @@ public class MainActivity extends AppCompatActivity {
                 tvNote.setVisibility(View.GONE);
             }
 
+            MotionHelper.attachCardPress(card);
             card.setOnClickListener(v -> openScheduleEditor(slot));
             card.setOnLongClickListener(v -> {
                 confirmDeleteSchedule(slot);
                 return true;
             });
             container.addView(card);
+            if (dayChanged) {
+                MotionHelper.animateCardEntrance(card, idx, direction);
+            }
         }
     }
 
@@ -1075,6 +1122,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindToolsTab() {
+        MotionHelper.attachButtonPress(
+                binding.tabTools.chipCompress100,
+                binding.tabTools.chipCompress500,
+                binding.tabTools.chipCompress3x4,
+                binding.tabTools.btnRunCompress,
+                binding.tabTools.btnSaveCompressed,
+                binding.tabTools.btnShareCompressed,
+                binding.tabTools.chipOcrSample1,
+                binding.tabTools.chipOcrSample2,
+                binding.tabTools.btnPickOcrImage,
+                binding.tabTools.btnCopyOcr,
+                binding.tabTools.btnOcrCreateNote,
+                binding.tabTools.btnToolOpenNotes,
+                binding.tabTools.btnToolNewNote
+        );
         binding.tabTools.chipCompress100.setOnClickListener(v -> toolsViewModel.selectCompressPreset(0));
         binding.tabTools.chipCompress500.setOnClickListener(v -> toolsViewModel.selectCompressPreset(1));
         binding.tabTools.chipCompress3x4.setOnClickListener(v -> toolsViewModel.selectCompressPreset(2));
@@ -1112,12 +1174,12 @@ public class MainActivity extends AppCompatActivity {
             if (!ocrText.isEmpty()) {
                 intent.putExtra(Note.EXTRA_INITIAL_CONTENT, ocrText);
             }
-            startActivity(intent);
+            MotionHelper.startActivityPush(this, intent);
         });
 
         binding.tabTools.btnToolOpenNotes.setOnClickListener(v -> openNotesActivity());
         binding.tabTools.btnToolNewNote.setOnClickListener(v ->
-                startActivity(new Intent(this, NoteEditorActivity.class))
+                MotionHelper.startActivityPush(this, new Intent(this, NoteEditorActivity.class))
         );
     }
 
@@ -1173,13 +1235,19 @@ public class MainActivity extends AppCompatActivity {
 
         ImageCompressGateway.CompressResult result = state.result;
         if (result == null) {
+            compressResultWasVisible = false;
             lastCompressedPreviewKey = null;
             binding.tabTools.ivCompressPreview.setImageDrawable(null);
             binding.tabTools.layoutCompressResult.setVisibility(View.GONE);
             return;
         }
 
+        boolean revealResult = !compressResultWasVisible;
+        compressResultWasVisible = true;
         binding.tabTools.layoutCompressResult.setVisibility(View.VISIBLE);
+        if (revealResult) {
+            MotionHelper.animateSectionReveal(binding.tabTools.layoutCompressResult);
+        }
         String originalText = ImageCompressHelper.formatSize(result.originalBytes);
         String compressedText = ImageCompressHelper.formatSize(result.compressedBytes);
         int savedPercent = ImageCompressHelper.computeSavingsPercent(result.originalBytes, result.compressedBytes);
@@ -1264,6 +1332,10 @@ public class MainActivity extends AppCompatActivity {
     private void renderOcrState(@NonNull ToolsViewModel.OcrUiState state) {
         if (hasText(state.scannedText)) {
             binding.tabTools.tvOcrOutput.setText(state.scannedText);
+            if (!state.scannedText.equals(lastAnimatedOcrText)) {
+                lastAnimatedOcrText = state.scannedText;
+                MotionHelper.animateTextCrossFade(binding.tabTools.tvOcrOutput);
+            }
         }
         boolean enabled = !state.scanning;
         binding.tabTools.btnPickOcrImage.setEnabled(enabled);
@@ -1294,6 +1366,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        MotionHelper.attachButtonPress(
+                binding.tabProfile.btnEditProfile,
+                binding.tabProfile.btnProfileNotes,
+                binding.tabProfile.btnCloudAuth,
+                binding.tabProfile.btnCloudBackup,
+                binding.tabProfile.btnCloudRestore,
+                binding.tabProfile.btnCloudLogout
+        );
         binding.tabProfile.btnEditProfile.setOnClickListener(v ->
                 FrostUiHelper.showProfileEditorDialog(
                         this,
@@ -1364,7 +1444,11 @@ public class MainActivity extends AppCompatActivity {
         binding.tabProfile.tvGpaProjected.setText(
                 getString(R.string.profile_gpa_value_format, state.projectedGpa)
         );
-        binding.tabProfile.pbGpaMeter.setProgress(Math.round(state.projectedGpa * 100f));
+        MotionHelper.animateProgress(
+                binding.tabProfile.pbGpaMeter,
+                Math.round(state.projectedGpa * 100f),
+                !binding.tabProfile.seekSimulatedScore.isPressed()
+        );
 
         switch (state.rank) {
             case EXCELLENT:
@@ -1550,14 +1634,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openNotesActivity() {
-        Intent intent = new Intent(this, NotesActivity.class);
-        if (FrostUiHelper.areAnimationsEnabled(this)) {
-            ActivityOptionsCompat transition = ActivityOptionsCompat.makeCustomAnimation(
-                    this, R.anim.dashboard_enter, R.anim.dashboard_exit);
-            startActivity(intent, transition.toBundle());
-        } else {
-            startActivity(intent);
-        }
+        MotionHelper.startActivityPush(this, new Intent(this, NotesActivity.class));
     }
 
     private boolean hasText(@Nullable String value) {
