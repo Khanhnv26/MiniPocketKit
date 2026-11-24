@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.pocketkit.network.gateway.CloudGateway;
 import com.example.pocketkit.reminder.ReminderGateway;
 import com.example.pocketkit.repository.PocketKitRepository;
+import com.example.pocketkit.tools.ImageCompressGateway;
 import com.example.pocketkit.transfer.ScheduleTransferGateway;
 
 import java.util.concurrent.Executor;
@@ -17,6 +18,7 @@ public final class PocketKitViewModelFactory implements ViewModelProvider.Factor
     private final ReminderGateway reminderGateway;
     private final ScheduleTransferGateway transferGateway;
     private final CloudGateway cloudGateway;
+    private final ImageCompressGateway imageCompressGateway;
     private final Executor ioExecutor;
     private final Executor networkExecutor;
 
@@ -25,6 +27,7 @@ public final class PocketKitViewModelFactory implements ViewModelProvider.Factor
             @NonNull ReminderGateway reminderGateway,
             @NonNull ScheduleTransferGateway transferGateway,
             @NonNull CloudGateway cloudGateway,
+            @NonNull ImageCompressGateway imageCompressGateway,
             @NonNull Executor ioExecutor,
             @NonNull Executor networkExecutor
     ) {
@@ -32,6 +35,7 @@ public final class PocketKitViewModelFactory implements ViewModelProvider.Factor
         this.reminderGateway = reminderGateway;
         this.transferGateway = transferGateway;
         this.cloudGateway = cloudGateway;
+        this.imageCompressGateway = imageCompressGateway;
         this.ioExecutor = ioExecutor;
         this.networkExecutor = networkExecutor;
     }
@@ -47,7 +51,7 @@ public final class PocketKitViewModelFactory implements ViewModelProvider.Factor
             return (T) new CalendarViewModel(repository, transferGateway, cloudGateway, ioExecutor, networkExecutor);
         }
         if (modelClass.isAssignableFrom(ToolsViewModel.class)) {
-            return (T) new ToolsViewModel(repository, cloudGateway, ioExecutor, networkExecutor);
+            return (T) new ToolsViewModel(repository, cloudGateway, imageCompressGateway, ioExecutor, networkExecutor);
         }
         if (modelClass.isAssignableFrom(ProfileViewModel.class)) {
             return (T) new ProfileViewModel(repository, cloudGateway, reminderGateway, ioExecutor, networkExecutor);

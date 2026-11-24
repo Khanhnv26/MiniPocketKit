@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -49,6 +51,8 @@ import com.example.pocketkit.model.StudyTask;
 import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.profile.ProfileGpaHelper;
 import com.example.pocketkit.reminder.TaskReminderHelper;
+import com.example.pocketkit.tools.ImageCompressGateway;
+import com.example.pocketkit.tools.ImageCompressHelper;
 import com.example.pocketkit.transfer.ScheduleTransferHelper;
 import com.example.pocketkit.ui.FrostUiHelper;
 import com.example.pocketkit.ui.UiEvent;
@@ -59,6 +63,7 @@ import com.example.pocketkit.viewmodel.PocketKitViewModelFactory;
 import com.example.pocketkit.viewmodel.ProfileViewModel;
 import com.example.pocketkit.viewmodel.ToolsViewModel;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -78,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
     private StudyTask pendingReminderTask;
     private boolean taskReceiverRegistered = false;
     private boolean calendarCloudBusy = false;
+    @Nullable
+    private String lastCompressedPreviewKey;
     @Nullable
     private FrostUiHelper.OnlineShareDialogHandle onlineShareDialog;
 
@@ -120,6 +127,24 @@ public class MainActivity extends AppCompatActivity {
             uri -> {
                 if (uri != null) {
                     calendarViewModel.scanScheduleImage(uri.toString());
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickCompressImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(),
+            uri -> {
+                if (uri != null) {
+                    toolsViewModel.compressImage(uri.toString());
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<String> saveCompressedDocumentLauncher = registerForActivityResult(
+            new ActivityResultContracts.CreateDocument("image/jpeg"),
+            uri -> {
+                if (uri != null) {
+                    toolsViewModel.saveCompressedToDocument(uri.toString());
                 }
             }
     );
@@ -306,6 +331,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         toolsViewModel.getCompressPreset().observe(this, this::renderCompressPreset);
+        toolsViewModel.getCompressState().observe(this, this::renderCompressState);
+        toolsViewModel.getLaunchSaveCompressedDocumentEvent().observe(this, event -> {
+            String fileName = event.getContentIfNotHandled();
+            if (fileName != null) {
+                saveCompressedDocumentLauncher.launch(fileName);
+            }
+        });
+        toolsViewModel.getShareCompressedEvent().observe(this, event -> {
+            File file = event.getContentIfNotHandled();
+            if (file != null) {
+                launchShareCompressedImage(file);
+            }
+        });
         toolsViewModel.getOcrSample().observe(this, this::renderOcrSample);
         toolsViewModel.getOcrState().observe(this, this::renderOcrState);
         toolsViewModel.getTotalNotesCount().observe(this, count ->
@@ -1035,7 +1073,15 @@ public class MainActivity extends AppCompatActivity {
         binding.tabTools.chipCompress100.setOnClickListener(v -> toolsViewModel.selectCompressPreset(0));
         binding.tabTools.chipCompress500.setOnClickListener(v -> toolsViewModel.selectCompressPreset(1));
         binding.tabTools.chipCompress3x4.setOnClickListener(v -> toolsViewModel.selectCompressPreset(2));
-        binding.tabTools.btnRunCompress.setOnClickListener(v -> toolsViewModel.triggerCompressReadyMessage());
+        binding.tabTools.btnRunCompress.setOnClickListener(v ->
+                pickCompressImageLauncher.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build())
+        );
+        binding.tabTools.btnSaveCompressed.setOnClickListener(v ->
+                toolsViewModel.requestSaveCompressed(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        );
+        binding.tabTools.btnShareCompressed.setOnClickListener(v -> toolsViewModel.requestShareCompressed());
 
         binding.tabTools.chipOcrSample1.setOnClickListener(v -> toolsViewModel.selectOcrSample(0));
         binding.tabTools.chipOcrSample2.setOnClickListener(v -> toolsViewModel.selectOcrSample(1));
@@ -1087,6 +1133,110 @@ public class MainActivity extends AppCompatActivity {
         } else {
             binding.tabTools.tvCompressSpec.setText(R.string.tools_compress_spec_3x4);
             binding.tabTools.tvCompressEstimate.setText(R.string.tools_compress_estimate_3x4);
+        }
+    }
+
+    private void renderCompressState(@NonNull ToolsViewModel.CompressUiState state) {
+        boolean busy = state.compressing || state.saving;
+        boolean enabled = !busy;
+        float alpha = enabled ? 1.0f : 0.55f;
+
+        binding.tabTools.chipCompress100.setEnabled(enabled);
+        binding.tabTools.chipCompress100.setAlpha(alpha);
+        binding.tabTools.chipCompress500.setEnabled(enabled);
+        binding.tabTools.chipCompress500.setAlpha(alpha);
+        binding.tabTools.chipCompress3x4.setEnabled(enabled);
+        binding.tabTools.chipCompress3x4.setAlpha(alpha);
+
+        binding.tabTools.btnRunCompress.setEnabled(enabled);
+        binding.tabTools.btnRunCompress.setAlpha(alpha);
+        if (state.compressing) {
+            binding.tabTools.btnRunCompress.setText(R.string.tools_compress_running);
+        } else if (state.result != null) {
+            binding.tabTools.btnRunCompress.setText(R.string.tools_compress_btn_pick_another);
+        } else {
+            binding.tabTools.btnRunCompress.setText(R.string.tools_compress_btn_run);
+        }
+
+        binding.tabTools.btnSaveCompressed.setEnabled(enabled);
+        binding.tabTools.btnSaveCompressed.setAlpha(alpha);
+        binding.tabTools.btnSaveCompressed.setText(
+                state.saving ? R.string.tools_compress_saving : R.string.tools_compress_btn_save
+        );
+        binding.tabTools.btnShareCompressed.setEnabled(enabled);
+        binding.tabTools.btnShareCompressed.setAlpha(alpha);
+
+        ImageCompressGateway.CompressResult result = state.result;
+        if (result == null) {
+            lastCompressedPreviewKey = null;
+            binding.tabTools.ivCompressPreview.setImageDrawable(null);
+            binding.tabTools.layoutCompressResult.setVisibility(View.GONE);
+            return;
+        }
+
+        binding.tabTools.layoutCompressResult.setVisibility(View.VISIBLE);
+        String originalText = ImageCompressHelper.formatSize(result.originalBytes);
+        String compressedText = ImageCompressHelper.formatSize(result.compressedBytes);
+        int savedPercent = ImageCompressHelper.computeSavingsPercent(result.originalBytes, result.compressedBytes);
+        if (savedPercent > 0) {
+            binding.tabTools.tvCompressResultSize.setText(
+                    getString(R.string.tools_compress_result_size_format, originalText, compressedText, savedPercent)
+            );
+        } else {
+            binding.tabTools.tvCompressResultSize.setText(
+                    getString(R.string.tools_compress_result_size_same_format, originalText, compressedText)
+            );
+        }
+        binding.tabTools.tvCompressResultMeta.setText(
+                getString(R.string.tools_compress_result_meta_format, result.width, result.height, result.quality)
+        );
+        binding.tabTools.tvCompressResultNote.setVisibility(result.reachedTarget ? View.GONE : View.VISIBLE);
+
+        String previewKey = result.outputFile.getAbsolutePath()
+                + ":" + result.outputFile.lastModified()
+                + ":" + result.compressedBytes;
+        if (!previewKey.equals(lastCompressedPreviewKey)) {
+            Bitmap thumb = decodeCompressedThumbnail(result.outputFile);
+            if (thumb != null) {
+                binding.tabTools.ivCompressPreview.setImageBitmap(thumb);
+                lastCompressedPreviewKey = previewKey;
+            } else {
+                lastCompressedPreviewKey = null;
+                binding.tabTools.ivCompressPreview.setImageDrawable(null);
+            }
+        }
+    }
+
+    @Nullable
+    private static Bitmap decodeCompressedThumbnail(@NonNull File file) {
+        if (!file.exists()) {
+            return null;
+        }
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(file.getAbsolutePath(), bounds);
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            return null;
+        }
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inSampleSize = ImageCompressHelper.computeInSampleSize(bounds.outWidth, bounds.outHeight, 320, false);
+        return BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
+    }
+
+    private void launchShareCompressedImage(@NonNull File file) {
+        Uri contentUri = FileProvider.getUriForFile(
+                this,
+                getPackageName() + ".fileprovider",
+                file
+        );
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("image/jpeg");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.tools_compress_share_chooser)));
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.schedule_export_no_share_app, Toast.LENGTH_SHORT).show();
         }
     }
 

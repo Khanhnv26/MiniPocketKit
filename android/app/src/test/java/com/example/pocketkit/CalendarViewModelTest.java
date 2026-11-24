@@ -193,16 +193,24 @@ public class CalendarViewModelTest {
     public void toolsViewModel_tracksSelectionsAndNotesCount() {
         FakePocketKitRepository repository = new FakePocketKitRepository();
         repository.insertCategory("PRM392");
-        ToolsViewModel viewModel = new ToolsViewModel(repository, new FakeCloudGateway(), Runnable::run, Runnable::run);
+        FakeImageCompressGateway compressGateway = new FakeImageCompressGateway();
+        ToolsViewModel viewModel = new ToolsViewModel(
+                repository,
+                new FakeCloudGateway(),
+                compressGateway,
+                Runnable::run,
+                Runnable::run
+        );
 
         viewModel.selectCompressPreset(2);
         viewModel.selectOcrSample(1);
-        viewModel.triggerCompressReadyMessage();
+        viewModel.compressImage("content://media/sample.jpg");
         viewModel.refreshNotesCount();
 
         assertEquals(Integer.valueOf(2), viewModel.getCompressPreset().getValue());
         assertEquals(Integer.valueOf(1), viewModel.getOcrSample().getValue());
         assertEquals(Integer.valueOf(0), viewModel.getTotalNotesCount().getValue());
+        assertNotNull(viewModel.getCompressState().getValue().result);
         assertNotNull(viewModel.getToastEvent().getValue().getContentIfNotHandled());
     }
 
@@ -210,7 +218,13 @@ public class CalendarViewModelTest {
     public void toolsViewModel_scanOcrImage_requiresLoginAndUpdatesStateWhenLoggedIn() {
         FakePocketKitRepository repository = new FakePocketKitRepository();
         FakeCloudGateway cloudGateway = new FakeCloudGateway();
-        ToolsViewModel viewModel = new ToolsViewModel(repository, cloudGateway, Runnable::run, Runnable::run);
+        ToolsViewModel viewModel = new ToolsViewModel(
+                repository,
+                cloudGateway,
+                new FakeImageCompressGateway(),
+                Runnable::run,
+                Runnable::run
+        );
 
         viewModel.scanOcrImage("content://media/slide.png");
         assertNull(cloudGateway.lastOcrUri);

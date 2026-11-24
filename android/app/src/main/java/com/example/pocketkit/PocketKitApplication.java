@@ -13,6 +13,8 @@ import com.example.pocketkit.reminder.SystemReminderGateway;
 import com.example.pocketkit.reminder.TaskNotificationHelper;
 import com.example.pocketkit.repository.LocalPocketKitRepository;
 import com.example.pocketkit.repository.PocketKitRepository;
+import com.example.pocketkit.tools.AndroidImageCompressGateway;
+import com.example.pocketkit.tools.ImageCompressGateway;
 import com.example.pocketkit.transfer.AndroidScheduleTransferGateway;
 import com.example.pocketkit.transfer.ScheduleTransferGateway;
 import com.example.pocketkit.viewmodel.PocketKitViewModelFactory;
@@ -26,6 +28,7 @@ public class PocketKitApplication extends Application {
     private ReminderGateway reminderGateway;
     private ScheduleTransferGateway scheduleTransferGateway;
     private CloudGateway cloudGateway;
+    private ImageCompressGateway imageCompressGateway;
     private ExecutorService sharedIoExecutor;
     private ExecutorService networkExecutor;
     private PocketKitViewModelFactory viewModelFactory;
@@ -40,6 +43,7 @@ public class PocketKitApplication extends Application {
         this.reminderGateway = new SystemReminderGateway(this);
         this.scheduleTransferGateway = new AndroidScheduleTransferGateway(this);
         this.cloudGateway = new RetrofitCloudGateway(this, BuildConfig.API_BASE_URL, new SessionStore(this));
+        this.imageCompressGateway = new AndroidImageCompressGateway(this);
         this.sharedIoExecutor = Executors.newSingleThreadExecutor();
         this.networkExecutor = Executors.newFixedThreadPool(2);
         this.viewModelFactory = new PocketKitViewModelFactory(
@@ -47,6 +51,7 @@ public class PocketKitApplication extends Application {
                 reminderGateway,
                 scheduleTransferGateway,
                 cloudGateway,
+                imageCompressGateway,
                 sharedIoExecutor,
                 networkExecutor
         );
