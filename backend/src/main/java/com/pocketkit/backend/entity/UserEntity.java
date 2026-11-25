@@ -19,8 +19,14 @@ public class UserEntity {
     @Column(nullable = false, unique = true, length = 160)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String passwordHash;
+
+    @Column(unique = true, length = 128)
+    private String googleSub;
+
+    @Column(length = 32)
+    private String authProvider;
 
     @Column(nullable = false, length = 120)
     private String fullName;

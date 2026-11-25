@@ -10,6 +10,7 @@ import com.example.pocketkit.model.StudyTask;
 import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.profile.ProfileGpaHelper;
 import com.example.pocketkit.reminder.ReminderGateway;
+import com.example.pocketkit.ui.UiMessage;
 import com.example.pocketkit.viewmodel.ProfileViewModel;
 
 import org.junit.Rule;
@@ -87,7 +88,9 @@ public class ProfileViewModelTest {
     @Test
     public void saveProfile_updatesStateAndEmitsSingleToastEvent() {
         FakePocketKitRepository repository = new FakePocketKitRepository();
-        ProfileViewModel viewModel = createViewModel(repository, new FakeCloudGateway(), new RecordingReminderGateway());
+        FakeCloudGateway cloudGateway = new FakeCloudGateway();
+        cloudGateway.loggedIn = true;
+        ProfileViewModel viewModel = createViewModel(repository, cloudGateway, new RecordingReminderGateway());
 
         StudentProfile updated = StudentProfile.builder()
                 .fullName("Trần Minh Đức")
@@ -107,6 +110,76 @@ public class ProfileViewModelTest {
         assertEquals(ProfileGpaHelper.GpaRank.EXCELLENT, state.rank);
         assertNotNull(viewModel.getToastEvent().getValue().getContentIfNotHandled());
         assertNull(viewModel.getToastEvent().getValue().getContentIfNotHandled());
+    }
+
+    @Test
+    public void saveProfile_whenNotLoggedIn_rejectsUpdateAndEmitsToast() {
+        FakePocketKitRepository repository = new FakePocketKitRepository();
+        FakeCloudGateway cloudGateway = new FakeCloudGateway();
+        ProfileViewModel viewModel = createViewModel(repository, cloudGateway, new RecordingReminderGateway());
+
+        StudentProfile updated = StudentProfile.builder()
+                .fullName("Người Chưa Đăng Nhập")
+                .majorAndCohort("SE")
+                .earnedCredits(100)
+                .totalCredits(140)
+                .attendancePercent(95)
+                .baselineGpa(3.50f)
+                .currentTermCredits(18)
+                .build();
+
+        viewModel.saveProfile(updated);
+
+        assertEquals("Nguyễn Khánh", repository.loadProfile().getFullName());
+        UiMessage message = viewModel.getToastEvent().getValue().getContentIfNotHandled();
+        assertNotNull(message);
+        assertEquals(R.string.cloud_error_login_required, message.resId);
+    }
+
+    @Test
+    public void loginWithGoogle_updatesCloudStateAndSyncsDefaultProfileName() {
+        FakePocketKitRepository repository = new FakePocketKitRepository();
+        FakeCloudGateway cloudGateway = new FakeCloudGateway();
+        cloudGateway.email = "bao@fpt.edu.vn";
+        cloudGateway.fullName = "Trần Bảo";
+        ProfileViewModel viewModel = createViewModel(repository, cloudGateway, new RecordingReminderGateway());
+
+        viewModel.loginWithGoogle("google-id-token-123");
+
+        assertEquals("google-id-token-123", cloudGateway.lastGoogleIdToken);
+        ProfileViewModel.CloudUiState cloudState = viewModel.getCloudState().getValue();
+        assertNotNull(cloudState);
+        assertTrue(cloudState.loggedIn);
+        assertEquals("bao@fpt.edu.vn", cloudState.email);
+        assertEquals("Trần Bảo", viewModel.getProfileState().getValue().profile.getFullName());
+        UiMessage toast = viewModel.getToastEvent().getValue().getContentIfNotHandled();
+        assertNotNull(toast);
+        assertEquals(R.string.cloud_auth_google_success, toast.resId);
+    }
+
+    @Test
+    public void loginWithGoogle_preservesCustomEditedProfileName() {
+        FakePocketKitRepository repository = new FakePocketKitRepository();
+        FakeCloudGateway cloudGateway = new FakeCloudGateway();
+        cloudGateway.loggedIn = true;
+        ProfileViewModel viewModel = createViewModel(repository, cloudGateway, new RecordingReminderGateway());
+
+        viewModel.saveProfile(StudentProfile.builder()
+                .fullName("Lê Minh")
+                .majorAndCohort("AI · K19")
+                .earnedCredits(114)
+                .totalCredits(145)
+                .attendancePercent(96)
+                .baselineGpa(3.44f)
+                .currentTermCredits(20)
+                .build());
+        viewModel.logout();
+
+        cloudGateway.email = "minh@fpt.edu.vn";
+        cloudGateway.fullName = "Google Name Should Not Overwrite";
+        viewModel.loginWithGoogle("google-id-token-456");
+
+        assertEquals("Lê Minh", viewModel.getProfileState().getValue().profile.getFullName());
     }
 
     @Test

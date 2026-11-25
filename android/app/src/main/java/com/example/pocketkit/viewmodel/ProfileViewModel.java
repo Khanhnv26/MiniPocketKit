@@ -1,6 +1,7 @@
 package com.example.pocketkit.viewmodel;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -78,7 +79,8 @@ public class ProfileViewModel extends ViewModel {
 
     @FunctionalInterface
     private interface CloudAuthAction {
-        void run() throws CloudException;
+        @NonNull
+        ApiModels.AuthResponse run() throws CloudException;
     }
 
     private final PocketKitRepository repository;
@@ -137,6 +139,10 @@ public class ProfileViewModel extends ViewModel {
         return currentProfile;
     }
 
+    public boolean isLoggedIn() {
+        return cloudGateway.isLoggedIn();
+    }
+
     public void loadProfile() {
         currentProfile = repository.loadProfile();
         currentProgress = ProfileGpaHelper.clampSimulatedProgress(repository.loadSimulatedScoreProgress());
@@ -144,6 +150,10 @@ public class ProfileViewModel extends ViewModel {
     }
 
     public void saveProfile(@NonNull StudentProfile updatedProfile) {
+        if (!cloudGateway.isLoggedIn()) {
+            toastEvent.setValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_error_login_required)));
+            return;
+        }
         repository.saveProfile(updatedProfile);
         currentProfile = updatedProfile;
         emitState();
@@ -169,6 +179,10 @@ public class ProfileViewModel extends ViewModel {
 
     public void register(@NonNull String fullName, @NonNull String email, @NonNull String password) {
         executeAuth(R.string.cloud_auth_register_success, () -> cloudGateway.register(fullName, email, password));
+    }
+
+    public void loginWithGoogle(@NonNull String idToken) {
+        executeAuth(R.string.cloud_auth_google_success, () -> cloudGateway.loginWithGoogle(idToken));
     }
 
     public void logout() {
@@ -253,7 +267,30 @@ public class ProfileViewModel extends ViewModel {
         postCloudState();
         networkExecutor.execute(() -> {
             try {
-                authAction.run();
+                ApiModels.AuthResponse auth = authAction.run();
+                String accountName = auth.getUser() != null && auth.getUser().getFullName() != null
+                        ? auth.getUser().getFullName().trim()
+                        : "";
+                if (!accountName.isEmpty() && shouldSyncDefaultProfileName(currentProfile)) {
+                    StudentProfile updated = StudentProfile.builder()
+                            .fullName(accountName)
+                            .majorAndCohort(currentProfile.getMajorAndCohort())
+                            .earnedCredits(currentProfile.getEarnedCredits())
+                            .totalCredits(currentProfile.getTotalCredits())
+                            .attendancePercent(currentProfile.getAttendancePercent())
+                            .baselineGpa(currentProfile.getBaselineGpa())
+                            .currentTermCredits(currentProfile.getCurrentTermCredits())
+                            .build();
+                    ioExecutor.execute(() -> {
+                        repository.saveProfile(updated);
+                        currentProfile = updated;
+                        emitState();
+                        cloudBusy = false;
+                        postCloudState();
+                        toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(successMessageRes)));
+                    });
+                    return;
+                }
                 cloudBusy = false;
                 postCloudState();
                 toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(successMessageRes)));
@@ -263,6 +300,14 @@ public class ProfileViewModel extends ViewModel {
                 toastEvent.postValue(new UiEvent<>(UiMessage.shortToast(R.string.cloud_message_raw, ex.getMessage())));
             }
         });
+    }
+
+    private static boolean shouldSyncDefaultProfileName(@Nullable StudentProfile profile) {
+        if (profile == null || profile.getFullName() == null) {
+            return true;
+        }
+        String trimmed = profile.getFullName().trim();
+        return trimmed.isEmpty() || "Nguyễn Khánh".equals(trimmed);
     }
 
     private void applyRestoredSnapshot(@NonNull ApiModels.BackupPayload payload) {

@@ -33,6 +33,14 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @PostMapping("/oauth/google")
+    public ResponseEntity<ApiResponse<AuthDtos.AuthResponse>> loginWithGoogle(
+            @Valid @RequestBody AuthDtos.GoogleLoginRequest request
+    ) {
+        AuthDtos.AuthResponse response = authService.loginWithGoogle(request);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<AuthDtos.UserSummary>> getCurrentUser(@AuthenticationPrincipal Long userId) {
         AuthDtos.UserSummary response = authService.getCurrentUser(userId);

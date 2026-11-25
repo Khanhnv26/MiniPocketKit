@@ -1,6 +1,22 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
+
+val localProps = Properties().apply {
+    val propsFile = rootProject.file("local.properties")
+    if (propsFile.isFile) {
+        propsFile.inputStream().use { load(it) }
+    }
+}
+val rawGoogleClientId = localProps.getProperty("GOOGLE_WEB_CLIENT_ID")
+    ?: providers.gradleProperty("GOOGLE_WEB_CLIENT_ID").orNull
+    ?: System.getenv("GOOGLE_WEB_CLIENT_ID")
+    ?: ""
+val googleWebClientId = rawGoogleClientId.trim()
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
 
 android {
     namespace = "com.example.pocketkit"
@@ -16,6 +32,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildTypes {
@@ -62,4 +79,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
 }

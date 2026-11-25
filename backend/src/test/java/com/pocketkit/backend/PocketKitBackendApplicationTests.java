@@ -336,4 +336,27 @@ class PocketKitBackendApplicationTests {
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.success", is(false)));
     }
+
+    @Test
+    void googleOAuthEndpoint_validatesRequestAndConfig() throws Exception {
+        mockMvc.perform(post("/api/auth/oauth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "idToken": ""
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)));
+
+        mockMvc.perform(post("/api/auth/oauth/google")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "idToken": "sample-google-id-token"
+                                }
+                                """))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.success", is(false)));
+    }
 }

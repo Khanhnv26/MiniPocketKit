@@ -50,7 +50,9 @@ public class RetrofitCloudGateway implements CloudGateway {
                 .addInterceptor(chain -> {
                     Request original = chain.request();
                     String path = original.url().encodedPath();
-                    boolean isAuthEndpoint = path.endsWith("/api/auth/login") || path.endsWith("/api/auth/register");
+                    boolean isAuthEndpoint = path.endsWith("/api/auth/login")
+                            || path.endsWith("/api/auth/register")
+                            || path.endsWith("/api/auth/oauth/google");
                     String token = sessionStore.getAccessToken();
                     Request.Builder builder = original.newBuilder()
                             .header("Accept", "application/json");
@@ -120,6 +122,17 @@ public class RetrofitCloudGateway implements CloudGateway {
                 .password(password)
                 .build();
         ApiModels.AuthResponse auth = execute(api.login(request));
+        sessionStore.saveAuth(auth, System.currentTimeMillis());
+        return auth;
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.AuthResponse loginWithGoogle(@NonNull String idToken) throws CloudException {
+        ApiModels.GoogleLoginRequest request = ApiModels.GoogleLoginRequest.builder()
+                .idToken(idToken.trim())
+                .build();
+        ApiModels.AuthResponse auth = execute(api.loginWithGoogle(request));
         sessionStore.saveAuth(auth, System.currentTimeMillis());
         return auth;
     }

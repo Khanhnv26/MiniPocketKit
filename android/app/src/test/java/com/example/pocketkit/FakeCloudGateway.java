@@ -47,6 +47,8 @@ final class FakeCloudGateway implements CloudGateway {
     @Nullable
     String lastScheduleImageUri;
     @Nullable
+    String lastGoogleIdToken;
+    @Nullable
     CloudException errorToThrow;
 
     @Override
@@ -103,6 +105,25 @@ final class FakeCloudGateway implements CloudGateway {
         }
         return new ApiModels.AuthResponse(
                 "fake-jwt",
+                604800000L,
+                new ApiModels.UserSummary(1L, email, fullName)
+        );
+    }
+
+    @NonNull
+    @Override
+    public ApiModels.AuthResponse loginWithGoogle(@NonNull String idToken) throws CloudException {
+        throwIfConfigured();
+        this.lastGoogleIdToken = idToken;
+        this.loggedIn = true;
+        if (this.email.isEmpty()) {
+            this.email = "google.user@fpt.edu.vn";
+        }
+        if (this.fullName.isEmpty()) {
+            this.fullName = "Sinh viên Google";
+        }
+        return new ApiModels.AuthResponse(
+                "fake-google-jwt",
                 604800000L,
                 new ApiModels.UserSummary(1L, email, fullName)
         );

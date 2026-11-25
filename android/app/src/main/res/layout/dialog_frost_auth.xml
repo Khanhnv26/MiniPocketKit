@@ -54,6 +54,32 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/btnAuthGoogle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/card_gap"
+        android:background="@drawable/bg_pill_accent_soft"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/cloud_btn_google"
+        android:textColor="@color/accent_sapphire"
+        android:textSize="@dimen/text_size_body"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/card_gap"
+        android:gravity="center"
+        android:text="@string/cloud_or_email_divider"
+        android:textAllCaps="true"
+        android:textColor="@color/ink_muted"
+        android:textSize="@dimen/text_size_caption"
+        android:textStyle="bold" />
+
     <LinearLayout
         android:id="@+id/layoutAuthFullName"
         android:layout_width="match_parent"

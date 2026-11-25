@@ -53,6 +53,18 @@ public final class AuthDtos {
     }
 
     @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class GoogleLoginRequest {
+
+        @NotBlank(message = "Google ID token không được để trống")
+        @Size(max = 4096, message = "Google ID token không hợp lệ")
+        private String idToken;
+    }
+
+    @Getter
     @Builder
     @NoArgsConstructor(force = true)
     @AllArgsConstructor

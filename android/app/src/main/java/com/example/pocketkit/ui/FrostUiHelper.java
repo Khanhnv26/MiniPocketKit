@@ -1069,7 +1069,8 @@ public final class FrostUiHelper {
 
     public static void showAuthDialog(
             @NonNull Context context,
-            @NonNull OnAuthSubmitListener listener
+            @NonNull OnAuthSubmitListener listener,
+            @NonNull Runnable onGoogleAuthRequested
     ) {
         AppCompatDialog dialog = new AppCompatDialog(context);
         dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -1078,6 +1079,7 @@ public final class FrostUiHelper {
 
         TextView chipLogin = content.findViewById(R.id.chipAuthLogin);
         TextView chipRegister = content.findViewById(R.id.chipAuthRegister);
+        TextView btnGoogle = content.findViewById(R.id.btnAuthGoogle);
         View layoutFullName = content.findViewById(R.id.layoutAuthFullName);
         EditText edtFullName = content.findViewById(R.id.edtAuthFullName);
         EditText edtEmail = content.findViewById(R.id.edtAuthEmail);
@@ -1125,6 +1127,10 @@ public final class FrostUiHelper {
             listener.onSubmit(registerMode[0], fullName, email, password);
         };
 
+        btnGoogle.setOnClickListener(v -> {
+            dialog.dismiss();
+            onGoogleAuthRequested.run();
+        });
         btnCancel.setOnClickListener(v -> dialog.dismiss());
         btnSubmit.setOnClickListener(v -> submit.run());
         edtPassword.setOnEditorActionListener((v, actionId, event) -> {

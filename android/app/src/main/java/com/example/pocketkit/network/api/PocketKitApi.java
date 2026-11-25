@@ -22,6 +22,9 @@ public interface PocketKitApi {
     @POST("api/auth/login")
     Call<ApiModels.ApiResponse<ApiModels.AuthResponse>> login(@Body ApiModels.LoginRequest request);
 
+    @POST("api/auth/oauth/google")
+    Call<ApiModels.ApiResponse<ApiModels.AuthResponse>> loginWithGoogle(@Body ApiModels.GoogleLoginRequest request);
+
     @GET("api/auth/me")
     Call<ApiModels.ApiResponse<ApiModels.UserSummary>> aboutMe();
 

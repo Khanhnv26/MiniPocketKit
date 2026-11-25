@@ -399,6 +399,11 @@
     </plurals>
 
     <string name="cloud_message_raw">%1$s</string>
+    <string name="profile_guest_title">Chưa đăng nhập</string>
+    <string name="profile_guest_subtitle">Đăng nhập để tạo hồ sơ sinh viên, sao lưu lịch học, công việc và ghi chú lên đám mây.</string>
+    <string name="cloud_btn_google">Tiếp tục với Google</string>
+    <string name="cloud_btn_email_auth">Dùng Email &amp; Mật khẩu</string>
+    <string name="cloud_or_email_divider">Hoặc dùng Email</string>
     <string name="cloud_card_title">Tài khoản &amp; Đám mây</string>
     <string name="cloud_guest_subtitle">Đăng nhập để đồng bộ ghi chú, lịch học và công việc lên server.</string>
     <string name="cloud_btn_auth_open">Đăng nhập / Đăng ký</string>
@@ -425,6 +430,10 @@
 
     <string name="cloud_auth_login_success">Đăng nhập thành công</string>
     <string name="cloud_auth_register_success">Đăng ký và đăng nhập thành công</string>
+    <string name="cloud_auth_google_success">Đăng nhập Google thành công</string>
+    <string name="cloud_google_not_configured">Chưa cấu hình GOOGLE_WEB_CLIENT_ID trong android/local.properties</string>
+    <string name="cloud_google_no_account">Không tìm thấy tài khoản Google trên thiết bị</string>
+    <string name="cloud_google_failed">Không thể đăng nhập bằng Google lúc này</string>
     <string name="cloud_logout_success">Đã đăng xuất khỏi tài khoản</string>
     <string name="cloud_backup_success">Đã sao lưu toàn bộ dữ liệu lên server</string>
     <string name="cloud_restore_success">Đã khôi phục dữ liệu từ bản sao lưu mới nhất</string>

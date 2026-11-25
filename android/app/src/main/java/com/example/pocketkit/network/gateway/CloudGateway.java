@@ -34,6 +34,9 @@ public interface CloudGateway {
             @NonNull String password
     ) throws CloudException;
 
+    @NonNull
+    ApiModels.AuthResponse loginWithGoogle(@NonNull String idToken) throws CloudException;
+
     void logout();
 
     @NonNull

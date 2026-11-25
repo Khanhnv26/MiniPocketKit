@@ -50,6 +50,15 @@ public final class ApiModels {
         private String password;
     }
 
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class GoogleLoginRequest {
+        private String idToken;
+    }
+
 
     @Getter
     @Setter

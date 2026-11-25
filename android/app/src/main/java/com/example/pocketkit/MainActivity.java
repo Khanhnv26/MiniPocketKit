@@ -48,6 +48,7 @@ import com.example.pocketkit.model.Note;
 import com.example.pocketkit.model.ScheduleSlot;
 import com.example.pocketkit.model.StudentProfile;
 import com.example.pocketkit.model.StudyTask;
+import com.example.pocketkit.network.auth.GoogleAuthHelper;
 import com.example.pocketkit.network.dto.ApiModels;
 import com.example.pocketkit.profile.ProfileGpaHelper;
 import com.example.pocketkit.reminder.TaskReminderHelper;
@@ -87,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
     private int lastRenderedCalendarDay = -1;
     private boolean pinnedBarWasVisible = false;
     private boolean compressResultWasVisible = false;
+    private boolean cloudLoginStateInitialized = false;
+    private boolean wasCloudLoggedIn = false;
     @Nullable
     private String lastAnimatedOcrText;
     private StudyTask pendingReminderTask;
@@ -1369,19 +1372,25 @@ public class MainActivity extends AppCompatActivity {
         MotionHelper.attachButtonPress(
                 binding.tabProfile.btnEditProfile,
                 binding.tabProfile.btnProfileNotes,
+                binding.tabProfile.btnProfileGoogleAuth,
                 binding.tabProfile.btnCloudAuth,
                 binding.tabProfile.btnCloudBackup,
                 binding.tabProfile.btnCloudRestore,
                 binding.tabProfile.btnCloudLogout
         );
-        binding.tabProfile.btnEditProfile.setOnClickListener(v ->
-                FrostUiHelper.showProfileEditorDialog(
-                        this,
-                        profileViewModel.getCurrentProfileSnapshot(),
-                        updatedProfile -> profileViewModel.saveProfile(updatedProfile)
-                )
-        );
+        binding.tabProfile.btnEditProfile.setOnClickListener(v -> {
+            if (!profileViewModel.isLoggedIn()) {
+                Toast.makeText(this, R.string.cloud_error_login_required, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            FrostUiHelper.showProfileEditorDialog(
+                    this,
+                    profileViewModel.getCurrentProfileSnapshot(),
+                    updatedProfile -> profileViewModel.saveProfile(updatedProfile)
+            );
+        });
         binding.tabProfile.btnProfileNotes.setOnClickListener(v -> openNotesActivity());
+        binding.tabProfile.btnProfileGoogleAuth.setOnClickListener(v -> launchGoogleSignIn());
         binding.tabProfile.btnCloudAuth.setOnClickListener(v -> openAuthDialog());
         binding.tabProfile.btnCloudBackup.setOnClickListener(v -> profileViewModel.backupNow());
         binding.tabProfile.btnCloudRestore.setOnClickListener(v ->
@@ -1412,7 +1421,7 @@ public class MainActivity extends AppCompatActivity {
                 profile.getFullName(),
                 getString(R.string.profile_default_initials)
         );
-        binding.btnHeaderProfile.setText(initials);
+        renderHeaderProfileAvatar(profileViewModel.isLoggedIn(), profile);
         binding.tabProfile.tvProfileAvatar.setText(initials);
         binding.tabProfile.tvProfileName.setText(profile.getFullName());
 
@@ -1476,19 +1485,66 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openAuthDialog() {
-        FrostUiHelper.showAuthDialog(this, (isRegister, fullName, email, password) -> {
-            if (isRegister) {
-                profileViewModel.register(fullName, email, password);
-            } else {
-                profileViewModel.login(email, password);
+        FrostUiHelper.showAuthDialog(
+                this,
+                (isRegister, fullName, email, password) -> {
+                    if (isRegister) {
+                        profileViewModel.register(fullName, email, password);
+                    } else {
+                        profileViewModel.login(email, password);
+                    }
+                },
+                this::launchGoogleSignIn
+        );
+    }
+
+    private void launchGoogleSignIn() {
+        ProfileViewModel.CloudUiState cloud = profileViewModel.getCloudState().getValue();
+        if (cloud != null && cloud.busy) {
+            return;
+        }
+        GoogleAuthHelper.requestIdToken(this, new GoogleAuthHelper.Callback() {
+            @Override
+            public void onIdTokenReceived(@NonNull String idToken) {
+                profileViewModel.loginWithGoogle(idToken);
+            }
+
+            @Override
+            public void onCancelled() {
+            }
+
+            @Override
+            public void onError(@NonNull String message) {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    private void renderHeaderProfileAvatar(boolean loggedIn, @Nullable StudentProfile profile) {
+        if (loggedIn && profile != null) {
+            String initials = ProfileGpaHelper.buildInitials(
+                    profile.getFullName(),
+                    getString(R.string.profile_default_initials)
+            );
+            binding.btnHeaderProfile.setBackgroundResource(R.drawable.bg_pill_secondary);
+            binding.btnHeaderProfile.setText(initials);
+        } else {
+            binding.btnHeaderProfile.setBackgroundResource(R.drawable.bg_header_guest_avatar);
+            binding.btnHeaderProfile.setText("");
+        }
+    }
+
     private void renderCloudState(@NonNull ProfileViewModel.CloudUiState state) {
+        renderHeaderProfileAvatar(state.loggedIn, profileViewModel.getCurrentProfileSnapshot());
         if (state.loggedIn) {
-            binding.tabProfile.layoutCloudGuest.setVisibility(View.GONE);
-            binding.tabProfile.layoutCloudSignedIn.setVisibility(View.VISIBLE);
+            boolean revealSignedIn = cloudLoginStateInitialized && !wasCloudLoggedIn;
+            binding.tabProfile.cardProfileGuestHero.setVisibility(View.GONE);
+            binding.tabProfile.cardProfileUserHero.setVisibility(View.VISIBLE);
+            binding.tabProfile.cardCloudAccount.setVisibility(View.VISIBLE);
+            if (revealSignedIn) {
+                MotionHelper.animateSectionReveal(binding.tabProfile.cardProfileUserHero);
+                MotionHelper.animateSectionReveal(binding.tabProfile.cardCloudAccount);
+            }
             binding.tabProfile.tvCloudEmail.setText(state.email);
             if (state.lastBackupEpoch > 0L) {
                 Locale vi = Locale.forLanguageTag("vi-VN");
@@ -1501,13 +1557,21 @@ public class MainActivity extends AppCompatActivity {
                 binding.tabProfile.tvCloudLastBackup.setText(R.string.cloud_last_backup_none);
             }
         } else {
-            binding.tabProfile.layoutCloudGuest.setVisibility(View.VISIBLE);
-            binding.tabProfile.layoutCloudSignedIn.setVisibility(View.GONE);
+            boolean revealGuest = cloudLoginStateInitialized && wasCloudLoggedIn;
+            binding.tabProfile.cardProfileGuestHero.setVisibility(View.VISIBLE);
+            binding.tabProfile.cardProfileUserHero.setVisibility(View.GONE);
+            binding.tabProfile.cardCloudAccount.setVisibility(View.GONE);
+            if (revealGuest) {
+                MotionHelper.animateSectionReveal(binding.tabProfile.cardProfileGuestHero);
+            }
         }
+        wasCloudLoggedIn = state.loggedIn;
+        cloudLoginStateInitialized = true;
 
         boolean enabled = !state.busy;
         float alpha = enabled ? 1.0f : 0.55f;
         TextView[] actionButtons = new TextView[]{
+                binding.tabProfile.btnProfileGoogleAuth,
                 binding.tabProfile.btnCloudAuth,
                 binding.tabProfile.btnCloudBackup,
                 binding.tabProfile.btnCloudRestore,
